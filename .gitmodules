@@ -1,0 +1,3 @@
+[submodule "bvpCommon"]
+	path = bvpCommon
+	url = https://github.com/BerZerKku/CPP_bvpCommon.git
