@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "bvpCommon/modbus.h"
+
 const uint8_t MainWindow::comReadHoldingRegisters = 0x03;
 const uint8_t MainWindow::comWriteMultipleRegisters = 0x10;
 

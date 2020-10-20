@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     bvpCommon/modbus.cpp \
+    bvpCommon/serialprotocol.cpp \
     control.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
 
 HEADERS += \
     bvpCommon/modbus.h \
+    bvpCommon/serialprotocol.h \
     control.h \
     mainwindow.h \
     qcolorbutton.h \
