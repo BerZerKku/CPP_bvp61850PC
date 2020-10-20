@@ -9,6 +9,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    bvpCommon/modbus.cpp \
     control.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
     serial/serialport.cpp
 
 HEADERS += \
+    bvpCommon/modbus.h \
     control.h \
     mainwindow.h \
     qcolorbutton.h \
@@ -29,6 +31,10 @@ FORMS += \
     control.ui \
     mainwindow.ui \
     serial.ui
+
+INCLUDEPATH += \
+    bvpCommon/
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
