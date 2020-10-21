@@ -15,7 +15,7 @@ main(int argc, char *argv[]) {
                       arg("%{if-critical}\033[31;1mC%{endif}").
                       arg("%{if-fatal}\033[31;1mF%{endif}").
                       arg("\033[0m").
-                      arg("\n   Loc: [%{file}:%{line}]");
+                      arg("\n   Loc: [%{file} %{function}: %{line}]");
 
     qSetMessagePattern(pattern);
 

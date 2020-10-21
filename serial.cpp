@@ -32,7 +32,14 @@ TSerial::TSerial(QWidget *parent) :
 
 //
 TSerial::~TSerial() {
-    // FIXME Разобраться с ошибкой при закрытии формы с открытым протом.
+    if (!thread.isNull()) {
+        thread->exit();
+    }
+
+    if (!sport.isNull()) {
+        delete sport;
+    }
+
     delete ui;
 }
 

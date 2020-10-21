@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     bvpCommon/modbus.cpp \
+    bvpCommon/param.cpp \
     bvpCommon/serialprotocol.cpp \
     control.cpp \
     main.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 
 HEADERS += \
     bvpCommon/modbus.h \
+    bvpCommon/param.h \
     bvpCommon/serialprotocol.h \
     control.h \
     mainwindow.h \
