@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
+#include "bvpCommon/modbus.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,14 +23,21 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    uint8_t sBuf[128];
+    QTimer timer;
 
     uint16_t getUInt16(QVector<uint8_t> &pkg);
     void writePkg(QVector<uint8_t> &pkg);
+    BVP::TModbus modbus;
 
 private slots:
+    void modbusStart();
+    void modbusStop();
+    void modbusProc();
+
     void readRegistersSlot();
     void writeRegistersSlot();
-    void readAndWriteRegistersSlot();
+    void readAndWriteRegistersSlot();    
 
     void readSlot(int value);
 };

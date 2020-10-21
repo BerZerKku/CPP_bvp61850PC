@@ -23,11 +23,18 @@ signals:
     void readRegisters();
     void writeRegisters();
     void readAndWriteRegisters();
+    void modbusStart();
+    void modbusStop();
 
 private:
     Ui::TControl *ui;
 
     void setEnable(bool enable);
+    void setEnableModbus(bool enable);
+
+private slots:
+    void enableModbus();
+    void disableModbus();
 };
 
 #endif // CONTROL_H

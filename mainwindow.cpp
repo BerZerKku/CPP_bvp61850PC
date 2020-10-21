@@ -1,10 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "bvpCommon/modbus.h"
-
 const uint8_t MainWindow::comReadHoldingRegisters = 0x03;
 const uint8_t MainWindow::comWriteMultipleRegisters = 0x10;
+
 
 //
 MainWindow::MainWindow(QWidget *parent)
@@ -12,6 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    modbus.setBuffer(sBuf, (sizeof(sBuf) / sizeof(sBuf[0])));
 
     connect(ui->serial, &TSerial::openPort,
             ui->control, &TControl::enableSlot);
@@ -29,6 +30,9 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::readAndWriteRegistersSlot);
 
     connect(ui->serial, &TSerial::read, this, &MainWindow::readSlot);
+
+    connect(ui->control, &TControl::modbusStart, this, &MainWindow::modbusStart);
+    connect(ui->control, &TControl::modbusStop, this, &MainWindow::modbusStop);
 }
 
 //
@@ -53,6 +57,26 @@ MainWindow::writePkg(QVector<uint8_t> &pkg) {
        ui->textBrowser->insertPlainText(
                    QString("%1 ").arg(byte, 2, 16, QLatin1Char('0')));
     }
+}
+
+//
+void
+MainWindow::modbusStart() {
+    modbus.setup(9600, true, 1);
+    modbus.setNetAddress(0x0A);
+    modbus.setTimeTick(1000);
+    modbus.setEnable(true);
+
+    connect(&timer, &QTimer::timeout, this, &MainWindow::modbusProc);
+    timer.start(1);
+}
+
+//
+void
+MainWindow::modbusStop() {
+    modbus.setEnable(false);
+    disconnect(&timer, &QTimer::timeout, this, &MainWindow::modbusProc);
+    timer.stop();
 }
 
 //
@@ -128,6 +152,22 @@ MainWindow::readAndWriteRegistersSlot() {
 
 //
 void
+MainWindow::modbusProc() {
+    modbus.tick();
+    modbus.read();
+    if (modbus.write()) {
+        QVector<uint8_t> pkg;
+        uint8_t byte;
+        while(modbus.pop(byte)) {
+            pkg.append(byte);
+        }
+        writePkg(pkg);
+    }
+
+}
+
+//
+void
 MainWindow::readSlot(int value) {
     static QVector<uint8_t> rxPkg;
     static quint8 size = 0;
@@ -135,6 +175,8 @@ MainWindow::readSlot(int value) {
     quint8 byte = static_cast<uint8_t> (value);
 
     // TODO здесь должен быть обработчик принятого сообщения Modbus
+
+    modbus.push(byte);
 
     if (len == 0) {
         if (value == 0x0A) {

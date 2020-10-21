@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>356</width>
+    <width>397</width>
     <height>41</height>
    </rect>
   </property>
@@ -31,6 +31,20 @@
     <widget class="QCheckBox" name="checkBox">
      <property name="text">
       <string>Cycle</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pModbusStop">
+     <property name="text">
+      <string>Modbus Stop</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pModbusStart">
+     <property name="text">
+      <string>Modbus Start</string>
      </property>
     </widget>
    </item>
