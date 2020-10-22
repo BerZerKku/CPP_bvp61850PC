@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include "bvpCommon/modbus.h"
+#include "bvpCommon/param.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,6 +17,7 @@ class MainWindow : public QMainWindow
     const uint8_t deviceAddress = 0x0A;
     static const uint8_t comReadHoldingRegisters;
     static const uint8_t comWriteMultipleRegisters;
+    static const uint8_t comReadWriteMultipleRegisters;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -28,7 +30,9 @@ private:
 
     uint16_t getUInt16(QVector<uint8_t> &pkg);
     void writePkg(QVector<uint8_t> &pkg);
-    BVP::TModbus modbus;
+
+    BVP::TModbus mModbus;
+    BVP::TParam *mParam;
 
 private slots:
     void modbusStart();

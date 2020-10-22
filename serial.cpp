@@ -28,12 +28,20 @@ TSerial::TSerial(QWidget *parent) :
 
     connect(ui->pbOpen, &QPushButton::clicked,
             this, &TSerial::connectSerialPort);
+
+    ui->pbOpen->setFixedSize(ui->pbOpen->sizeHint());
+    ui->pbRefresh->setFixedSize(ui->pbOpen->sizeHint());
+    ui->cbPort->setFixedHeight(ui->pbOpen->sizeHint().height());
+
+    setFixedHeight(sizeHint().height());
 }
 
 //
 TSerial::~TSerial() {
+    // Не решило проблему! Ошибка все равно появляется, просто не всегда!
+
     if (!thread.isNull()) {
-        thread->exit();
+        thread->quit();
     }
 
     if (!sport.isNull()) {

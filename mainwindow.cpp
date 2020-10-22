@@ -3,7 +3,7 @@
 
 const uint8_t MainWindow::comReadHoldingRegisters = 0x03;
 const uint8_t MainWindow::comWriteMultipleRegisters = 0x10;
-
+const uint8_t MainWindow::comReadWriteMultipleRegisters = 0x17;
 
 //
 MainWindow::MainWindow(QWidget *parent)
@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    modbus.setBuffer(sBuf, (sizeof(sBuf) / sizeof(sBuf[0])));
+    mModbus.setBuffer(sBuf, (sizeof(sBuf) / sizeof(sBuf[0])));
 
     connect(ui->serial, &TSerial::openPort,
             ui->control, &TControl::enableSlot);
@@ -33,6 +33,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->control, &TControl::modbusStart, this, &MainWindow::modbusStart);
     connect(ui->control, &TControl::modbusStop, this, &MainWindow::modbusStop);
+
+    mParam = BVP::TParam::getInstance();
+    mParam->setValue(BVP::PARAM_vpEnSanSbSac, 0);
+    mParam->setValue(BVP::PARAM_vpEnSa16to01, 0);
+    mParam->setValue(BVP::PARAM_vpEnSa32to17, 0);
+    mParam->setValue(BVP::PARAM_vpEnSa38to33, 0);
+    mParam->setValue(BVP::PARAM_vpEnSa64to49, 0);
+    mParam->setValue(BVP::PARAM_vpDsSanSbSac, 0);
+    mParam->setValue(BVP::PARAM_vpDsSa16to01, 0);
+    mParam->setValue(BVP::PARAM_vpDsSa32to17, 0);
+    mParam->setValue(BVP::PARAM_vpDsSa38to33, 0);
+    mParam->setValue(BVP::PARAM_vpDsSa64to49, 0);
+
+    setMinimumHeight(sizeHint().height());
 }
 
 //
@@ -62,10 +76,10 @@ MainWindow::writePkg(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::modbusStart() {
-    modbus.setup(9600, true, 1);
-    modbus.setNetAddress(0x0A);
-    modbus.setTimeTick(1000);
-    modbus.setEnable(true);
+    mModbus.setup(9600, true, 1);
+    mModbus.setNetAddress(deviceAddress);
+    mModbus.setTimeTick(1000);
+    mModbus.setEnable(true);
 
     connect(&timer, &QTimer::timeout, this, &MainWindow::modbusProc);
     timer.start(1);
@@ -74,7 +88,7 @@ MainWindow::modbusStart() {
 //
 void
 MainWindow::modbusStop() {
-    modbus.setEnable(false);
+    mModbus.setEnable(false);
     disconnect(&timer, &QTimer::timeout, this, &MainWindow::modbusProc);
     timer.stop();
 }
@@ -153,16 +167,24 @@ MainWindow::readAndWriteRegistersSlot() {
 //
 void
 MainWindow::modbusProc() {
-    modbus.tick();
-    modbus.read();
-    if (modbus.write()) {
+    mModbus.tick();
+    if (mModbus.read()) {
+        ui->readReg->setReg(1, mParam->getValue(BVP::PARAM_vpBtnSAnSbSac));
+        ui->readReg->setReg(2, mParam->getValue(BVP::PARAM_vpBtnSA16to01));
+        ui->readReg->setReg(3, mParam->getValue(BVP::PARAM_vpBtnSA32to17));
+        ui->readReg->setReg(4, mParam->getValue(BVP::PARAM_vpBtnSA38to33));
+        ui->readReg->setReg(5, mParam->getValue(BVP::PARAM_vpBtnSA64to49));
+    }
+
+    if (mModbus.write()) {
         QVector<uint8_t> pkg;
         uint8_t byte;
-        while(modbus.pop(byte)) {
+        while(mModbus.pop(byte)) {
             pkg.append(byte);
         }
         writePkg(pkg);
     }
+
 
 }
 
@@ -176,7 +198,7 @@ MainWindow::readSlot(int value) {
 
     // TODO здесь должен быть обработчик принятого сообщения Modbus
 
-    modbus.push(byte);
+    mModbus.push(byte);
 
     if (len == 0) {
         if (value == 0x0A) {
@@ -189,6 +211,8 @@ MainWindow::readSlot(int value) {
             size = 15;
         } else if (byte == comWriteMultipleRegisters) {
             size = 8;
+        } else if (byte == comReadWriteMultipleRegisters) {
+            size = 15;
         } else {
             rxPkg.clear();
         }

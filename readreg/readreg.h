@@ -25,6 +25,8 @@ public:
 
 private:  
     std::array<reg_t, kNumberOfReadRegisters> rReg;
+
+    QLayout *crtRegisterlayout(reg_t &reg);
 };
 
 #endif // TREADREG_H

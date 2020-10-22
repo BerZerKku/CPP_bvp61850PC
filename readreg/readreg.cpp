@@ -5,8 +5,7 @@
 
 
 TReadReg::TReadReg(QWidget *parent) : QWidget(parent) {
-    QGridLayout *l = new QGridLayout();
-
+    QVBoxLayout *layout = new QVBoxLayout(this);
     rReg.at(0).widgets.at(0).setText("SAC1");
     rReg.at(0).widgets.at(1).setText("SAC2");
     rReg.at(0).widgets.at(2).setText("SB1");
@@ -22,27 +21,16 @@ TReadReg::TReadReg(QWidget *parent) : QWidget(parent) {
         }
     }
 
-    for(quint8 index = 0; index < rReg.size(); index++) {
-        quint8 row = index + 1;
-        quint8 col = 0;
-        reg_t *reg = &rReg.at(index);
-
-        reg->value.setReadOnly(true);
-        reg->value.setAlignment(Qt::AlignRight);
-
-        l->addWidget(new QLabel("1"), row, col++);
-        l->addWidget(&reg->value, row, col++);
-
-        for(size_t bit = rReg.at(0).widgets.size(); bit > 0; bit--) {
-
-            l->addWidget(&reg->widgets.at(bit-1), row, col++);
-        }
+    QHBoxLayout *hl = new QHBoxLayout();
+    for(uint8_t index = 1; index < rReg.size(); index++) {
+        hl->addLayout(crtRegisterlayout(rReg.at(index)));
     }
+    hl->addLayout(crtRegisterlayout(rReg.at(0)));
 
-    QVBoxLayout *vl = new QVBoxLayout(this);
-    vl->addWidget(new QLabel("Holding Registers"));
-    vl->addLayout(l);
+    layout->addWidget(new QLabel("Holding Registers"));
+    layout->addLayout(hl);
 
+    setFixedHeight(sizeHint().height());
 }
 
 void
@@ -54,4 +42,28 @@ TReadReg::setReg(quint8 number, quint16 value) {
     for(quint16 i = 0; i < reg->widgets.size(); i++) {
         reg->widgets.at(i).set(value & (1 << i));
     }
+}
+
+//
+QLayout*
+TReadReg::crtRegisterlayout(TReadReg::reg_t &reg) {
+    QVBoxLayout *layout = new QVBoxLayout();
+
+    reg.value.setReadOnly(true);
+    reg.value.setAlignment(Qt::AlignHCenter);
+    layout->addWidget(&reg.value);
+
+    QHBoxLayout *hl = new QHBoxLayout();
+    for(uint8_t col = 0; col < 2; col++) {
+        QVBoxLayout *vl = new QVBoxLayout();
+        for(uint8_t bit = 0; bit < CHAR_BIT; bit++) {
+            qDebug() << "bit - 1" << bit - 1;
+            vl->addWidget(&reg.widgets.at(bit + col*CHAR_BIT));
+        }
+        hl->addLayout(vl);
+    }
+
+    layout->addLayout(hl);
+
+    return layout;
 }
