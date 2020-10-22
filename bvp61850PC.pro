@@ -16,6 +16,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     qcolorbutton.cpp \
+    readreg/qledindicator.cpp \
+    readreg/qpush1.cpp \
     readreg/readreg.cpp \
     serial.cpp \
     serial/serialport.cpp
@@ -27,6 +29,8 @@ HEADERS += \
     control.h \
     mainwindow.h \
     qcolorbutton.h \
+    readreg/qledindicator.h \
+    readreg/qpush1.h \
     readreg/readreg.h \
     serial.h \
     serial/serialport.h

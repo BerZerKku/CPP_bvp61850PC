@@ -29,6 +29,7 @@ TSerialPort::start() {
     }
 
     if (port->open(QSerialPort::ReadWrite)) {
+        qDebug() << "open()";
         connect(port, &QSerialPort::errorOccurred, this, &TSerialPort::error);
         connect(port, &QSerialPort::readyRead,
                 this, &TSerialPort::readyReadSlot);

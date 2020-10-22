@@ -6,6 +6,7 @@
 #include <QSignalMapper>
 #include <QVector>
 #include <QWidget>
+#include "readreg/qledindicator.h"
 
 class TReadReg : public QWidget {
     Q_OBJECT
@@ -15,7 +16,9 @@ class TReadReg : public QWidget {
 
     typedef struct {
         QLineEdit value;
-        std::array<QColorButton, 2*CHAR_BIT> widgets;
+        std::array<QColorButton, 2*CHAR_BIT> button;
+        std::array<QLedIndicator, 2*CHAR_BIT> ledEnabe;
+        std::array<QLedIndicator, 2*CHAR_BIT> ledDisable;
     } reg_t;
 
 public:
