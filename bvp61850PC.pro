@@ -19,6 +19,8 @@ SOURCES += \
     readreg/qledindicator.cpp \
     readreg/qpush1.cpp \
     readreg/readreg.cpp \
+    readreg/vpitem.cpp \
+    readreg/vpreg.cpp \
     serial.cpp \
     serial/serialport.cpp
 
@@ -32,13 +34,17 @@ HEADERS += \
     readreg/qledindicator.h \
     readreg/qpush1.h \
     readreg/readreg.h \
+    readreg/vpitem.h \
+    readreg/vpreg.h \
     serial.h \
     serial/serialport.h
 
 FORMS += \
     control.ui \
     mainwindow.ui \
-    serial.ui
+    serial.ui \
+    vpitem.ui \
+    vpreg.ui
 
 INCLUDEPATH += \
     bvpCommon/

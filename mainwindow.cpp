@@ -65,11 +65,11 @@ MainWindow::getUInt16(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::writePkg(QVector<uint8_t> &pkg) {
-    ui->textBrowser->append("\nTX >> ");
+//    ui->textBrowser->append("\nTX >> ");
     for(auto &byte: pkg) {
        ui->serial->write(byte);
-       ui->textBrowser->insertPlainText(
-                   QString("%1 ").arg(byte, 2, 16, QLatin1Char('0')));
+//       ui->textBrowser->insertPlainText(
+//                   QString("%1 ").arg(byte, 2, 16, QLatin1Char('0')));
     }
 }
 
@@ -203,7 +203,7 @@ MainWindow::readSlot(int value) {
     if (len == 0) {
         if (value == 0x0A) {
             rxPkg.append(byte);
-            ui->textBrowser->append("\nRx << ");
+//            ui->textBrowser->append("\nRx << ");
         }
     } else if (len == 1) {
         rxPkg.append(byte);
@@ -243,7 +243,7 @@ MainWindow::readSlot(int value) {
         }
     }
 
-    ui->textBrowser->insertPlainText(
-                QString("%1 ").arg(byte, 2, 16, QLatin1Char('0')));
+//    ui->textBrowser->insertPlainText(
+//                QString("%1 ").arg(byte, 2, 16, QLatin1Char('0')));
 }
 
