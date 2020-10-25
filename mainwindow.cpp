@@ -47,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
     mParam->setValue(BVP::PARAM_vpDsSa64to49, 0);
 
     setMinimumHeight(sizeHint().height());
+
+    ui->readReg->setReg(vpReg::GROUP_control, TReadReg::REG_FUNC_LED_ENABLE, 0xe5f6);
+    ui->readReg->setReg(vpReg::GROUP_control, TReadReg::REG_FUNC_LED_DISABLE, 0xc3d4);
+     ui->readReg->setReg(vpReg::GROUP_control, TReadReg::REG_FUNC_BUTTON, 0xa1b2);
 }
 
 //
@@ -169,11 +173,11 @@ void
 MainWindow::modbusProc() {
     mModbus.tick();
     if (mModbus.read()) {
-        ui->readReg->setReg(1, mParam->getValue(BVP::PARAM_vpBtnSAnSbSac));
-        ui->readReg->setReg(2, mParam->getValue(BVP::PARAM_vpBtnSA16to01));
-        ui->readReg->setReg(3, mParam->getValue(BVP::PARAM_vpBtnSA32to17));
-        ui->readReg->setReg(4, mParam->getValue(BVP::PARAM_vpBtnSA38to33));
-        ui->readReg->setReg(5, mParam->getValue(BVP::PARAM_vpBtnSA64to49));
+//        ui->readReg->setReg(1, mParam->getValue(BVP::PARAM_vpBtnSAnSbSac));
+//        ui->readReg->setReg(2, mParam->getValue(BVP::PARAM_vpBtnSA16to01));
+//        ui->readReg->setReg(3, mParam->getValue(BVP::PARAM_vpBtnSA32to17));
+//        ui->readReg->setReg(4, mParam->getValue(BVP::PARAM_vpBtnSA38to33));
+//        ui->readReg->setReg(5, mParam->getValue(BVP::PARAM_vpBtnSA64to49));
     }
 
     if (mModbus.write()) {
@@ -223,11 +227,11 @@ MainWindow::readSlot(int value) {
             switch(rxPkg.takeFirst()) {
                 case comReadHoldingRegisters: {
                     rxPkg.takeFirst();  // num bytes
-                    ui->readReg->setReg(1, getUInt16(rxPkg));
-                    ui->readReg->setReg(2, getUInt16(rxPkg));
-                    ui->readReg->setReg(3, getUInt16(rxPkg));
-                    ui->readReg->setReg(4, getUInt16(rxPkg));
-                    ui->readReg->setReg(5, getUInt16(rxPkg));
+//                    ui->readReg->setReg(1, getUInt16(rxPkg));
+//                    ui->readReg->setReg(2, getUInt16(rxPkg));
+//                    ui->readReg->setReg(3, getUInt16(rxPkg));
+//                    ui->readReg->setReg(4, getUInt16(rxPkg));
+//                    ui->readReg->setReg(5, getUInt16(rxPkg));
                     rxPkg.takeFirst();  // crc
                     rxPkg.takeFirst();
                 } break;

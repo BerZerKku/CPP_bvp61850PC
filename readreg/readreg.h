@@ -20,19 +20,21 @@ class TReadReg : public QWidget {
         std::array<QColorButton, 2*CHAR_BIT> button;
         std::array<QLedIndicator, 2*CHAR_BIT> ledEnabe;
         std::array<QLedIndicator, 2*CHAR_BIT> ledDisable;
-    } reg_t;
-
+    } reg_t;    
 
 public:
+
+    enum regFunc_t {
+        REG_FUNC_LED_ENABLE = 0,
+        REG_FUNC_LED_DISABLE,
+        REG_FUNC_BUTTON
+    };
+
     explicit TReadReg(QWidget *parent = nullptr);
 
-    void setReg(quint8 number, quint16 value);
+    void setReg(vpReg::group_t group, regFunc_t func, quint16 value);
 
 private:  
-//    std::array<reg_t, kNumberOfReadRegisters> rReg;
-
-    QLayout *crtRegisterlayout(reg_t &reg);
-
     std::array<vpReg, kNumberOfReadRegisters> rReg;
 };
 
