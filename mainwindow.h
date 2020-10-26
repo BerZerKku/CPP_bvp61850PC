@@ -37,12 +37,10 @@ private:
 private slots:
     void modbusStart();
     void modbusStop();
-    void modbusProc();
-
-    void readRegistersSlot();
-    void writeRegistersSlot();
-    void readAndWriteRegistersSlot();    
+    void modbusProc();  
 
     void readSlot(int value);
+
+    void viewReadRegSlot();
 };
 #endif // MAINWINDOW_H

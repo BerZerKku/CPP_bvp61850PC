@@ -29,7 +29,6 @@ TSerialPort::start() {
     }
 
     if (port->open(QSerialPort::ReadWrite)) {
-        qDebug() << "open()";
         connect(port, &QSerialPort::errorOccurred, this, &TSerialPort::error);
         connect(port, &QSerialPort::readyRead,
                 this, &TSerialPort::readyReadSlot);
@@ -59,8 +58,6 @@ TSerialPort::writeByteSlot(int byte) {
             m_timeToFinishSendMs = 0.0;
             timer->start();
         }
-    } else {
-        stop();
     }
 }
 

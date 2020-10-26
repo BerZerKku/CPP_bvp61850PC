@@ -34,6 +34,8 @@ public:
 
     void setReg(vpReg::group_t group, regFunc_t func, quint16 value);
 
+    void setCom64(bool enable);
+
 private:  
     std::array<vpReg, kNumberOfReadRegisters> rReg;
 };

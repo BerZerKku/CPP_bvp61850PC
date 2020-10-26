@@ -15,12 +15,15 @@ vpReg::vpReg(QWidget *parent) :
 
     ui->sbRegButton->setFont(font);
     ui->sbRegButton->setMaximum(0xFFFF);
+    ui->sbRegButton->setDisplayIntegerBase(16);
 
     ui->sbRegEnable->setFont(font);
     ui->sbRegEnable->setMaximum(0xFFFF);
+    ui->sbRegEnable->setDisplayIntegerBase(16);
 
     ui->sbRegDisable->setFont(font);
     ui->sbRegDisable->setMaximum(0xFFFF);
+    ui->sbRegDisable->setDisplayIntegerBase(16);
 
     QSignalMapper *signalMapper = new QSignalMapper(this);
 
@@ -91,9 +94,7 @@ vpReg::setRegime(vpItem::regime_t regime) {
 //
 void
 vpReg::setGroupCom16to01() {
-    qDebug() << "bits.size()" << bits.size();
     for(size_t index = 0; index < bits.size(); index++) {
-        qDebug() << "index = " << index;
         bits.at(index).setText(QString("SA%1").arg(index + 1));
     }
 }
@@ -134,6 +135,7 @@ vpReg::setGroupControl() {
     bits.at(index++).setHidden(true);
     bits.at(index++).setHidden(true);
     bits.at(index++).setHidden(true);
+    Q_ASSERT(index == 8);
     for(;index < bits.size(); index++) {
         bits.at(index).setText(QString("SAn%1").arg(index - CHAR_BIT));
     }

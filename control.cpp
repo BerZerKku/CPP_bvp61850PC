@@ -1,20 +1,12 @@
 #include "control.h"
 #include "ui_control.h"
+#include <QDebug>
 
 TControl::TControl(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TControl)
 {
     ui->setupUi(this);
-
-    connect(ui->pRead, &QPushButton::pressed,
-            this, &TControl::readRegisters);
-
-    connect(ui->pWrite, &QPushButton::pressed,
-            this, &TControl::writeRegisters);
-
-    connect(ui->pReadWrite, &QPushButton::pressed,
-            this, &TControl::readAndWriteRegisters);
 
     connect(ui->pModbusStop, &QPushButton::pressed,
             this, &TControl::disableModbus);
@@ -48,9 +40,12 @@ TControl::enableSlot() {
 //
 void TControl::setEnable(bool enable) {
     if (!enable) {
+        ui->pModbusStop->pressed();
+
         ui->pModbusStart->setEnabled(false);
         ui->pModbusStop->setEnabled(false);
-    } else {
+
+    } else {        
          setEnableModbus(false);
     }
 

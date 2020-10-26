@@ -18,14 +18,14 @@ TReadReg::TReadReg(QWidget *parent) : QWidget(parent) {
         reg.setRegime(vpItem::REGIME_connect);
         layout->addWidget(&reg);
     }
+
+    setCom64(false);
 }
 
 //
 void
 TReadReg::setReg(vpReg::group_t group, TReadReg::regFunc_t func, quint16 value) {
     vpReg *item = &rReg.at(group);
-
-    qDebug() << "group = " << group << ", func = " << func << ", value = " << value;
 
     switch(func) {
         case REG_FUNC_LED_ENABLE: {
@@ -38,4 +38,11 @@ TReadReg::setReg(vpReg::group_t group, TReadReg::regFunc_t func, quint16 value) 
             item->setBtns(value);
         } break;
     }
+}
+
+//
+void
+TReadReg::setCom64(bool enable) {
+    rReg.at(vpReg::GROUP_com48to33).setVisible(enable);
+    rReg.at(vpReg::GROUP_com64to49).setVisible(enable);
 }

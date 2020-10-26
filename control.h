@@ -20,9 +20,6 @@ public slots:
     void enableSlot();
 
 signals:
-    void readRegisters();
-    void writeRegisters();
-    void readAndWriteRegisters();
     void modbusStart();
     void modbusStop();
 
