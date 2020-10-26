@@ -98,6 +98,8 @@ MainWindow::modbusProc() {
         }
         writePkg(pkg);
     }
+
+    ui->serial->setConnectionColor(mModbus.isConnection());
 }
 
 //

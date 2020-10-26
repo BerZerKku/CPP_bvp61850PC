@@ -64,6 +64,17 @@ TControl::setEnableModbus(bool enable) {
 
 //
 void
+TControl::setConnectionColor(Qt::GlobalColor color) {
+    QColor col = QColor(color);
+
+    if(col.isValid()) {
+        QString qss = QString("background-color: %1").arg(col.name());
+        ui->pModbusStop->setStyleSheet(qss);
+    }
+}
+
+//
+void
 TControl::enableModbus() {
     setEnableModbus(true);
 }
@@ -73,3 +84,5 @@ void
 TControl::disableModbus() {
     setEnableModbus(false);
 }
+
+

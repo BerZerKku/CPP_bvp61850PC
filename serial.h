@@ -30,10 +30,14 @@ private:
     QPointer<TSerialPort> sport;
     QPointer<QThread> thread;
 
+
+
 private slots:
     void refreshPortList();
     void connectSerialPort();
     void closeSerialPort();
+
+    void setConnectionColor(Qt::GlobalColor color);
 };
 
 #endif // SERIAL_H

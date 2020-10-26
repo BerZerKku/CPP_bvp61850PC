@@ -53,6 +53,12 @@ TSerial::~TSerial() {
 
 //
 void
+TSerial::setConnectionColor(bool enable) {
+    setConnectionColor(enable ? Qt::green : Qt::yellow);
+}
+
+//
+void
 TSerial::refreshPortList() {
     QString portname;
     QList<QString> ports;
@@ -130,6 +136,8 @@ TSerial::closeSerialPort() {
     ui->pbOpen->setText("Open");
     ui->pbOpen->setEnabled(true);
     ui->pbRefresh->setEnabled(true);
+
+    setConnectionColor(Qt::color0);
 
     emit closePort();
 }
