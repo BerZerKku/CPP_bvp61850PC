@@ -36,8 +36,6 @@ private slots:
     void refreshPortList();
     void connectSerialPort();
     void closeSerialPort();
-
-    void setConnectionColor(Qt::GlobalColor color);
 };
 
 #endif // SERIAL_H

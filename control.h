@@ -15,6 +15,8 @@ public:
     explicit TControl(QWidget *parent = nullptr);
     ~TControl();
 
+    void setModbusConnection(bool enable);
+
 public slots:
     void disableSlot();
     void enableSlot();
@@ -28,6 +30,7 @@ private:
 
     void setEnable(bool enable);
     void setEnableModbus(bool enable);
+
     void setConnectionColor(Qt::GlobalColor color);
 
 private slots:

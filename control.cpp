@@ -38,16 +38,22 @@ TControl::enableSlot() {
 }
 
 //
+void
+TControl::setModbusConnection(bool enable) {
+    if (ui->pModbusStop->isEnabled()) {
+        setConnectionColor(enable ? Qt::green : Qt::yellow);
+    }
+}
+
+//
 void TControl::setEnable(bool enable) {
     if (!enable) {
-        ui->pModbusStop->pressed();
-
         ui->pModbusStart->setEnabled(false);
         ui->pModbusStop->setEnabled(false);
-
     } else {        
          setEnableModbus(false);
     }
+    setModbusConnection(false);
 
     ui->pRead->setEnabled(enable);
     ui->pWrite->setEnabled(enable);
@@ -60,6 +66,10 @@ void
 TControl::setEnableModbus(bool enable) {
     ui->pModbusStart->setEnabled(!enable);
     ui->pModbusStop->setEnabled(enable);
+
+    if (!enable) {
+        ui->pModbusStop->setStyleSheet(ui->pModbusStart->styleSheet());
+    }
 }
 
 //

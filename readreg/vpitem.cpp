@@ -57,7 +57,7 @@ vpItem::setLedDs(bool enable) {
 //
 void
 vpItem::setBtn(bool enable) {
-    QColor col = QColor(enable ? Qt::darkGreen : Qt::gray);
+    QColor col = QColor(enable ? Qt::green : Qt::gray);
 
     if(col.isValid()) {
         QString qss = QString("background-color: %1").arg(col.name());
