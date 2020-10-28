@@ -6,7 +6,6 @@
 #include <QSignalMapper>
 #include <QVector>
 #include <QWidget>
-#include "readreg/qledindicator.h"
 #include "readreg/vpreg.h"
 
 class TReadReg : public QWidget {
@@ -14,13 +13,6 @@ class TReadReg : public QWidget {
 
     /// Количество регистров для чтения
     static const quint8 kNumberOfReadRegisters = 5;
-
-    typedef struct {
-        QLineEdit value;
-        std::array<QColorButton, 2*CHAR_BIT> button;
-        std::array<QLedIndicator, 2*CHAR_BIT> ledEnabe;
-        std::array<QLedIndicator, 2*CHAR_BIT> ledDisable;
-    } reg_t;    
 
 public:
 
@@ -35,6 +27,8 @@ public:
     void setReg(vpReg::group_t group, regFunc_t func, quint16 value);
 
     void setCom64(bool enable);
+
+    void clear();
 
 private:  
     std::array<vpReg, kNumberOfReadRegisters> rReg;

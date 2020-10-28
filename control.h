@@ -31,8 +31,6 @@ private:
     void setEnable(bool enable);
     void setEnableModbus(bool enable);
 
-    void setConnectionColor(Qt::GlobalColor color);
-
 private slots:
     void enableModbus();
     void disableModbus();

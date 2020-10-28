@@ -40,6 +40,8 @@ public:
     void setDsLeds(quint16 value);
     void setBtns(quint16 value);
 
+    void clear();
+
 public slots:
     void setRegime(vpItem::regime_t regime);
 
@@ -58,7 +60,10 @@ private:
     void setupPushButton(QPushButton *pb, QString text, regime_t mode);
 
 private slots:
-    void pressedBtnSlot(int value);
+    void pressedBtnSlot(int bit, bool checked);
+    void changedEnLeds(int value);
+    void changedDsLeds(int value);
+    void changedBtns(int value);
 };
 
 #endif // VPREG_H

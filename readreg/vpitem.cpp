@@ -10,13 +10,17 @@ vpItem::vpItem(QWidget *parent) :
     ui->pushButton->setFixedHeight(ui->ledEn->height());
     ui->pushButton->setFixedWidth(2*ui->ledEn->height());
 
-    setRegime(REGIME_connect);
+    ui->ledDs->setOnColor1(QColor(255, 255, 0));
+    ui->ledDs->setOnColor2(QColor(192, 192, 0));
+    ui->ledDs->setOffColor2(QColor(128, 128, 0));
 
     connect(ui->pushButton, &QPushButton::pressed,
-            this, &vpItem::pressedBtn);
+            [=] () {pressedBtn(true);});
 
     connect(ui->pushButton, &QPushButton::released,
-            this, &vpItem::pressedBtn);
+            [=] () {pressedBtn(false);});
+
+    setRegime(REGIME_connect);
 
     setFixedSize(sizeHint());
 }
@@ -34,12 +38,32 @@ vpItem::setRegime(vpItem::regime_t regime) {
 
     ui->ledDs->setCheckable(true);
     ui->ledDs->setDisabled(true);
+
+    ui->pushButton->setDisabled(true);
 }
 
 //
 void
 vpItem::setText(const QString &text) {
     ui->pushButton->setText(text);
+}
+
+//
+void
+vpItem::btnEnabled(bool enable) {
+    ui->pushButton->setVisible(enable);
+}
+
+//
+void
+vpItem::ledDsEnabled(bool enable) {
+    ui->ledDs->setVisible(enable);
+}
+
+//
+void
+vpItem::ledEnEnabled(bool enable) {
+    ui->ledEn->setVisible(enable);
 }
 
 //
@@ -57,13 +81,15 @@ vpItem::setLedDs(bool enable) {
 //
 void
 vpItem::setBtn(bool enable) {
-    QColor col = QColor(enable ? Qt::green : Qt::gray);
+    QString qss;
+    QColor col;
 
-    if(col.isValid()) {
-        QString qss = QString("background-color: %1").arg(col.name());
-        ui->pushButton->setStyleSheet(qss);
+    if (enable) {
+        qss = QString("background-color: %1").arg(QColor(Qt::green).name());
     }
 
+
+    ui->pushButton->setStyleSheet(qss);
     ui->pushButton->setChecked(enable);
 }
 
@@ -73,5 +99,4 @@ vpItem::getBtn() const {
 
     return false;
 }
-
 

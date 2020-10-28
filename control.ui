@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>397</width>
+    <width>478</width>
     <height>41</height>
    </rect>
   </property>
@@ -28,11 +28,7 @@
     </spacer>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox">
-     <property name="text">
-      <string>Cycle</string>
-     </property>
-    </widget>
+    <widget class="QLedIndicator" name="led" native="true"/>
    </item>
    <item>
     <widget class="QPushButton" name="pModbusStop">
@@ -48,29 +44,16 @@
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QPushButton" name="pRead">
-     <property name="text">
-      <string>Read</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pWrite">
-     <property name="text">
-      <string>Write</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pReadWrite">
-     <property name="text">
-      <string>Read/Write</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QLedIndicator</class>
+   <extends>QWidget</extends>
+   <header>widget/qledindicator.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

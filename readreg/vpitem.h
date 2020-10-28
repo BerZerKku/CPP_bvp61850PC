@@ -22,6 +22,10 @@ public:
     void setRegime(regime_t regime);
     void setText(const QString &text);
 
+    void btnEnabled(bool enable);
+    void ledDsEnabled(bool enable);
+    void ledEnEnabled(bool enable);
+
 public slots:
     void setLedEn(bool enable);
     void setLedDs(bool enable);
@@ -29,11 +33,10 @@ public slots:
     bool getBtn() const;
 
 signals:
-    void pressedBtn();
+    void pressedBtn(bool checked);
 
 private:
     Ui::vpItem *ui;
-    quint16 a;
 };
 
 #endif // VPITEM_H

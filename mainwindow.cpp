@@ -29,18 +29,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&timer, &QTimer::timeout, this, &MainWindow::modbusProc);
     connect(&timer, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
 
-
-
     mParam = BVP::TParam::getInstance();
-    mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, 0);
-    mParam->setValue(BVP::PARAM_vpBtnSA32to01, 0);
-    mParam->setValue(BVP::PARAM_vpBtnSA64to33, 0);
-    mParam->setValue(BVP::PARAM_blkComPrm32to01, 0);
-    mParam->setValue(BVP::PARAM_blkComPrm64to33, 0);
-    mParam->setValue(BVP::PARAM_blkComPrd32to01, 0);
-    mParam->setValue(BVP::PARAM_blkComPrd64to33, 0);
+    mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_pi, 0);
+    mParam->setValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_pi, 0);
+    mParam->setValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_pi, 0);
+    mParam->setValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_pi, 0x50505050);
+    mParam->setValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_pi, 0);
+    mParam->setValue(BVP::PARAM_blkComPrd32to01, BVP::SRC_pi, 0);
+    mParam->setValue(BVP::PARAM_blkComPrd64to33, BVP::SRC_pi, 0);
+    mParam->setValue(BVP::PARAM_dirControl, BVP::SRC_pi, BVP::DIR_CONTROL_local);
+    mParam->setValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, 1);
+    mParam->setValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, 0x55);
 
-    setMinimumHeight(sizeHint().height());
+    setFixedSize(sizeHint());
 }
 
 //
@@ -71,7 +72,6 @@ MainWindow::modbusStart() {
     mModbus.setNetAddress(deviceAddress);
     mModbus.setTimeTick(1000);
     mModbus.setEnable(true);
-
     timer.start(1);
 }
 
@@ -80,6 +80,8 @@ void
 MainWindow::modbusStop() {
     mModbus.setEnable(false);
     timer.stop();
+
+    ui->readReg->clear();
 }
 
 //
@@ -113,38 +115,54 @@ MainWindow::readSlot(int value) {
 void
 MainWindow::viewReadRegSlot() {
     vpReg::group_t group;
+    bool ok = true;
+    quint32 val32;
     quint16 value;
     BVP::TParam *params = BVP::TParam::getInstance();
 
+    //
     group = vpReg::GROUP_control;
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_vpBtnSAnSbSac));
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
+    val32 = params->getValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, ok) ? 1 : 0;
+    val32 |= params->getValue(BVP::PARAM_dirControl, BVP::SRC_pi, ok) ? 2 : 0;
+    val32 |= params->getValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, ok) << 8;
+    value = static_cast<quint16> (val32);
+    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
+    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
+    //
     group = vpReg::GROUP_com16to01;
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_vpBtnSA32to01));
+    val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_blkComPrm32to01));
+    val32 = params->getValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
     group = vpReg::GROUP_com32to17;
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_vpBtnSA32to01) >> 16);
+    val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_blkComPrm32to01) >> 16);
+    val32 = params->getValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
     group = vpReg::GROUP_com48to33;
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_vpBtnSA64to33));
+    val32 = params->getValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_blkComPrm64to33));
+    val32 = params->getValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
     group = vpReg::GROUP_com64to49;
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_vpBtnSA64to33) >> 16);
+    val32 = params->getValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    value = static_cast<quint16> (params->getValue(BVP::PARAM_blkComPrm64to33) >> 16);
+    val32 = params->getValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_pi, ok);
+    value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 }

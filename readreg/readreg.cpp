@@ -46,3 +46,11 @@ TReadReg::setCom64(bool enable) {
     rReg.at(vpReg::GROUP_com48to33).setVisible(enable);
     rReg.at(vpReg::GROUP_com64to49).setVisible(enable);
 }
+
+//
+void
+TReadReg::clear() {
+    for(vpReg &reg: rReg) {
+        reg.clear();
+    }
+}

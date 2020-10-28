@@ -16,8 +16,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     qcolorbutton.cpp \
-    readreg/qledindicator.cpp \
-    readreg/qpush1.cpp \
+    widget/qledindicator.cpp \
+    widget/qpush1.cpp \
     readreg/readreg.cpp \
     readreg/vpitem.cpp \
     readreg/vpreg.cpp \
@@ -31,8 +31,8 @@ HEADERS += \
     control.h \
     mainwindow.h \
     qcolorbutton.h \
-    readreg/qledindicator.h \
-    readreg/qpush1.h \
+    widget/qledindicator.h \
+    widget/qpush1.h \
     readreg/readreg.h \
     readreg/vpitem.h \
     readreg/vpreg.h \

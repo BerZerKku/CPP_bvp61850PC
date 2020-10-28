@@ -18,6 +18,9 @@ TControl::TControl(QWidget *parent) :
     connect(ui->pModbusStart, &QPushButton::pressed,
             this, &TControl::modbusStart);
 
+    ui->led->setEnabled(false);
+    ui->led->setCheckable(false);
+
     setEnable(false);
 }
 
@@ -40,25 +43,23 @@ TControl::enableSlot() {
 //
 void
 TControl::setModbusConnection(bool enable) {
-    if (ui->pModbusStop->isEnabled()) {
-        setConnectionColor(enable ? Qt::green : Qt::yellow);
-    }
+    ui->led->setChecked(enable);
 }
 
 //
 void TControl::setEnable(bool enable) {
-    if (!enable) {
+    if (enable) {
+//        setEnableModbus(false);
+        ui->pModbusStart->pressed();
+    } else {
+        if (ui->pModbusStop->isEnabled()) {
+            ui->pModbusStop->pressed();
+        }
         ui->pModbusStart->setEnabled(false);
         ui->pModbusStop->setEnabled(false);
-    } else {        
-         setEnableModbus(false);
+        ui->led->setChecked(false);
+        ui->led->setCheckable(false);
     }
-    setModbusConnection(false);
-
-    ui->pRead->setEnabled(enable);
-    ui->pWrite->setEnabled(enable);
-    ui->pReadWrite->setEnabled(enable);
-    ui->checkBox->setEnabled(enable);
 }
 
 //
@@ -66,21 +67,8 @@ void
 TControl::setEnableModbus(bool enable) {
     ui->pModbusStart->setEnabled(!enable);
     ui->pModbusStop->setEnabled(enable);
-
-    if (!enable) {
-        ui->pModbusStop->setStyleSheet(ui->pModbusStart->styleSheet());
-    }
-}
-
-//
-void
-TControl::setConnectionColor(Qt::GlobalColor color) {
-    QColor col = QColor(color);
-
-    if(col.isValid()) {
-        QString qss = QString("background-color: %1").arg(col.name());
-        ui->pModbusStop->setStyleSheet(qss);
-    }
+    ui->led->setChecked(false);
+    ui->led->setCheckable(enable);
 }
 
 //

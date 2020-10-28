@@ -16,29 +16,35 @@ vpReg::vpReg(QWidget *parent) :
     ui->sbRegButton->setFont(font);
     ui->sbRegButton->setMaximum(0xFFFF);
     ui->sbRegButton->setDisplayIntegerBase(16);
+    ui->sbRegButton->setReadOnly(true);
+    connect(ui->sbRegButton, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &vpReg::changedBtns);
 
     ui->sbRegEnable->setFont(font);
     ui->sbRegEnable->setMaximum(0xFFFF);
     ui->sbRegEnable->setDisplayIntegerBase(16);
+    ui->sbRegEnable->setReadOnly(true);
+    connect(ui->sbRegEnable, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &vpReg::changedEnLeds);
 
     ui->sbRegDisable->setFont(font);
     ui->sbRegDisable->setMaximum(0xFFFF);
     ui->sbRegDisable->setDisplayIntegerBase(16);
-
-    QSignalMapper *signalMapper = new QSignalMapper(this);
+    ui->sbRegDisable->setReadOnly(true);
+    connect(ui->sbRegDisable, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &vpReg::changedDsLeds);
 
     for(quint8 col = 0; col < 2; col++) {
         for(quint8 row = 0; row < CHAR_BIT; row++) {
             quint8 bit = col*CHAR_BIT + row;
             ui->bitLayout->addWidget(&bits.at(bit), row, col);
             connect(&bits.at(bit), &vpItem::pressedBtn,
-                    signalMapper, QOverload<>::of(&QSignalMapper::map));
-            signalMapper->setMapping(&bits.at(bit), bit);
+                    [=](bool checked) { pressedBtnSlot(bit, checked); });
         }
     }
 
-    connect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped),
-            this, &vpReg::pressedBtnSlot);
+
+    clear();
 }
 
 //
@@ -60,27 +66,27 @@ void vpReg::setGroup(vpReg::group_t group) {
 void
 vpReg::setEnLeds(quint16 value) {
     ui->sbRegEnable->setValue(value);
-    for(size_t index = 0; index < bits.size(); index++) {
-        bits.at(index).setLedEn(value & (1 << index));
-    }
 }
 
 //
 void
 vpReg::setDsLeds(quint16 value) {
     ui->sbRegDisable->setValue(value);
-    for(size_t index = 0; index < bits.size(); index++) {
-        bits.at(index).setLedDs(value & (1 << index));
-    }
+
 }
 
 //
 void
 vpReg::setBtns(quint16 value) {
     ui->sbRegButton->setValue(value);
-    for(size_t index = 0; index < bits.size(); index++) {
-        bits.at(index).setBtn(value & (1 << index));
-    }
+
+}
+
+void
+vpReg::clear() {
+    setBtns(0);
+    setEnLeds(0);
+    setDsLeds(0);
 }
 
 //
@@ -129,6 +135,8 @@ vpReg::setGroupControl() {
     size_t index = 0;
     bits.at(index++).setText(QString("SAC1"));
     bits.at(index++).setText(QString("SAC2"));
+    bits.at(index).ledDsEnabled(false);
+    bits.at(index).ledEnEnabled(false);
     bits.at(index++).setText(QString("SB1"));
     bits.at(index++).setHidden(true);
     bits.at(index++).setHidden(true);
@@ -143,14 +151,27 @@ vpReg::setGroupControl() {
 
 //
 void
-vpReg::pressedBtnSlot(int value) {
-//    quint16 v = 0;
+vpReg::pressedBtnSlot(int bit, bool checked) {
+    qDebug() << "bit = " << bit << ", checked = " << checked;
+}
 
-//    for(quint8 i = 0; i < bits.size(); i++) {
-//        if (bits.at(i).getBtn()) {
-//            v += (1 << i);
-//        }
-//    }
+void
+vpReg::changedEnLeds(int value) {
+    for(size_t index = 0; index < bits.size(); index++) {
+        bits.at(index).setLedEn(value & (1 << index));
+    }
+}
 
-//    ui->sbRegButton->setValue(v);
+void
+vpReg::changedDsLeds(int value) {
+    for(size_t index = 0; index < bits.size(); index++) {
+        bits.at(index).setLedDs(value & (1 << index));
+    }
+}
+
+void
+vpReg::changedBtns(int value) {
+    for(size_t index = 0; index < bits.size(); index++) {
+        bits.at(index).setBtn(value & (1 << index));
+    }
 }
