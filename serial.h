@@ -13,29 +13,29 @@ class TSerial;
 
 class TSerial : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit TSerial(QWidget *parent = nullptr);
-    ~TSerial();
+  explicit TSerial(QWidget *parent = nullptr);
+  ~TSerial();
 
 signals:
-    void write(int value);
-    void openPort();
-    void closePort();
-    void read(int byte);
+  void write(int value);
+  void openPort();
+  void closePort();
+  void read(int byte);
 
 private:
-    Ui::TSerial *ui;
-    QPointer<TSerialPort> sport;
-    QPointer<QThread> thread;
+  Ui::TSerial *ui;
+  QPointer<TSerialPort> sport;
+  QPointer<QThread> thread;
 
 
 
 private slots:
-    void refreshPortList();
-    void connectSerialPort();
-    void closeSerialPort();
+  void refreshPortList();
+  void connectSerialPort();
+  void closeSerialPort();
 };
 
 #endif // SERIAL_H

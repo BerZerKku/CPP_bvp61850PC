@@ -5,15 +5,15 @@
 
 class QColorButton : public QPushButton {
 public:
-    QColorButton();
+  QColorButton();
 
-    void set(bool enable);
+  void set(bool enable);
 
 signals:
-    void changed(bool enable);
+  void changed(bool enable);
 
 private:
-    void setColor(Qt::GlobalColor color);
+  void setColor(Qt::GlobalColor color);
 };
 
 #endif // QCOLORBUTTON_H

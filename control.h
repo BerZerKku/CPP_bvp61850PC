@@ -9,31 +9,31 @@ class TControl;
 
 class TControl : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit TControl(QWidget *parent = nullptr);
-    ~TControl();
+  explicit TControl(QWidget *parent = nullptr);
+  ~TControl();
 
-    void setModbusConnection(bool enable);
+  void setModbusConnection(bool enable);
 
 public slots:
-    void disableSlot();
-    void enableSlot();
+  void disableSlot();
+  void enableSlot();
 
 signals:
-    void modbusStart();
-    void modbusStop();
+  void modbusStart();
+  void modbusStop();
 
 private:
-    Ui::TControl *ui;
+  Ui::TControl *ui;
 
-    void setEnable(bool enable);
-    void setEnableModbus(bool enable);
+  void setEnable(bool enable);
+  void setEnableModbus(bool enable);
 
 private slots:
-    void enableModbus();
-    void disableModbus();
+  void enableModbus();
+  void disableModbus();
 };
 
 #endif // CONTROL_H
