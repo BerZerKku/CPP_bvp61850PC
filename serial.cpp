@@ -100,12 +100,14 @@ TSerial::connectSerialPort() {
     connect(sport, &TSerialPort::finished, thread, &QThread::quit);
     connect(sport, &TSerialPort::finished, sport, &TSerialPort::deleteLater);
     connect(sport, &TSerialPort::readByte, this, &TSerial::read);
+    connect(sport, &TSerialPort::sendFinished, this, &TSerial::sendFinished);
 
     connect(this, &TSerial::write, sport, &TSerialPort::writeByteSlot);
 
     disconnect(ui->pbOpen, &QPushButton::clicked,
                this, &TSerial::connectSerialPort);
     connect(ui->pbOpen, &QPushButton::clicked, sport, &TSerialPort::stop);
+
 
     ui->cbPort->setEnabled(false);
     ui->pbOpen->setText("Close");

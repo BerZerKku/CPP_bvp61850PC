@@ -24,13 +24,12 @@ signals:
   void openPort();
   void closePort();
   void read(int byte);
+  void sendFinished();
 
 private:
   Ui::TSerial *ui;
   QPointer<TSerialPort> sport;
   QPointer<QThread> thread;
-
-
 
 private slots:
   void refreshPortList();

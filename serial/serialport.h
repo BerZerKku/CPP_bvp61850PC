@@ -19,6 +19,8 @@ public slots:
 signals:
   void finished();
   void readByte(int byte);
+
+  /// Сигнал завершения передачи (
   void sendFinished();
 
 private:

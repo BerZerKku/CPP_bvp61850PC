@@ -13,9 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
   ui->setupUi(this);
 
-  mModbus.setBuffer(sBuf, (sizeof(sBuf) / sizeof(sBuf[0])));
-  mModbus.setSource(BVP::SRC_vkey);
-
   connect(ui->serial, &TSerial::openPort,
           ui->control, &TControl::enableSlot);
 
@@ -23,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
           ui->control, &TControl::disableSlot);
 
   connect(ui->serial, &TSerial::read, this, &MainWindow::readSlot);
+  connect(ui->serial, &TSerial::sendFinished,
+          this, &MainWindow::sendFinishedSlot);
 
   connect(ui->control, &TControl::modbusStart, this, &MainWindow::modbusStart);
   connect(ui->control, &TControl::modbusStop, this, &MainWindow::modbusStop);
@@ -69,11 +68,15 @@ MainWindow::writePkg(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::modbusStart() {
-  mModbus.setup(9600, true, 1);
-  mModbus.setNetAddress(deviceAddress);
-  mModbus.setTimeTick(1000);
-  mModbus.setEnable(true);
-  timer.start(1);
+
+    mModbus.setBuffer(sBuf, (sizeof(sBuf) / sizeof(sBuf[0])));
+
+    mModbus.setID(BVP::SRC_vkey);
+    mModbus.setup(9600, true, 1);
+    mModbus.setNetAddress(deviceAddress);
+    mModbus.setTimeTick(1000);
+    mModbus.setEnable(true);
+    timer.start(1);
 }
 
 //
@@ -94,15 +97,30 @@ MainWindow::modbusProc() {
   }
 
   if (mModbus.write()) {
-    QVector<uint8_t> pkg;
-    uint8_t byte;
-    while(mModbus.pop(byte)) {
-      pkg.append(byte);
+    uint8_t *data = nullptr;
+    uint16_t len = mModbus.pop(&data);
+
+    Q_ASSERT(data != nullptr);
+
+    if ((len > 0) && (data != nullptr)) {
+      QVector<uint8_t> pkg;
+      for(uint16_t i = 0; i < len; i++) {
+        pkg.append(data[i]);
+      }
+      writePkg(pkg);
+      qDebug() << pkg;
     }
-    writePkg(pkg);
+
   }
 
   ui->control->setModbusConnection(mModbus.isConnection());
+}
+
+//
+void
+MainWindow::sendFinishedSlot() {
+  qDebug() << "ok";
+  mModbus.sendFinished();
 }
 
 //

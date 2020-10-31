@@ -38,6 +38,7 @@ private slots:
   void modbusStart();
   void modbusStop();
   void modbusProc();
+  void sendFinishedSlot();
 
   void readSlot(int value);
 

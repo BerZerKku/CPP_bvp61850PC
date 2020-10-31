@@ -54,9 +54,10 @@ void
 TSerialPort::writeByteSlot(int byte) {
   if (port->isOpen()) {
     bufTx.append(static_cast<quint8> (byte));
+
+    // запуск передачи если она еще не ведется
     if (!timer->isActive()) {
-      m_timeToFinishSendMs = 0.0;
-      timer->start();
+      timeoutSlot();
     }
   }
 }
@@ -125,14 +126,29 @@ void
 TSerialPort::timeoutSlot() {
   m_timeToFinishSendMs += 1.0;    // 1.0 шаг таймера
 
-  while(m_timeToFinishSendMs >= m_byteSendMs) {
+  // Начало передачи
+  if (!timer->isActive()) {
+    m_timeToFinishSendMs = m_byteSendMs;
+    timer->start();
+  }
+
+  // Отправка байта. Первый сразу, остальные только по таймауту
+  if (m_timeToFinishSendMs >= m_byteSendMs) {
     if (bufTx.isEmpty()) {
+      // Окончание передачи.
       timer->stop();
       emit sendFinished();
-      break;
+    } else {
+      // Передача следующего(их) байт.
+      while((m_timeToFinishSendMs >= m_byteSendMs) && !bufTx.isEmpty()) {
+        char byte = static_cast<char> (bufTx.takeFirst());
+        port->write(&byte, 1);
+        m_timeToFinishSendMs -= m_byteSendMs;
+      }
     }
-
-    char byte = static_cast<char> (bufTx.takeFirst());
-    port->write(&byte, 1);
   }
+
+
+
+
 }
