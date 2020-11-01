@@ -18,6 +18,8 @@ TControl::TControl(QWidget *parent) :
   connect(ui->pModbusStart, &QPushButton::pressed,
           this, &TControl::modbusStart);
 
+  ui->led->setOffColor2(QColor(128, 128, 0));
+
   ui->led->setEnabled(false);
   ui->led->setCheckable(false);
 
