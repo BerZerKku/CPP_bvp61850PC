@@ -108,7 +108,7 @@ MainWindow::modbusProc() {
         pkg.append(data[i]);
       }
       writePkg(pkg);
-      qDebug() << pkg;
+//      qDebug() << pkg;
     }
 
   }
@@ -119,7 +119,6 @@ MainWindow::modbusProc() {
 //
 void
 MainWindow::sendFinishedSlot() {
-  qDebug() << "ok";
   mModbus.sendFinished();
 }
 

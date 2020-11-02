@@ -12,9 +12,10 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 
 SOURCES += \
     bvpCommon/debug.cpp \
-    bvpCommon/modbus.cpp \
+    bvpCommon/serial/modbusVp.cpp \
     bvpCommon/param.cpp \
-    bvpCommon/serialprotocol.cpp \
+    bvpCommon/serial/protocolAvant.cpp \
+    bvpCommon/serial/serialprotocol.cpp \
     control.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -30,9 +31,10 @@ SOURCES += \
 HEADERS += \
     bvpCommon/debug.hpp \
     bvpCommon/hardware.hpp \
-    bvpCommon/modbus.h \
+    bvpCommon/serial/modbusVp.h \
     bvpCommon/param.h \
-    bvpCommon/serialprotocol.h \
+    bvpCommon/serial/protocolAvant.h \
+    bvpCommon/serial/serialprotocol.h \
     control.h \
     mainwindow.h \
     qcolorbutton.h \

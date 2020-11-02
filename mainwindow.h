@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include "bvpCommon/modbus.h"
+#include "bvpCommon/serial/modbusVp.h"
 #include "bvpCommon/param.h"
 
 QT_BEGIN_NAMESPACE
@@ -31,7 +31,7 @@ private:
   uint16_t getUInt16(QVector<uint8_t> &pkg);
   void writePkg(QVector<uint8_t> &pkg);
 
-  BVP::TModbus mModbus;
+  BVP::TModbusVp mModbus;
   BVP::TParam *mParam;
 
 private slots:
