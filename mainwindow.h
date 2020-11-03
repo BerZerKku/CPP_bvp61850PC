@@ -3,8 +3,10 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include "bvpCommon/serial/modbusVp.h"
 #include "bvpCommon/param.h"
+#include "bvpCommon/serial/avantpi.h"
+#include "bvpCommon/serial/modbusVp.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,22 +27,26 @@ public:
 
 private:
   Ui::MainWindow *ui;
-  uint8_t sBuf[128];
+  uint8_t bufModbus[256];
+  uint8_t bufAvantPi[256];
   QTimer timer;
 
   uint16_t getUInt16(QVector<uint8_t> &pkg);
-  void writePkg(QVector<uint8_t> &pkg);
+  void writePkgVp(QVector<uint8_t> &pkg);
+  void writePkgPi(QVector<uint8_t> &pkg);
 
   BVP::TModbusVp mModbus;
+  BVP::TAvantPi mAvantPi;
   BVP::TParam *mParam;
 
 private slots:
   void modbusStart();
   void modbusStop();
-  void modbusProc();
-  void sendFinishedSlot();
 
-  void readSlot(int value);
+  void serialProc();
+
+  void avantPiStart();
+  void avantPiStop();
 
   void viewReadRegSlot();
 };

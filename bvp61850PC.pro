@@ -12,6 +12,7 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 
 SOURCES += \
     bvpCommon/debug.cpp \
+    bvpCommon/serial/avantpi.cpp \
     bvpCommon/serial/modbusVp.cpp \
     bvpCommon/param.cpp \
     bvpCommon/serial/protocolAvant.cpp \
@@ -30,7 +31,9 @@ SOURCES += \
 
 HEADERS += \
     bvpCommon/debug.hpp \
+    bvpCommon/global.hpp \
     bvpCommon/hardware.hpp \
+    bvpCommon/serial/avantpi.h \
     bvpCommon/serial/modbusVp.h \
     bvpCommon/param.h \
     bvpCommon/serial/protocolAvant.h \

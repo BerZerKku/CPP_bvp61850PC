@@ -19,6 +19,11 @@ public:
   explicit TSerial(QWidget *parent = nullptr);
   ~TSerial();
 
+  void setLabelText(QString text);
+  bool setup(uint32_t baudrate, QSerialPort::Parity parity,
+             QSerialPort::StopBits stopbits);
+  void addDefaultPort(QString portname);
+
 signals:
   void write(int value);
   void openPort();
@@ -30,6 +35,11 @@ private:
   Ui::TSerial *ui;
   QPointer<TSerialPort> sport;
   QPointer<QThread> thread;
+  QVector<QString> defaultPorts;
+
+  uint32_t mBaudrate = 0;
+  QSerialPort::Parity mParity = QSerialPort::NoParity;
+  QSerialPort::StopBits mStopBits = QSerialPort::OneStop;
 
 private slots:
   void refreshPortList();

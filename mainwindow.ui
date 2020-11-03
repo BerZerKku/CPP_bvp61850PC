@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>682</width>
-    <height>394</height>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,11 @@
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>5</number>
+      </property>
       <item>
-       <widget class="TSerial" name="serial" native="true">
+       <widget class="TSerial" name="serialVp" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -28,7 +31,23 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>25</height>
+          <height>20</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="TSerial" name="serialPi" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>20</height>
          </size>
         </property>
        </widget>
@@ -60,7 +79,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>25</height>
+          <height>20</height>
          </size>
         </property>
        </widget>

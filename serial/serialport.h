@@ -8,7 +8,9 @@ class TSerialPort : public QObject {
   Q_OBJECT
 
 public:
-  explicit TSerialPort(QString portname, qint32 baudrate);
+  explicit TSerialPort(QString portname, qint32 baudrate,
+                       QSerialPort::Parity parity,
+                       QSerialPort::StopBits stopbits);
   ~TSerialPort();
 
 public slots:
@@ -27,6 +29,8 @@ private:
   qint32 m_baudrate = 0;
   QSerialPort *port = nullptr;
   QString m_portName;
+  QSerialPort::Parity m_parity;
+  QSerialPort::StopBits m_stopbits;
   QPointer<QTimer> timer;
   double m_timeToFinishSendMs = 0.0;
   double m_byteSendMs = 0.0;

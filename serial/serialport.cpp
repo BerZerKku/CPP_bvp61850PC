@@ -1,7 +1,12 @@
 #include "serial/serialport.h"
 
-TSerialPort::TSerialPort(QString portname, qint32 baudrate) :
-  m_baudrate(baudrate), m_portName(portname) {
+TSerialPort::TSerialPort(QString portname, qint32 baudrate,
+                         QSerialPort::Parity parity,
+                         QSerialPort::StopBits stopbits) :
+  m_baudrate(baudrate),
+  m_portName(portname),
+  m_parity(parity),
+  m_stopbits(stopbits) {
 
 }
 
@@ -16,8 +21,8 @@ TSerialPort::start() {
     if (!port->setBaudRate(m_baudrate)) {
       emit finished();
     }
-    port->setParity(QSerialPort::Parity::EvenParity);
-    port->setStopBits(QSerialPort::StopBits::OneStop);
+    port->setParity(m_parity);
+    port->setStopBits(m_stopbits);
   }
 
   if (timer.isNull()) {

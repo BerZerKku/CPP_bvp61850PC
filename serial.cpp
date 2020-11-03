@@ -53,6 +53,34 @@ TSerial::~TSerial() {
 
 //
 void
+TSerial::setLabelText(QString text) {
+  ui->lPort->setText(text);
+}
+
+//
+bool
+TSerial::setup(uint32_t baudrate, QSerialPort::Parity parity,
+               QSerialPort::StopBits stopbits) {
+
+  mBaudrate = baudrate;
+  mParity = parity;
+  mStopBits = stopbits;
+
+  return true;
+}
+
+//
+void
+TSerial::addDefaultPort(QString portname) {
+  if (!portname.isEmpty() && !defaultPorts.contains(portname)) {
+    defaultPorts.append(portname);
+  }
+
+  ui->cbPort->setCurrentText(portname);
+}
+
+//
+void
 TSerial::refreshPortList() {
   QString portname;
   QList<QString> ports;
@@ -62,6 +90,7 @@ TSerial::refreshPortList() {
   if (ui->cbPort->isEnabled()) {
     portname = ui->cbPort->currentText();
     ui->cbPort->clear();
+
 
     for(const QSerialPortInfo &info :infos) {
       QString port = info.portName();
@@ -76,8 +105,9 @@ TSerial::refreshPortList() {
     }
 
     if (portname.isEmpty()) {
-      ui->cbPort->setCurrentText("COM5");
-      ui->cbPort->setCurrentText("tnt0");
+      for(QString &portname: defaultPorts) {
+        ui->cbPort->setCurrentText(portname);
+      }
     } else {
       ui->cbPort->setCurrentText(portname);
     }
@@ -89,7 +119,9 @@ TSerial::refreshPortList() {
 void
 TSerial::connectSerialPort() {
   if (sport.isNull() && thread.isNull()) {
-    sport = new TSerialPort(ui->cbPort->currentText(), 9600);
+    sport = new TSerialPort(ui->cbPort->currentText(), mBaudrate,
+                            mParity, mStopBits);
+
     thread = new QThread(this);
 
     connect(thread, &QThread::started, sport, &TSerialPort::start);

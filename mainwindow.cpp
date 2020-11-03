@@ -13,21 +13,35 @@ MainWindow::MainWindow(QWidget *parent)
 {
   ui->setupUi(this);
 
-  connect(ui->serial, &TSerial::openPort,
+  ui->serialVp->setLabelText("Virtual keys panel: ");
+  ui->serialVp->addDefaultPort("COM5");
+  ui->serialVp->addDefaultPort("tnt0");
+  ui->serialVp->setup(9600, QSerialPort::EvenParity, QSerialPort::OneStop);
+  connect(ui->serialVp, &TSerial::openPort,
           ui->control, &TControl::enableSlot);
 
-  connect(ui->serial, &TSerial::closePort,
+  connect(ui->serialVp, &TSerial::closePort,
           ui->control, &TControl::disableSlot);
 
-  connect(ui->serial, &TSerial::read, this, &MainWindow::readSlot);
-  connect(ui->serial, &TSerial::sendFinished,
-          this, &MainWindow::sendFinishedSlot);
+  connect(ui->serialVp, &TSerial::read,
+          [=](uint32_t value) {mModbus.push(static_cast<uint8_t> (value));});
+  connect(ui->serialVp, &TSerial::sendFinished,
+          [=](){mModbus.sendFinished();});
 
   connect(ui->control, &TControl::modbusStart, this, &MainWindow::modbusStart);
   connect(ui->control, &TControl::modbusStop, this, &MainWindow::modbusStop);
 
-  connect(&timer, &QTimer::timeout, this, &MainWindow::modbusProc);
-  connect(&timer, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
+  ui->serialPi->setLabelText("BSP-Pi: ");
+  ui->serialPi->addDefaultPort("COM20");
+  ui->serialPi->addDefaultPort("tnt2");
+  ui->serialPi->setup(4800, QSerialPort::NoParity, QSerialPort::TwoStop);
+  connect(ui->serialPi, &TSerial::read,
+          [=](uint32_t value) {mAvantPi.push(static_cast<uint8_t> (value));});
+  connect(ui->serialPi, &TSerial::sendFinished,
+          [=](){mAvantPi.sendFinished();});
+
+  connect(ui->serialPi, &TSerial::openPort, this, &MainWindow::avantPiStart);
+  connect(ui->serialPi, &TSerial::closePort, this, &MainWindow::avantPiStop);
 
   mParam = BVP::TParam::getInstance();
   mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_pi, 0);
@@ -40,6 +54,10 @@ MainWindow::MainWindow(QWidget *parent)
   mParam->setValue(BVP::PARAM_dirControl, BVP::SRC_pi, BVP::DIR_CONTROL_local);
   mParam->setValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, BVP::ON_OFF_on);
   mParam->setValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, 0x55);
+
+  connect(&timer, &QTimer::timeout, this, &MainWindow::serialProc);
+  connect(&timer, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
+  timer.start(1);
 
   setFixedSize(sizeHint());
 }
@@ -59,9 +77,19 @@ MainWindow::getUInt16(QVector<uint8_t> &pkg) {
 
 //
 void
-MainWindow::writePkg(QVector<uint8_t> &pkg) {
+MainWindow::writePkgVp(QVector<uint8_t> &pkg) {
   for(auto &byte: pkg) {
-    ui->serial->write(byte);
+    ui->serialVp->write(byte);
+  }
+}
+
+//
+void
+MainWindow::writePkgPi(QVector<uint8_t> &pkg) {
+  qDebug() << "avantPi: " << showbase << hex << pkg;
+
+  for(auto &byte: pkg) {
+    ui->serialPi->write(byte);
   }
 }
 
@@ -69,48 +97,69 @@ MainWindow::writePkg(QVector<uint8_t> &pkg) {
 void
 MainWindow::modbusStart() {
 
-    mModbus.setBuffer(sBuf, (sizeof(sBuf) / sizeof(sBuf[0])));
+    mModbus.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
 
     mModbus.setID(BVP::SRC_vkey);
     mModbus.setup(9600, true, 1);
     mModbus.setNetAddress(deviceAddress);
     mModbus.setTimeTick(1000);
     mModbus.setEnable(true);
-    timer.start(1);
 }
 
 //
 void
 MainWindow::modbusStop() {
   mModbus.setEnable(false);
-  timer.stop();
 
   ui->readReg->clear();
 }
 
 //
 void
-MainWindow::modbusProc() {
-  mModbus.tick();
-  if (mModbus.read()) {
+MainWindow::serialProc() {
+  if (mModbus.isEnable()) {
+    mModbus.tick();
+    if (mModbus.read()) {
 
-  }
-
-  if (mModbus.write()) {
-    uint8_t *data = nullptr;
-    uint16_t len = mModbus.pop(&data);
-
-    Q_ASSERT(data != nullptr);
-
-    if ((len > 0) && (data != nullptr)) {
-      QVector<uint8_t> pkg;
-      for(uint16_t i = 0; i < len; i++) {
-        pkg.append(data[i]);
-      }
-      writePkg(pkg);
-//      qDebug() << pkg;
     }
 
+    if (mModbus.write()) {
+      uint8_t *data = nullptr;
+      uint16_t len = mModbus.pop(&data);
+
+      Q_ASSERT(data != nullptr);
+
+      if ((len > 0) && (data != nullptr)) {
+        QVector<uint8_t> pkg;
+        for(uint16_t i = 0; i < len; i++) {
+          pkg.append(data[i]);
+        }
+        writePkgVp(pkg);
+//        qDebug() << pkg;
+      }
+    }
+  }
+
+  if (mAvantPi.isEnable()) {
+    mAvantPi.tick();
+    if (mAvantPi.read()) {
+
+    }
+
+    if (mAvantPi.write()) {
+      uint8_t *data = nullptr;
+      uint16_t len = mAvantPi.pop(&data);
+
+      Q_ASSERT(data != nullptr);
+
+      if ((len > 0) && (data != nullptr)) {
+        QVector<uint8_t> pkg;
+        for(uint16_t i = 0; i < len; i++) {
+          pkg.append(data[i]);
+        }
+        writePkgPi(pkg);
+      }
+    }
   }
 
   ui->control->setModbusConnection(mModbus.isConnection());
@@ -118,15 +167,20 @@ MainWindow::modbusProc() {
 
 //
 void
-MainWindow::sendFinishedSlot() {
-  mModbus.sendFinished();
+MainWindow::avantPiStart() {
+  mAvantPi.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
+
+  mAvantPi.setID(BVP::SRC_pi);
+  mAvantPi.setup(4800, false, 2);
+  mAvantPi.setNetAddress(1);
+  mAvantPi.setTimeTick(1000);
+  mAvantPi.setEnable(true);
 }
 
 //
 void
-MainWindow::readSlot(int value) {
-  quint8 byte = static_cast<uint8_t> (value);
-  mModbus.push(byte);
+MainWindow::avantPiStop() {
+  mAvantPi.setEnable(false);
 }
 
 //
@@ -136,6 +190,7 @@ MainWindow::viewReadRegSlot() {
   bool ok = true;
   quint32 val32;
   quint16 value;
+  BVP::param_t param = BVP::PARAM_MAX;
   BVP::TParam *params = BVP::TParam::getInstance();
 
   //
@@ -186,5 +241,7 @@ MainWindow::viewReadRegSlot() {
   value = static_cast<quint16> (val32 >> 16);
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
+
+  param = BVP::PARAM_control;
 }
 
