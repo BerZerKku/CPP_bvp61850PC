@@ -20,6 +20,7 @@ SOURCES += \
     control.cpp \
     main.cpp \
     mainwindow.cpp \
+    paramtree/paramtree.cpp \
     qcolorbutton.cpp \
     widget/qledindicator.cpp \
     widget/qpush1.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
     bvpCommon/serial/serialprotocol.h \
     control.h \
     mainwindow.h \
+    paramtree/paramtree.h \
     qcolorbutton.h \
     widget/qledindicator.h \
     widget/qpush1.h \

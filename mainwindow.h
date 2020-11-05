@@ -29,7 +29,8 @@ private:
   Ui::MainWindow *ui;
   uint8_t bufModbus[256];
   uint8_t bufAvantPi[256];
-  QTimer timer;
+  QTimer timer1ms;
+  QTimer timer100ms;
 
   uint16_t getUInt16(QVector<uint8_t> &pkg);
   void writePkgVp(QVector<uint8_t> &pkg);

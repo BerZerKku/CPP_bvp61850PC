@@ -55,9 +55,14 @@ MainWindow::MainWindow(QWidget *parent)
   mParam->setValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, BVP::ON_OFF_on);
   mParam->setValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, 0x55);
 
-  connect(&timer, &QTimer::timeout, this, &MainWindow::serialProc);
-  connect(&timer, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
-  timer.start(1);
+  connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
+  timer1ms.start(1);
+
+  connect(&timer100ms, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
+  connect(&timer100ms, &QTimer::timeout,
+          ui->paramTree, &TParamTree::updateParameters);
+  timer100ms.start(100);
+
 
   setFixedSize(sizeHint());
 }
@@ -78,6 +83,7 @@ MainWindow::getUInt16(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::writePkgVp(QVector<uint8_t> &pkg) {
+//  qDebug() << "vp: " << showbase << hex << pkg;
   for(auto &byte: pkg) {
     ui->serialVp->write(byte);
   }
@@ -97,7 +103,7 @@ MainWindow::writePkgPi(QVector<uint8_t> &pkg) {
 void
 MainWindow::modbusStart() {
 
-    mModbus.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
+    mModbus.setBuffer(bufModbus, (sizeof(bufModbus) / sizeof(bufModbus[0])));
 
     mModbus.setID(BVP::SRC_vkey);
     mModbus.setup(9600, true, 1);
