@@ -13,6 +13,7 @@ TParamTree::TParamTree(QWidget *parent) :
   crtGroupError();
   crtGroupErrorRemote();
 
+  expandAll();
 
   header()->resizeSections(QHeaderView::ResizeToContents);
   header()->setSectionResizeMode(0, QHeaderView::Fixed);
@@ -22,7 +23,7 @@ TParamTree::TParamTree(QWidget *parent) :
   setSelectionMode(QAbstractItemView::NoSelection);
   setFocusPolicy(Qt::NoFocus);
 
-  expandAll();
+
 }
 
 //
@@ -86,7 +87,7 @@ TParamTree::crtGroupVp() {
 
   crtItem(top, BVP::PARAM_dirControl, "Управление SAC2");
   crtItem(top, BVP::PARAM_blkComPrmAll, "Приемник SAC1");
-  crtItem(top, BVP::PARAM_blkComPrmDir, "Блк. напрвлений SAnn.x");
+  crtItem(top, BVP::PARAM_blkComPrmDir, "Блк. направлений SAnn.x");
   crtItem(top, BVP::PARAM_blkComPrm32to01, "Блк. команд приемника 32..01");
   crtItem(top, BVP::PARAM_blkComPrm64to33, "Блк. команд приемника 64..33");
   crtItem(top, BVP::PARAM_blkComPrd32to01, "Блк. команд передатчика 32..01");

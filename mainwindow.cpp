@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->serialVp->setLabelText("Virtual keys panel: ");
   ui->serialVp->addDefaultPort("COM5");
-  ui->serialVp->addDefaultPort("tnt0");
+  ui->serialVp->addDefaultPort("tnt3");
   ui->serialVp->setup(9600, QSerialPort::EvenParity, QSerialPort::OneStop);
   connect(ui->serialVp, &TSerial::openPort,
           ui->control, &TControl::enableSlot);
@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->serialPi->setLabelText("BSP-Pi: ");
   ui->serialPi->addDefaultPort("COM20");
-  ui->serialPi->addDefaultPort("tnt2");
+  ui->serialPi->addDefaultPort("tnt0");
   ui->serialPi->setup(4800, QSerialPort::NoParity, QSerialPort::TwoStop);
   connect(ui->serialPi, &TSerial::read,
           [=](uint32_t value) {mAvantPi.push(static_cast<uint8_t> (value));});
@@ -92,7 +92,7 @@ MainWindow::writePkgVp(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::writePkgPi(QVector<uint8_t> &pkg) {
-  qDebug() << "avantPi: " << showbase << hex << pkg;
+//  qDebug() << "avantPi: " << showbase << hex << pkg;
 
   for(auto &byte: pkg) {
     ui->serialPi->write(byte);
