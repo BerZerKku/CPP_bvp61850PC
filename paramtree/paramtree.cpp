@@ -116,14 +116,28 @@ TParamTree::crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name) {
 //
 void
 TParamTree::updateParameter(BVP::param_t param) {
-  bool ok;
-
+  Qt::GlobalColor color = Qt::black;
   BVP::TParam *p = BVP::TParam::getInstance();
   QTreeWidgetItem *item = mapItems.value(param);
   QLineEdit *lineedit = static_cast<QLineEdit *> (itemWidget(item, 1));
 
   uint32_t rvalue = p->getValueR(param);
   uint32_t wvalue = p->getValueW(param);
+
+  if ((param >= BVP::PARAM_error) && (param <= BVP::PARAM_glbRemoteError)) {
+    if ((rvalue | wvalue) > 0) {
+      color = Qt::blue;
+    }
+  }
+
+  if (!p->isValueSet(param)) {
+    color = Qt::darkYellow;
+  }
+
+  QPalette palette = lineedit->palette();
+  palette.setColor(QPalette::Text, color);
+  lineedit->setPalette(palette);
+
 
   lineedit->setText(QString("%1 / %2").
                     arg(rvalue, 8, 16, QLatin1Char('0')).

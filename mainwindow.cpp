@@ -33,8 +33,9 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->serialPi->setLabelText("BSP-Pi: ");
   ui->serialPi->addDefaultPort("COM20");
-  ui->serialPi->addDefaultPort("tnt0");
+  ui->serialPi->addDefaultPort("tnt0");  
   ui->serialPi->setup(4800, QSerialPort::NoParity, QSerialPort::TwoStop);
+
   connect(ui->serialPi, &TSerial::read,
           [=](uint32_t value) {mAvantPi.push(static_cast<uint8_t> (value));});
   connect(ui->serialPi, &TSerial::sendFinished,
