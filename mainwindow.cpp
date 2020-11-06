@@ -18,10 +18,10 @@ MainWindow::MainWindow(QWidget *parent)
   ui->serialVp->addDefaultPort("tnt3");
   ui->serialVp->setup(9600, QSerialPort::EvenParity, QSerialPort::OneStop);
   connect(ui->serialVp, &TSerial::openPort,
-          ui->control, &TControl::enableSlot);
+          ui->control, &TControl::enableModbusSlot);
 
   connect(ui->serialVp, &TSerial::closePort,
-          ui->control, &TControl::disableSlot);
+          ui->control, &TControl::disableModbusSlot);
 
   connect(ui->serialVp, &TSerial::read,
           [=](uint32_t value) {mModbus.push(static_cast<uint8_t> (value));});
@@ -33,8 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->serialPi->setLabelText("BSP-Pi: ");
   ui->serialPi->addDefaultPort("COM20");
-  ui->serialPi->addDefaultPort("tnt0");  
-  ui->serialPi->setup(4800, QSerialPort::NoParity, QSerialPort::TwoStop);
+  ui->serialPi->addDefaultPort("tnt0");
 
   connect(ui->serialPi, &TSerial::read,
           [=](uint32_t value) {mAvantPi.push(static_cast<uint8_t> (value));});
@@ -43,6 +42,17 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(ui->serialPi, &TSerial::openPort, this, &MainWindow::avantPiStart);
   connect(ui->serialPi, &TSerial::closePort, this, &MainWindow::avantPiStop);
+
+  connect(ui->serialPi, &TSerial::openPort,
+          ui->control, &TControl::enableBspSlot);
+
+  connect(ui->serialPi, &TSerial::closePort,
+          ui->control, &TControl::disableBspSlot);
+
+  connect(ui->control, &TControl::bspSettingsChanged,
+          this, &MainWindow::bspSettingsChangedSlot);
+
+  bspSettingsChangedSlot();
 
   mParam = BVP::TParam::getInstance();
   mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_pi, 0);
@@ -93,7 +103,9 @@ MainWindow::writePkgVp(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::writePkgPi(QVector<uint8_t> &pkg) {
-//  qDebug() << "avantPi: " << showbase << hex << pkg;
+  if (pkg.at(2) != 0x31) {
+    qDebug() << "avantPi: " << showbase << hex << pkg;
+  }
 
   for(auto &byte: pkg) {
     ui->serialPi->write(byte);
@@ -142,7 +154,6 @@ MainWindow::serialProc() {
           pkg.append(data[i]);
         }
         writePkgVp(pkg);
-//        qDebug() << pkg;
       }
     }
   }
@@ -169,6 +180,7 @@ MainWindow::serialProc() {
     }
   }
 
+  ui->control->setBspConnection(mAvantPi.isConnection());
   ui->control->setModbusConnection(mModbus.isConnection());
 }
 
@@ -177,8 +189,11 @@ void
 MainWindow::avantPiStart() {
   mAvantPi.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
 
+  TControl::settings_t settings = ui->control->getBspSettings();
+
   mAvantPi.setID(BVP::SRC_pi);
-  mAvantPi.setup(4800, false, 2);
+//  mAvantPi.setup(settings.baud, settings.parity != QSerialPort::NoParity,
+//                 settings.stopBits == QSerialPort::TwoStop ? 2 : 1);
   mAvantPi.setNetAddress(1);
   mAvantPi.setTimeTick(1000);
   mAvantPi.setEnable(true);
@@ -250,5 +265,16 @@ MainWindow::viewReadRegSlot() {
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
   param = BVP::PARAM_control;
+}
+
+//
+void
+MainWindow::bspSettingsChangedSlot() {
+  TControl::settings_t settings = ui->control->getBspSettings();
+
+  mAvantPi.setup(settings.baud, settings.parity != QSerialPort::NoParity,
+                 settings.stopBits == QSerialPort::TwoStop ? 2 : 1);
+
+  ui->serialPi->setup(settings.baud, settings.parity, settings.stopBits);
 }
 

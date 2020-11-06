@@ -50,5 +50,6 @@ private slots:
   void avantPiStop();
 
   void viewReadRegSlot();
+  void bspSettingsChangedSlot();
 };
 #endif // MAINWINDOW_H
