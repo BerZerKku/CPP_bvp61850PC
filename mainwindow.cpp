@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
   , ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
+  setWindowTitle("bvp61850 STM32");
 
   ui->serialVp->setLabelText("Virtual keys panel: ");
   ui->serialVp->addDefaultPort("COM5");
