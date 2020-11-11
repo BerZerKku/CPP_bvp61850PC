@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
+    <width>406</width>
     <height>43</height>
    </rect>
   </property>
@@ -56,7 +56,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QComboBox" name="cbPort">
+    <widget class="TComboBox" name="cbPort">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -68,13 +68,6 @@
        <width>0</width>
        <height>0</height>
       </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pbRefresh">
-     <property name="text">
-      <string>Refresh</string>
      </property>
     </widget>
    </item>
@@ -91,8 +84,51 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QLabel" name="lLink">
+     <property name="text">
+      <string>Link:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLedIndicator" name="ledLink" native="true"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="lTx">
+     <property name="text">
+      <string>Tx:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLedIndicator" name="ledTx" native="true"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="lRx">
+     <property name="text">
+      <string>Rx:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLedIndicator" name="ledRx" native="true"/>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QLedIndicator</class>
+   <extends>QWidget</extends>
+   <header location="global">widget/qledindicator.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widget/combobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

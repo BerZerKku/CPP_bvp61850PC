@@ -23,15 +23,26 @@ TSerial::TSerial(QWidget *parent) :
   ui->setupUi(this);
 
   refreshPortList();
-  connect(ui->pbRefresh, &QPushButton::clicked,
-          this, &TSerial::refreshPortList);
 
   connect(ui->pbOpen, &QPushButton::clicked,
           this, &TSerial::connectSerialPort);
 
+  connect(this, &TSerial::write, [=]() {setLedTx(true);});
+  connect(this, &TSerial::write, [=]() {timerLedTx.start(kTimeLedOnMs);});
+  connect(&timerLedTx, &QTimer::timeout, [=]() {setLedTx(false);});
+
+  connect(this, &TSerial::read, [=]() {setLedRx(true);});
+  connect(this, &TSerial::read, [=]() {timerLedRx.start(kTimeLedOnMs);});
+  connect(&timerLedRx, &QTimer::timeout, [=]() {setLedRx(false);});
+
+  connect(ui->cbPort, &TComboBox::popuped, this, &TSerial::refreshPortList);
+
   ui->pbOpen->setFixedSize(ui->pbOpen->sizeHint());
-  ui->pbRefresh->setFixedSize(ui->pbOpen->sizeHint());
   ui->cbPort->setFixedHeight(ui->pbOpen->sizeHint().height());
+
+  ui->ledLink->setDisabled(true);
+  ui->ledRx->setDisabled(true);
+  ui->ledTx->setDisabled(true);
 
   setFixedHeight(sizeHint().height());
 }
@@ -77,6 +88,12 @@ TSerial::addDefaultPort(QString portname) {
   }
 
   ui->cbPort->setCurrentText(portname);
+}
+
+//
+void
+TSerial::setLedLink(bool enable) {
+  ui->ledLink->setChecked(enable);
 }
 
 //
@@ -143,7 +160,6 @@ TSerial::connectSerialPort() {
 
     ui->cbPort->setEnabled(false);
     ui->pbOpen->setText("Close");
-    ui->pbRefresh->setEnabled(false);
 
     sport->moveToThread(thread);
     thread->start();
@@ -163,7 +179,18 @@ TSerial::closeSerialPort() {
   ui->cbPort->setEnabled(true);
   ui->pbOpen->setText("Open");
   ui->pbOpen->setEnabled(true);
-  ui->pbRefresh->setEnabled(true);
 
   emit closePort();
+}
+
+//
+void
+TSerial::setLedRx(bool enable) {
+  ui->ledRx->setChecked(enable);
+}
+
+//
+void
+TSerial::setLedTx(bool enable) {
+  ui->ledTx->setChecked(enable);
 }

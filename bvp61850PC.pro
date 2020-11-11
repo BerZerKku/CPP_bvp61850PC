@@ -22,6 +22,7 @@ SOURCES += \
     mainwindow.cpp \
     paramtree/paramtree.cpp \
     qcolorbutton.cpp \
+    widget/combobox.cpp \
     widget/qledindicator.cpp \
     widget/qpush1.cpp \
     readreg/readreg.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     mainwindow.h \
     paramtree/paramtree.h \
     qcolorbutton.h \
+    widget/combobox.h \
     widget/qledindicator.h \
     widget/qpush1.h \
     readreg/readreg.h \

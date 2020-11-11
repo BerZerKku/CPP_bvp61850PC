@@ -51,7 +51,6 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(ui->control, &TControl::bspSettingsChanged,
           this, &MainWindow::bspSettingsChangedSlot);
-
   bspSettingsChangedSlot();
 
   mParam = BVP::TParam::getInstance();
@@ -73,7 +72,6 @@ MainWindow::MainWindow(QWidget *parent)
   connect(&timer100ms, &QTimer::timeout,
           ui->paramTree, &TParamTree::updateParameters);
   timer100ms.start(100);
-
 
   setFixedSize(sizeHint());
 }
@@ -114,10 +112,24 @@ MainWindow::writePkgPi(QVector<uint8_t> &pkg) {
 
 //
 void
+MainWindow::avantPiStart() {
+  mAvantPi.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
+  mAvantPi.setID(BVP::SRC_pi);
+  mAvantPi.setNetAddress(1);
+  mAvantPi.setTimeTick(1000);
+  mAvantPi.setEnable(true);
+}
+
+//
+void
+MainWindow::avantPiStop() {
+  mAvantPi.setEnable(false);
+}
+
+//
+void
 MainWindow::modbusStart() {
-
     mModbus.setBuffer(bufModbus, (sizeof(bufModbus) / sizeof(bufModbus[0])));
-
     mModbus.setID(BVP::SRC_vkey);
     mModbus.setup(9600, true, 1);
     mModbus.setNetAddress(deviceAddress);
@@ -180,29 +192,8 @@ MainWindow::serialProc() {
     }
   }
 
-  ui->control->setBspConnection(mAvantPi.isConnection());
-  ui->control->setModbusConnection(mModbus.isConnection());
-}
-
-//
-void
-MainWindow::avantPiStart() {
-  mAvantPi.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
-
-  TControl::settings_t settings = ui->control->getBspSettings();
-
-  mAvantPi.setID(BVP::SRC_pi);
-//  mAvantPi.setup(settings.baud, settings.parity != QSerialPort::NoParity,
-//                 settings.stopBits == QSerialPort::TwoStop ? 2 : 1);
-  mAvantPi.setNetAddress(1);
-  mAvantPi.setTimeTick(1000);
-  mAvantPi.setEnable(true);
-}
-
-//
-void
-MainWindow::avantPiStop() {
-  mAvantPi.setEnable(false);
+  ui->serialVp->setLedLink(mModbus.isConnection());
+  ui->serialPi->setLedLink(mAvantPi.isConnection());
 }
 
 //

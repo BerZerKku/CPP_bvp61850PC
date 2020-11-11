@@ -24,8 +24,6 @@ public:
   explicit TControl(QWidget *parent = nullptr);
   ~TControl();
 
-  void setModbusConnection(bool enable);
-  void setBspConnection(bool enable);
   settings_t getBspSettings() const;
 
 public slots:

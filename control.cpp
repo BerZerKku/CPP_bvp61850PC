@@ -41,18 +41,6 @@ TControl::enableBspSlot() {
 }
 
 //
-void
-TControl::setModbusConnection(bool enable) {
-  ui->ledModbus->setChecked(enable);
-}
-
-//
-void
-TControl::setBspConnection(bool enable) {
-  ui->ledBsp->setChecked(enable);
-}
-
-//
 TControl::settings_t
 TControl::getBspSettings() const {
   return bspSettings;
@@ -69,8 +57,6 @@ void TControl::setEnable(bool enable) {
     }
     ui->pModbusStart->setEnabled(false);
     ui->pModbusStop->setEnabled(false);
-    ui->ledModbus->setChecked(false);
-    ui->ledModbus->setCheckable(true);
   }
 }
 
@@ -79,7 +65,6 @@ void
 TControl::setEnableModbus(bool enable) {
   ui->pModbusStart->setEnabled(!enable);
   ui->pModbusStop->setEnabled(enable);
-  ui->ledModbus->setChecked(false);
 }
 
 //
@@ -88,13 +73,8 @@ TControl::bspInit() {
   connect(ui->cbBsp, QOverload<int>::of(&QComboBox::currentIndexChanged),
           this, &TControl::changeBsp);
 
-
   ui->cbBsp->addItem("BSP");
   ui->cbBsp->addItem("BSP-PI");
-
-  ui->ledBsp->setOffColor2(QColor(128, 128, 0));
-  ui->ledBsp->setEnabled(false);
-  ui->ledBsp->setCheckable(true);
 
   disableBspSlot();
 }
@@ -111,10 +91,6 @@ TControl::modbusInit() {
           this, &TControl::enableModbus);
   connect(ui->pModbusStart, &QPushButton::pressed,
           this, &TControl::modbusStart);
-
-  ui->ledModbus->setOffColor2(QColor(128, 128, 0));
-  ui->ledModbus->setEnabled(false);
-  ui->ledModbus->setCheckable(false);
 
   setEnable(false);
 }

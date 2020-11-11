@@ -15,9 +15,6 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QLedIndicator" name="ledBsp" native="true"/>
-   </item>
-   <item>
     <widget class="QComboBox" name="cbBsp"/>
    </item>
    <item>
@@ -32,9 +29,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item>
-    <widget class="QLedIndicator" name="ledModbus" native="true"/>
    </item>
    <item>
     <widget class="QPushButton" name="pModbusStop">
@@ -52,14 +46,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QLedIndicator</class>
-   <extends>QWidget</extends>
-   <header location="global">widget/qledindicator.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

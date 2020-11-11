@@ -41,13 +41,13 @@ private:
   BVP::TParam *mParam;
 
 private slots:
+  void avantPiStart();
+  void avantPiStop();
+
   void modbusStart();
   void modbusStop();
 
   void serialProc();
-
-  void avantPiStart();
-  void avantPiStop();
 
   void viewReadRegSlot();
   void bspSettingsChangedSlot();
