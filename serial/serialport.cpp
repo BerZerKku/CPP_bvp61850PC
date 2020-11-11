@@ -133,23 +133,28 @@ TSerialPort::timeoutSlot() {
 
   // Начало передачи
   if (!timer->isActive()) {
-    m_timeToFinishSendMs = m_byteSendMs;
+    m_timeToFinishSendMs = 0;
     timer->start();
   }
 
+  // FIXME Определение окончания передачи
+  // На данный момент сделано для виртуальных портов:
+  // - байт отправляется по окончанию времени передачи одного байта.
+  // Для реального порта при этом будет осуществлена только запись в буфер.
+
   // Отправка байта. Первый сразу, остальные только по таймауту
-  if (m_timeToFinishSendMs >= m_byteSendMs) {
+  if (m_timeToFinishSendMs >= m_byteSendMs) {    
+    // Передача следующего(их) байт.
+    while((m_timeToFinishSendMs >= m_byteSendMs) && !bufTx.isEmpty()) {
+      char byte = static_cast<char> (bufTx.takeFirst());
+      port->write(&byte, 1);
+      m_timeToFinishSendMs -= m_byteSendMs;
+    }
+
     if (bufTx.isEmpty()) {
       // Окончание передачи.
       timer->stop();
       emit sendFinished();
-    } else {
-      // Передача следующего(их) байт.
-      while((m_timeToFinishSendMs >= m_byteSendMs) && !bufTx.isEmpty()) {
-        char byte = static_cast<char> (bufTx.takeFirst());
-        port->write(&byte, 1);
-        m_timeToFinishSendMs -= m_byteSendMs;
-      }
     }
   }
 

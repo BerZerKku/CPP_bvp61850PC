@@ -55,6 +55,9 @@
          </widget>
         </item>
         <item>
+         <widget class="TSerial" name="serialPc" native="true"/>
+        </item>
+        <item>
          <widget class="TReadReg" name="readReg" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">

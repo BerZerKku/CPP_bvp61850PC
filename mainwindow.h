@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include "bvpCommon/param.h"
+#include "bvpCommon/serial/avantpc.h"
 #include "bvpCommon/serial/avantpi.h"
 #include "bvpCommon/serial/modbusVp.h"
 
@@ -27,20 +28,33 @@ public:
 
 private:
   Ui::MainWindow *ui;
+
   uint8_t bufModbus[256];
   uint8_t bufAvantPi[256];
+  uint8_t bufAvantPc[256];
+
   QTimer timer1ms;
   QTimer timer100ms;
 
+  void initAvantPc();
+  void initAvantPi();
+  void initVp();
+
   uint16_t getUInt16(QVector<uint8_t> &pkg);
-  void writePkgVp(QVector<uint8_t> &pkg);
+
+  void writePkgPc(QVector<uint8_t> &pkg);
   void writePkgPi(QVector<uint8_t> &pkg);
+  void writePkgVp(QVector<uint8_t> &pkg);
 
   BVP::TModbusVp mModbus;
   BVP::TAvantPi mAvantPi;
+  BVP::TAvantPc mAvantPc;
   BVP::TParam *mParam;
 
 private slots:
+  void avantPcStart();
+  void avantPcStop();
+
   void avantPiStart();
   void avantPiStop();
 
