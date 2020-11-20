@@ -46,9 +46,9 @@ private:
   void writePkgPi(QVector<uint8_t> &pkg);
   void writePkgVp(QVector<uint8_t> &pkg);
 
-  BVP::TModbusVp mModbus;
-  BVP::TAvantPi mAvantPi;
-  BVP::TAvantPc mAvantPc;
+  BVP::TModbusVp *mModbus;
+  BVP::TAvantPi *mAvantPi;
+  BVP::TAvantPc *mAvantPc;
   BVP::TParam *mParam;
 
 private slots:

@@ -55,7 +55,20 @@
          </widget>
         </item>
         <item>
-         <widget class="TSerial" name="serialPc" native="true"/>
+         <widget class="TSerial" name="serialPc" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>20</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="TReadReg" name="readReg" native="true">
@@ -104,7 +117,7 @@
      <x>0</x>
      <y>0</y>
      <width>1019</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

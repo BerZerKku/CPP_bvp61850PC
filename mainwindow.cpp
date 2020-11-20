@@ -49,36 +49,35 @@ MainWindow::~MainWindow() {
 //
 void
 MainWindow::initAvantPc() {
+  mAvantPc = new BVP::TAvantPc(BVP::TSerialProtocol::REGIME_slave);
+
   ui->serialPc->setLabelText("PC: ");
   ui->serialPc->addDefaultPort("COM30");
   ui->serialPc->addDefaultPort("tnt4");
+  ui->serialPc->setup(19200, QSerialPort::NoParity, QSerialPort::TwoStop);
 
   connect(ui->serialPc, &TSerial::read,
-          [=](uint32_t value) {mAvantPc.push(static_cast<uint8_t> (value));});
+          [=](uint32_t value) {mAvantPc->push(static_cast<uint8_t> (value));});
   connect(ui->serialPc, &TSerial::sendFinished,
-          [=](){mAvantPc.sendFinished();});
+          [=](){mAvantPc->sendFinished();});
 
   connect(ui->serialPc, &TSerial::openPort, this, &MainWindow::avantPcStart);
   connect(ui->serialPc, &TSerial::closePort, this, &MainWindow::avantPcStop);
-
-  connect(ui->serialPc, &TSerial::openPort,
-          ui->control, &TControl::enableBspSlot);
-
-  connect(ui->serialPc, &TSerial::closePort,
-          ui->control, &TControl::disableBspSlot);
 }
 
 //
 void
 MainWindow::initAvantPi() {
+  mAvantPi = new BVP::TAvantPi(BVP::TSerialProtocol::REGIME_master);
+
   ui->serialPi->setLabelText("BSP-Pi: ");
   ui->serialPi->addDefaultPort("COM20");
   ui->serialPi->addDefaultPort("tnt0");
 
   connect(ui->serialPi, &TSerial::read,
-          [=](uint32_t value) {mAvantPi.push(static_cast<uint8_t> (value));});
+          [=](uint32_t value) {mAvantPi->push(static_cast<uint8_t> (value));});
   connect(ui->serialPi, &TSerial::sendFinished,
-          [=](){mAvantPi.sendFinished();});
+          [=](){mAvantPi->sendFinished();});
 
   connect(ui->serialPi, &TSerial::openPort, this, &MainWindow::avantPiStart);
   connect(ui->serialPi, &TSerial::closePort, this, &MainWindow::avantPiStop);
@@ -97,6 +96,8 @@ MainWindow::initAvantPi() {
 //
 void
 MainWindow::initVp() {
+  mModbus = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
+
   ui->serialVp->setLabelText("Virtual keys panel: ");
   ui->serialVp->addDefaultPort("COM5");
   ui->serialVp->addDefaultPort("tnt2");
@@ -108,9 +109,9 @@ MainWindow::initVp() {
           ui->control, &TControl::disableModbusSlot);
 
   connect(ui->serialVp, &TSerial::read,
-          [=](uint32_t value) {mModbus.push(static_cast<uint8_t> (value));});
+          [=](uint32_t value) {mModbus->push(static_cast<uint8_t> (value));});
   connect(ui->serialVp, &TSerial::sendFinished,
-          [=](){mModbus.sendFinished();});
+          [=](){mModbus->sendFinished();});
 
   connect(ui->control, &TControl::modbusStart, this, &MainWindow::modbusStart);
   connect(ui->control, &TControl::modbusStop, this, &MainWindow::modbusStop);
@@ -158,51 +159,51 @@ MainWindow::writePkgVp(QVector<uint8_t> &pkg) {
 //
 void
 MainWindow::avantPcStart() {
-  mAvantPc.setBuffer(bufAvantPc, (sizeof(bufAvantPc) / sizeof(bufAvantPc[0])));
-  mAvantPc.setID(BVP::SRC_pc);
-  mAvantPc.setup(19200, false, 2);
-  mAvantPc.setNetAddress(1);
-  mAvantPc.setTimeTick(1000);
-  mAvantPc.setEnable(true);
+  mAvantPc->setBuffer(bufAvantPc, (sizeof(bufAvantPc) / sizeof(bufAvantPc[0])));
+  mAvantPc->setID(BVP::SRC_pc);
+  Q_ASSERT(mAvantPc->setup(19200, false, 2));
+  Q_ASSERT(mAvantPc->setNetAddress(1));
+  Q_ASSERT(mAvantPc->setTimeTick(1000));
+  Q_ASSERT(mAvantPc->setEnable(true));
 }
 
 //
 void
 MainWindow::avantPcStop() {
-  mAvantPc.setEnable(false);
+  mAvantPc->setEnable(false);
 }
 
 //
 void
 MainWindow::avantPiStart() {
-  mAvantPi.setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
-  mAvantPi.setID(BVP::SRC_pi);
-  mAvantPi.setNetAddress(1);
-  mAvantPi.setTimeTick(1000);
-  mAvantPi.setEnable(true);
+  mAvantPi->setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
+  mAvantPi->setID(BVP::SRC_pi);
+  mAvantPi->setNetAddress(1);
+  mAvantPi->setTimeTick(1000);
+  mAvantPi->setEnable(true);
 }
 
 //
 void
 MainWindow::avantPiStop() {
-  mAvantPi.setEnable(false);
+  mAvantPi->setEnable(false);
 }
 
 //
 void
 MainWindow::modbusStart() {
-    mModbus.setBuffer(bufModbus, (sizeof(bufModbus) / sizeof(bufModbus[0])));
-    mModbus.setID(BVP::SRC_vkey);
-    mModbus.setup(9600, true, 1);
-    mModbus.setNetAddress(deviceAddress);
-    mModbus.setTimeTick(1000);
-    mModbus.setEnable(true);
+  mModbus->setBuffer(bufModbus, (sizeof(bufModbus) / sizeof(bufModbus[0])));
+  mModbus->setID(BVP::SRC_vkey);
+  mModbus->setup(9600, true, 1);
+  mModbus->setNetAddress(deviceAddress);
+  mModbus->setTimeTick(1000);
+  mModbus->setEnable(true);
 }
 
 //
 void
 MainWindow::modbusStop() {
-  mModbus.setEnable(false);
+  mModbus->setEnable(false);
 
   ui->readReg->clear();
 }
@@ -210,15 +211,15 @@ MainWindow::modbusStop() {
 //
 void
 MainWindow::serialProc() {
-  if (mModbus.isEnable()) {
-    mModbus.tick();
-    if (mModbus.read()) {
+  if (mModbus->isEnable()) {
+    mModbus->tick();
+    if (mModbus->read()) {
 
     }
 
-    if (mModbus.write()) {
+    if (mModbus->write()) {
       uint8_t *data = nullptr;
-      uint16_t len = mModbus.pop(&data);
+      uint16_t len = mModbus->pop(&data);
 
       Q_ASSERT(data != nullptr);
 
@@ -232,15 +233,15 @@ MainWindow::serialProc() {
     }
   }
 
-  if (mAvantPi.isEnable()) {
-    mAvantPi.tick();
-    if (mAvantPi.read()) {
+  if (mAvantPi->isEnable()) {
+    mAvantPi->tick();
+    if (mAvantPi->read()) {
 
     }
 
-    if (mAvantPi.write()) {
+    if (mAvantPi->write()) {
       uint8_t *data = nullptr;
-      uint16_t len = mAvantPi.pop(&data);
+      uint16_t len = mAvantPi->pop(&data);
 
       Q_ASSERT(data != nullptr);
 
@@ -254,15 +255,15 @@ MainWindow::serialProc() {
     }
   }
 
-  if (mAvantPc.isEnable()) {
-    mAvantPc.tick();
-    if (mAvantPc.read()) {
+  if (mAvantPc->isEnable()) {
+    mAvantPc->tick();
+    if (mAvantPc->read()) {
 
     }
 
-    if (mAvantPc.write()) {
+    if (mAvantPc->write()) {
       uint8_t *data = nullptr;
-      uint16_t len = mAvantPc.pop(&data);
+      uint16_t len = mAvantPc->pop(&data);
 
       Q_ASSERT(data != nullptr);
 
@@ -276,9 +277,9 @@ MainWindow::serialProc() {
     }
   }
 
-  ui->serialVp->setLedLink(mModbus.isConnection());
-  ui->serialPi->setLedLink(mAvantPi.isConnection());
-  ui->serialPc->setLedLink(mAvantPc.isConnection());
+  ui->serialVp->setLedLink(mModbus->isConnection());
+  ui->serialPi->setLedLink(mAvantPi->isConnection());
+  ui->serialPc->setLedLink(mAvantPc->isConnection());
 }
 
 //
@@ -345,7 +346,7 @@ void
 MainWindow::bspSettingsChangedSlot() {
   TControl::settings_t settings = ui->control->getBspSettings();
 
-  mAvantPi.setup(settings.baud, settings.parity != QSerialPort::NoParity,
+  mAvantPi->setup(settings.baud, settings.parity != QSerialPort::NoParity,
                  settings.stopBits == QSerialPort::TwoStop ? 2 : 1);
 
   ui->serialPi->setup(settings.baud, settings.parity, settings.stopBits);
