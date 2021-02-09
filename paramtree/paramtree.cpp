@@ -9,6 +9,7 @@ TParamTree::TParamTree(QWidget *parent) :
   headerItem()->setText(1, "Значение R/W");
 
   crtGroupVp();
+  crtGroupTime();
   crtGroupCtrl();
   crtGroupError();
   crtGroupErrorRemote();
@@ -47,6 +48,23 @@ TParamTree::crtGroupCtrl() {
 
 //
 void
+TParamTree::crtGroupTime(){
+  QTreeWidgetItem *top = new QTreeWidgetItem();
+  top->setText(0, "Дата и время");
+
+  crtItem(top, BVP::PARAM_dateYear, "Год");
+  crtItem(top, BVP::PARAM_dateMonth, "Месяц");
+  crtItem(top, BVP::PARAM_dateDay, "День");
+  crtItem(top, BVP::PARAM_timeHour, "Часы");
+  crtItem(top, BVP::PARAM_timeMin, "Минуты");
+  crtItem(top, BVP::PARAM_timeSec, "Секунды");
+  crtItem(top, BVP::PARAM_timeMSec, "Миллисекунды");
+
+  insertTopLevelItem(topLevelItemCount(), top);
+}
+
+//
+void
 TParamTree::crtGroupError() {
   QTreeWidgetItem *top = new QTreeWidgetItem();
   top->setText(0, "Неисправности");
@@ -57,6 +75,8 @@ TParamTree::crtGroupError() {
   crtItem(top, BVP::PARAM_defWarning, "Предупреждения Защиты");
   crtItem(top, BVP::PARAM_prmError, "Неисправности Приемника");
   crtItem(top, BVP::PARAM_prmWarning, "Педупреждения Приемника");
+  crtItem(top, BVP::PARAM_prm2Error, "Неисправности Приемника 2");
+  crtItem(top, BVP::PARAM_prm2Warning, "Педупреждения Приемника 2");
   crtItem(top, BVP::PARAM_prdError, "Неисправности Передатчика");
   crtItem(top, BVP::PARAM_prdWarning, "Педупреждения Передатчика");
   crtItem(top, BVP::PARAM_glbError, "Неисправности Общие");
@@ -108,6 +128,8 @@ TParamTree::crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name) {
   lineedit->setFocusPolicy(Qt::NoFocus);
   lineedit->setStyleSheet("border: none");
 
+  Q_ASSERT(mapItems.count(param) == 0);
+
   top->addChild(item);
   setItemWidget(item, 1, lineedit);
   mapItems.insert(param, item);
@@ -137,7 +159,6 @@ TParamTree::updateParameter(BVP::param_t param) {
   QPalette palette = lineedit->palette();
   palette.setColor(QPalette::Text, color);
   lineedit->setPalette(palette);
-
 
   lineedit->setText(QString("%1 / %2").
                     arg(rvalue, 8, 16, QLatin1Char('0')).

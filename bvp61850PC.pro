@@ -36,11 +36,13 @@ HEADERS += \
     bvpCommon/debug.hpp \
     bvpCommon/global.hpp \
     bvpCommon/hardware.hpp \
+    bvpCommon/paramDB.h \
     bvpCommon/serial/avantpc.h \
     bvpCommon/serial/avantpi.h \
     bvpCommon/serial/modbusVp.h \
     bvpCommon/param.h \
     bvpCommon/serial/protocolAvant.h \
+    bvpCommon/serial/ringArray.hpp \
     bvpCommon/serial/serialprotocol.h \
     control.h \
     mainwindow.h \
