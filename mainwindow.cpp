@@ -38,253 +38,189 @@ MainWindow::MainWindow(QWidget *parent)
           ui->paramTree, &TParamTree::updateParameters);
   timer100ms.start(100);
 
+  connect(ui->control, &TControl::bspSettingsChanged,
+          this, &MainWindow::setBspPiCfg);
+
+  connect(ui->serialPi, &TSerial::openPort, ui->control, &TControl::enableBspSlot);
+  connect(ui->serialPi, &TSerial::closePort, ui->control, &TControl::disableBspSlot);
+
+  setBspPiCfg();
+
   setFixedSize(sizeHint());
 }
 
 //
-MainWindow::~MainWindow() {
+MainWindow::~MainWindow()
+{
   delete ui;
 }
 
 //
-void
-MainWindow::initAvantPc() {
-  mAvantPc = new BVP::TAvantPc(BVP::TSerialProtocol::REGIME_slave);
+void MainWindow::initAvantPc()
+{
+  serialCfg_t *cfg = new serialCfg_t;
 
-  ui->serialPc->setLabelText("PC: ");
-  ui->serialPc->addDefaultPort("COM30");
-  ui->serialPc->addDefaultPort("tnt4");
-  ui->serialPc->setup(19200, QSerialPort::NoParity, QSerialPort::TwoStop);
+  cfg->label = "PC";
+  cfg->defaultPorts.append("COM30");
+  cfg->defaultPorts.append("tnt4");
+  cfg->protocol = new BVP::TAvantPc(BVP::TSerialProtocol::REGIME_slave);
+  cfg->srcId = BVP::SRC_pc;
+  cfg->netAddr = 1;
+  cfg->baudrate = 19200;
+  cfg->parity = QSerialPort::NoParity;
+  cfg->stopBits = QSerialPort::TwoStop;
 
-  connect(ui->serialPc, &TSerial::read,
-          [=](uint32_t value) {mAvantPc->push(static_cast<uint8_t> (value));});
-  connect(ui->serialPc, &TSerial::sendFinished,
-          [=](){mAvantPc->sendFinished();});
-
-  connect(ui->serialPc, &TSerial::openPort, this, &MainWindow::avantPcStart);
-  connect(ui->serialPc, &TSerial::closePort, this, &MainWindow::avantPcStop);
+  initSerial(ui->serialPc, cfg);
 }
 
+
 //
-void
-MainWindow::initAvantPi() {
-  mAvantPi = new BVP::TAvantPi(BVP::TSerialProtocol::REGIME_master);
+void MainWindow::initAvantPi()
+{
+  serialCfg_t *cfg = new serialCfg_t;
 
-  ui->serialPi->setLabelText("BSP-Pi: ");
-  ui->serialPi->addDefaultPort("COM20");
-  ui->serialPi->addDefaultPort("tnt0");
+  cfg->label = "BSP-PI";
+  cfg->defaultPorts.append("COM20");
+  cfg->defaultPorts.append("tnt0");
+  cfg->protocol = new BVP::TAvantPi(BVP::TSerialProtocol::REGIME_master);
+  cfg->srcId = BVP::SRC_pi;
+  cfg->netAddr = 1;
+  cfg->baudrate = 19200;
+  cfg->parity = QSerialPort::NoParity;
+  cfg->stopBits = QSerialPort::TwoStop;
 
-  connect(ui->serialPi, &TSerial::read,
-          [=](uint32_t value) {mAvantPi->push(static_cast<uint8_t> (value));});
-  connect(ui->serialPi, &TSerial::sendFinished,
-          [=](){mAvantPi->sendFinished();});
-
-  connect(ui->serialPi, &TSerial::openPort, this, &MainWindow::avantPiStart);
-  connect(ui->serialPi, &TSerial::closePort, this, &MainWindow::avantPiStop);
-
-  connect(ui->serialPi, &TSerial::openPort,
-          ui->control, &TControl::enableBspSlot);
-
-  connect(ui->serialPi, &TSerial::closePort,
-          ui->control, &TControl::disableBspSlot);
-
-  connect(ui->control, &TControl::bspSettingsChanged,
-          this, &MainWindow::bspSettingsChangedSlot);
-  bspSettingsChangedSlot();
+  initSerial(ui->serialPi, cfg);
 }
 
+
 //
-void
-MainWindow::initVp() {
-  mModbus = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
+void MainWindow::initVp()
+{
+  serialCfg_t *cfg = new serialCfg_t;
 
-  ui->serialVp->setLabelText("Virtual keys panel: ");
-  ui->serialVp->addDefaultPort("COM5");
-  ui->serialVp->addDefaultPort("tnt2");
-  ui->serialVp->setup(9600, QSerialPort::EvenParity, QSerialPort::OneStop);
-  connect(ui->serialVp, &TSerial::openPort,
-          ui->control, &TControl::enableModbusSlot);
+  cfg->label = "Virtual keys panel";
+  cfg->defaultPorts.append("COM5");
+  cfg->defaultPorts.append("tnt2");
+  cfg->protocol = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
+  cfg->srcId = BVP::SRC_vkey;
+  cfg->netAddr = 10;
+  cfg->baudrate = 9600;
+  cfg->parity = QSerialPort::EvenParity;
+  cfg->stopBits = QSerialPort::OneStop;
 
-  connect(ui->serialVp, &TSerial::closePort,
-          ui->control, &TControl::disableModbusSlot);
-
-  connect(ui->serialVp, &TSerial::read,
-          [=](uint32_t value) {mModbus->push(static_cast<uint8_t> (value));});
-  connect(ui->serialVp, &TSerial::sendFinished,
-          [=](){mModbus->sendFinished();});
-
-  connect(ui->control, &TControl::modbusStart, this, &MainWindow::modbusStart);
-  connect(ui->control, &TControl::modbusStop, this, &MainWindow::modbusStop);
+  initSerial(ui->serialVp, cfg);
 }
 
+
 //
-uint16_t
-MainWindow::getUInt16(QVector<uint8_t> &pkg) {
+void MainWindow::initSerial(TSerial *serial, MainWindow::serialCfg_t *cfg)
+{
+  sPort.insert(serial, cfg);
+
+  serial->setLabelText(cfg->label + ":");
+
+  for(auto& port: cfg->defaultPorts) {
+    serial->addDefaultPort(port);
+  }
+
+  serial->setup(cfg->baudrate, cfg->parity, cfg->stopBits);
+
+  connect(serial, &TSerial::read,
+          [=](uint32_t value) {cfg->protocol->push(static_cast<uint8_t> (value));});
+  connect(serial, &TSerial::sendFinished,
+          [=](){cfg->protocol->sendFinished();});
+
+  connect(serial, &TSerial::openPort, this,
+          [=]() {protocolStart(cfg);});
+  connect(serial, &TSerial::closePort, this,
+          [=]() {protocolStop(sPort.value(serial));});
+}
+
+
+//
+uint16_t MainWindow::getUInt16(QVector<uint8_t> &pkg)
+{
   uint16_t value = pkg.takeFirst();
   value = static_cast<uint16_t> ((value << 8) + pkg.takeFirst());
   return value;
 }
 
-//
-void
-MainWindow::writePkgPc(QVector<uint8_t> &pkg) {
-  for(auto &byte: pkg) {
-    ui->serialPc->write(byte);
-  }
-}
 
 //
-void
-MainWindow::writePkgPi(QVector<uint8_t> &pkg) {
-//  if (pkg.at(2) != 0x31) {
-//    qDebug() << "avantPi: " << showbase << hex << pkg;
-//  }
+void MainWindow::protocolStart(MainWindow::serialCfg_t *cfg)
+{
+  cfg->protocol->setBuffer(cfg->buf, std::end(cfg->buf) - std::begin(cfg->buf));
+  cfg->protocol->setID(cfg->srcId);
 
-  for(auto &byte: pkg) {
-    ui->serialPi->write(byte);
-  }
-}
-
-//
-void
-MainWindow::writePkgVp(QVector<uint8_t> &pkg) {
-//  qDebug() << "vp: " << showbase << hex << pkg;
-  for(auto &byte: pkg) {
-    ui->serialVp->write(byte);
-  }
+  Q_ASSERT(cfg->protocol->setup(cfg->baudrate,
+                               cfg->parity != QSerialPort::NoParity,
+                               cfg->stopBits));
+  Q_ASSERT(cfg->protocol->setNetAddress(cfg->netAddr));
+  Q_ASSERT(cfg->protocol->setTimeTick(1000));
+  Q_ASSERT(cfg->protocol->setEnable(true));
 }
 
 
-
 //
-void
-MainWindow::avantPcStart() {
-  mAvantPc->setBuffer(bufAvantPc, (sizeof(bufAvantPc) / sizeof(bufAvantPc[0])));
-  mAvantPc->setID(BVP::SRC_pc);
-  Q_ASSERT(mAvantPc->setup(19200, false, 2));
-  Q_ASSERT(mAvantPc->setNetAddress(1));
-  Q_ASSERT(mAvantPc->setTimeTick(1000));
-  Q_ASSERT(mAvantPc->setEnable(true));
+void MainWindow::protocolStop(MainWindow::serialCfg_t *cfg)
+{
+  Q_ASSERT(!cfg->protocol->setEnable(false));
 }
 
+
 //
-void
-MainWindow::avantPcStop() {
-  mAvantPc->setEnable(false);
+void MainWindow::setBspPiCfg()
+{
+  Q_ASSERT(sPort.count(ui->serialPi) ==1);
+
+  serialCfg_t *cfg = sPort.value(ui->serialPi);
+  TControl::settings_t settings = ui->control->getBspSettings();
+
+  cfg->baudrate = settings.baud;
+  cfg->parity = settings.parity;
+  cfg->stopBits = settings.stopBits;
 }
 
-//
-void
-MainWindow::avantPiStart() {
-  mAvantPi->setBuffer(bufAvantPi, (sizeof(bufAvantPi) / sizeof(bufAvantPi[0])));
-  mAvantPi->setID(BVP::SRC_pi);
-  mAvantPi->setNetAddress(1);
-  mAvantPi->setTimeTick(1000);
-  mAvantPi->setEnable(true);
-}
 
 //
-void
-MainWindow::avantPiStop() {
-  mAvantPi->setEnable(false);
-}
+void MainWindow::serialProc() {
+  for(auto& serial: sPort.keys()) {
+    serialCfg_t *cfg = sPort.value(serial);
 
-//
-void
-MainWindow::modbusStart() {
-  mModbus->setBuffer(bufModbus, (sizeof(bufModbus) / sizeof(bufModbus[0])));
-  mModbus->setID(BVP::SRC_vkey);
-  mModbus->setup(9600, true, 1);
-  mModbus->setNetAddress(deviceAddress);
-  mModbus->setTimeTick(1000);
-  mModbus->setEnable(true);
-}
+    if (cfg->protocol->isEnable()) {
+      cfg->protocol->tick();
+      cfg->protocol->read();
 
-//
-void
-MainWindow::modbusStop() {
-  mModbus->setEnable(false);
+      if (cfg->protocol->write()) {
+        uint8_t *data = nullptr;
+        uint16_t len = cfg->protocol->pop(&data);
 
-  ui->readReg->clear();
-}
+        Q_ASSERT(data != nullptr);
 
-//
-void
-MainWindow::serialProc() {
-  if (mModbus->isEnable()) {
-    mModbus->tick();
-    if (mModbus->read()) {
+        if ((len > 0) && (data != nullptr)) {
+          QVector<uint8_t> pkg;
+          for(uint16_t i = 0; i < len; i++) {
+            pkg.append(data[i]);
+          }
 
-    }
+//          if (serial == ui->serialVp) {
+//            qDebug() << "Tx to VP: " << Qt::hex << pkg << Qt::endl;
+//          }
 
-    if (mModbus->write()) {
-      uint8_t *data = nullptr;
-      uint16_t len = mModbus->pop(&data);
-
-      Q_ASSERT(data != nullptr);
-
-      if ((len > 0) && (data != nullptr)) {
-        QVector<uint8_t> pkg;
-        for(uint16_t i = 0; i < len; i++) {
-          pkg.append(data[i]);
+          for(auto &byte: pkg) {
+            serial->write(byte);
+          }
         }
-        writePkgVp(pkg);
       }
     }
+
+    serial->setLedLink(cfg->protocol->isConnection());
   }
-
-  if (mAvantPi->isEnable()) {
-    mAvantPi->tick();
-    if (mAvantPi->read()) {
-
-    }
-
-    if (mAvantPi->write()) {
-      uint8_t *data = nullptr;
-      uint16_t len = mAvantPi->pop(&data);
-
-      Q_ASSERT(data != nullptr);
-
-      if ((len > 0) && (data != nullptr)) {
-        QVector<uint8_t> pkg;
-        for(uint16_t i = 0; i < len; i++) {
-          pkg.append(data[i]);
-        }
-        writePkgPi(pkg);
-      }
-    }
-  }
-
-  if (mAvantPc->isEnable()) {
-    mAvantPc->tick();
-    if (mAvantPc->read()) {
-
-    }
-
-    if (mAvantPc->write()) {
-      uint8_t *data = nullptr;
-      uint16_t len = mAvantPc->pop(&data);
-
-      Q_ASSERT(data != nullptr);
-
-      if ((len > 0) && (data != nullptr)) {
-        QVector<uint8_t> pkg;
-        for(uint16_t i = 0; i < len; i++) {
-          pkg.append(data[i]);
-        }
-        writePkgPc(pkg);
-      }
-    }
-  }
-
-  ui->serialVp->setLedLink(mModbus->isConnection());
-  ui->serialPi->setLedLink(mAvantPi->isConnection());
-  ui->serialPc->setLedLink(mAvantPc->isConnection());
 }
 
+
 //
-void
-MainWindow::viewReadRegSlot() {
+void MainWindow::viewReadRegSlot() {
   vpReg::group_t group;
   bool ok = true;
   quint32 val32;
@@ -340,15 +276,3 @@ MainWindow::viewReadRegSlot() {
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 }
-
-//
-void
-MainWindow::bspSettingsChangedSlot() {
-  TControl::settings_t settings = ui->control->getBspSettings();
-
-  mAvantPi->setup(settings.baud, settings.parity != QSerialPort::NoParity,
-                 settings.stopBits == QSerialPort::TwoStop ? 2 : 1);
-
-  ui->serialPi->setup(settings.baud, settings.parity, settings.stopBits);
-}
-
