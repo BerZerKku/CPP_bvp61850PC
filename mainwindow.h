@@ -28,6 +28,9 @@ class MainWindow : public QMainWindow
     uint8_t buf[256] = {0};
     QString label;
     QVector<QString> defaultPorts;
+    QVector<qint32> baudList;
+    QVector<QSerialPort::Parity> parityList;
+    QVector<QSerialPort::StopBits> stopList;
     BVP::TSerialProtocol *protocol = nullptr;
     BVP::src_t srcId = BVP::SRC_MAX;
     uint16_t netAddr = 0;
@@ -42,6 +45,7 @@ public:
 
 private:
   Ui::MainWindow *ui;
+  TSerial *serialPi = nullptr;
 
   QTimer timer1ms;
   QTimer timer100ms;
@@ -50,6 +54,7 @@ private:
   void initAvantPi();
   void initVp();
   void initSerial(TSerial *serial, serialCfg_t *cfg);
+  void addSerialToFrame(TSerial *serial);
 
   uint16_t getUInt16(QVector<uint8_t> &pkg);
 
@@ -59,10 +64,8 @@ private:
 
  private slots:
 
-  void protocolStart(serialCfg_t *cfg);
-  void protocolStop(serialCfg_t *cfg);
-
-  void setBspPiCfg();
+  void serialStart(TSerial *serial);
+  void serialStop(TSerial *serial);
 
   void serialProc();
 

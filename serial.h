@@ -30,6 +30,14 @@ public:
 
   void setLedLink(bool enable);
 
+  bool setBaudRateList(QVector<qint32> &values);
+  bool setStopBitList(QVector<QSerialPort::StopBits> &values);
+  bool setParityList(QVector<QSerialPort::Parity> &values);
+
+  qint32 getBaudRate() const;
+  QSerialPort::Parity getParity() const;
+  QSerialPort::StopBits getStopBits() const;
+
 signals:
   void write(int value);
   void openPort();
@@ -45,16 +53,13 @@ private:
   QTimer timerLedRx;              // Таймер светодиода принятых байт.
   QTimer timerLedTx;              // Таймер светодиода переданных байт.
 
-  uint32_t mBaudrate = 0;
-  QSerialPort::Parity mParity = QSerialPort::NoParity;
-  QSerialPort::StopBits mStopBits = QSerialPort::OneStop;
-
 private slots:
   void refreshPortList();
   void connectSerialPort();
   void closeSerialPort();
   void setLedRx(bool enable);
   void setLedTx(bool enable);
+  void changeConfigEnabled();
 };
 
 #endif // SERIAL_H

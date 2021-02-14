@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>406</width>
+    <width>671</width>
     <height>43</height>
    </rect>
   </property>
@@ -68,6 +68,30 @@
        <width>0</width>
        <height>0</height>
       </size>
+     </property>
+     <property name="toolTip">
+      <string>SerialPort</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="TComboBox" name="cbBaudRate">
+     <property name="toolTip">
+      <string>BaudRate</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="TComboBox" name="cbParity">
+     <property name="toolTip">
+      <string>Parity</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="TComboBox" name="cbStopBit">
+     <property name="toolTip">
+      <string>StopBit</string>
      </property>
     </widget>
    </item>

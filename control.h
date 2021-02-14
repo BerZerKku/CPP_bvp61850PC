@@ -27,10 +27,6 @@ public:
   settings_t getBspSettings() const;
 
 public slots:
-  void disableModbusSlot();
-  void enableModbusSlot();
-  void disableBspSlot();
-  void enableBspSlot();
 
 signals:
   void modbusStart();

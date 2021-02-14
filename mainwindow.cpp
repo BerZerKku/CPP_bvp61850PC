@@ -38,14 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
           ui->paramTree, &TParamTree::updateParameters);
   timer100ms.start(100);
 
-  connect(ui->control, &TControl::bspSettingsChanged,
-          this, &MainWindow::setBspPiCfg);
-
-  connect(ui->serialPi, &TSerial::openPort, ui->control, &TControl::enableBspSlot);
-  connect(ui->serialPi, &TSerial::closePort, ui->control, &TControl::disableBspSlot);
-
-  setBspPiCfg();
-
   setFixedSize(sizeHint());
 }
 
@@ -58,11 +50,15 @@ MainWindow::~MainWindow()
 //
 void MainWindow::initAvantPc()
 {
+  TSerial *serial = new TSerial;
   serialCfg_t *cfg = new serialCfg_t;
 
   cfg->label = "PC";
   cfg->defaultPorts.append("COM30");
   cfg->defaultPorts.append("tnt4");
+  cfg->baudList.append({19200});
+  cfg->parityList.append({QSerialPort::NoParity});
+  cfg->stopList.append({QSerialPort::TwoStop});
   cfg->protocol = new BVP::TAvantPc(BVP::TSerialProtocol::REGIME_slave);
   cfg->srcId = BVP::SRC_pc;
   cfg->netAddr = 1;
@@ -70,18 +66,23 @@ void MainWindow::initAvantPc()
   cfg->parity = QSerialPort::NoParity;
   cfg->stopBits = QSerialPort::TwoStop;
 
-  initSerial(ui->serialPc, cfg);
+  initSerial(serial, cfg);
+  addSerialToFrame(serial);
 }
 
 
 //
 void MainWindow::initAvantPi()
 {
+  TSerial *serial = new TSerial;
   serialCfg_t *cfg = new serialCfg_t;
 
   cfg->label = "BSP-PI";
   cfg->defaultPorts.append("COM20");
   cfg->defaultPorts.append("tnt0");
+  cfg->baudList.append({4800, 19200});
+  cfg->parityList.append({QSerialPort::NoParity});
+  cfg->stopList.append({QSerialPort::TwoStop});
   cfg->protocol = new BVP::TAvantPi(BVP::TSerialProtocol::REGIME_master);
   cfg->srcId = BVP::SRC_pi;
   cfg->netAddr = 1;
@@ -89,18 +90,26 @@ void MainWindow::initAvantPi()
   cfg->parity = QSerialPort::NoParity;
   cfg->stopBits = QSerialPort::TwoStop;
 
-  initSerial(ui->serialPi, cfg);
+  Q_ASSERT(serialPi == nullptr);
+  serialPi = serial;
+
+  initSerial(serial, cfg);
+  addSerialToFrame(serial);
 }
 
 
 //
 void MainWindow::initVp()
 {
+  TSerial *serial = new TSerial;
   serialCfg_t *cfg = new serialCfg_t;
 
   cfg->label = "Virtual keys panel";
   cfg->defaultPorts.append("COM5");
   cfg->defaultPorts.append("tnt2");
+  cfg->baudList.append({9600});
+  cfg->parityList.append({QSerialPort::EvenParity});
+  cfg->stopList.append({QSerialPort::OneStop});
   cfg->protocol = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
   cfg->srcId = BVP::SRC_vkey;
   cfg->netAddr = 10;
@@ -108,7 +117,8 @@ void MainWindow::initVp()
   cfg->parity = QSerialPort::EvenParity;
   cfg->stopBits = QSerialPort::OneStop;
 
-  initSerial(ui->serialVp, cfg);
+  initSerial(serial, cfg);
+  addSerialToFrame(serial);
 }
 
 
@@ -123,6 +133,10 @@ void MainWindow::initSerial(TSerial *serial, MainWindow::serialCfg_t *cfg)
     serial->addDefaultPort(port);
   }
 
+  serial->setBaudRateList(cfg->baudList);
+  serial->setParityList(cfg->parityList);
+  serial->setStopBitList(cfg->stopList);
+
   serial->setup(cfg->baudrate, cfg->parity, cfg->stopBits);
 
   connect(serial, &TSerial::read,
@@ -131,9 +145,14 @@ void MainWindow::initSerial(TSerial *serial, MainWindow::serialCfg_t *cfg)
           [=](){cfg->protocol->sendFinished();});
 
   connect(serial, &TSerial::openPort, this,
-          [=]() {protocolStart(cfg);});
+          [=]() {serialStart(serial);});
   connect(serial, &TSerial::closePort, this,
-          [=]() {protocolStop(sPort.value(serial));});
+          [=]() {serialStop(serial);});
+}
+
+void MainWindow::addSerialToFrame(TSerial *serial)
+{
+  ui->serialFrame->layout()->addWidget(serial);
 }
 
 
@@ -147,10 +166,19 @@ uint16_t MainWindow::getUInt16(QVector<uint8_t> &pkg)
 
 
 //
-void MainWindow::protocolStart(MainWindow::serialCfg_t *cfg)
+void MainWindow::serialStart(TSerial *serial)
 {
+  Q_ASSERT(sPort.count(serial) == 1);
+  serialCfg_t *cfg = sPort.value(serial);
+
+  cfg->baudrate = serial->getBaudRate();
+  cfg->parity = serial->getParity();
+  cfg->stopBits = serial->getStopBits();
+
   cfg->protocol->setBuffer(cfg->buf, std::end(cfg->buf) - std::begin(cfg->buf));
   cfg->protocol->setID(cfg->srcId);
+
+  qDebug() << cfg->baudrate;
 
   Q_ASSERT(cfg->protocol->setup(cfg->baudrate,
                                cfg->parity != QSerialPort::NoParity,
@@ -162,23 +190,13 @@ void MainWindow::protocolStart(MainWindow::serialCfg_t *cfg)
 
 
 //
-void MainWindow::protocolStop(MainWindow::serialCfg_t *cfg)
+void MainWindow::serialStop(TSerial *serial)
 {
+  Q_ASSERT(sPort.count(serial) == 1);
+
+  serialCfg_t *cfg = sPort.value(serial);
+
   Q_ASSERT(!cfg->protocol->setEnable(false));
-}
-
-
-//
-void MainWindow::setBspPiCfg()
-{
-  Q_ASSERT(sPort.count(ui->serialPi) ==1);
-
-  serialCfg_t *cfg = sPort.value(ui->serialPi);
-  TControl::settings_t settings = ui->control->getBspSettings();
-
-  cfg->baudrate = settings.baud;
-  cfg->parity = settings.parity;
-  cfg->stopBits = settings.stopBits;
 }
 
 

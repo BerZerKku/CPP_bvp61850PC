@@ -1,6 +1,8 @@
 #include "serial.h"
 #include "ui_serial.h"
 
+#include <QLineEdit>
+
 //
 bool
 comp(const QString &s1, const QString &s2) {
@@ -17,8 +19,7 @@ comp(const QString &s1, const QString &s2) {
 
 //
 TSerial::TSerial(QWidget *parent) :
-  QWidget(parent),
-  ui(new Ui::TSerial)
+  QWidget(parent), ui(new Ui::TSerial)
 {
   ui->setupUi(this);
 
@@ -36,6 +37,7 @@ TSerial::TSerial(QWidget *parent) :
   connect(&timerLedRx, &QTimer::timeout, [=]() {setLedRx(false);});
 
   connect(ui->cbPort, &TComboBox::popuped, this, &TSerial::refreshPortList);
+  connect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::changeConfigEnabled);
 
   ui->pbOpen->setFixedSize(ui->pbOpen->sizeHint());
   ui->cbPort->setFixedHeight(ui->pbOpen->sizeHint().height());
@@ -44,11 +46,14 @@ TSerial::TSerial(QWidget *parent) :
   ui->ledRx->setDisabled(true);
   ui->ledTx->setDisabled(true);
 
+  changeConfigEnabled();
+
   setFixedHeight(sizeHint().height());
 }
 
 //
-TSerial::~TSerial() {
+TSerial::~TSerial()
+{
   // Не решило проблему! Ошибка все равно появляется, просто не всегда!
 
   if (!thread.isNull()) {
@@ -63,26 +68,30 @@ TSerial::~TSerial() {
 }
 
 //
-void
-TSerial::setLabelText(QString text) {
+void TSerial::setLabelText(QString text)
+{
   ui->lPort->setText(text);
 }
 
 //
-bool
-TSerial::setup(uint32_t baudrate, QSerialPort::Parity parity,
-               QSerialPort::StopBits stopbits) {
+bool TSerial::setup(uint32_t baudrate, QSerialPort::Parity parity,
+               QSerialPort::StopBits stopbits)
+{
+  Q_ASSERT(ui->cbBaudRate->findData(baudrate) != -1);
+  ui->cbBaudRate->setCurrentIndex(ui->cbBaudRate->findData(baudrate));
 
-  mBaudrate = baudrate;
-  mParity = parity;
-  mStopBits = stopbits;
+  Q_ASSERT(ui->cbParity->findData(parity) != -1);
+  ui->cbParity->setCurrentIndex(ui->cbParity->findData(parity));
+
+  Q_ASSERT(ui->cbStopBit->findData(stopbits) != -1);
+  ui->cbStopBit->setCurrentIndex(ui->cbStopBit->findData(stopbits));
 
   return true;
 }
 
 //
-void
-TSerial::addDefaultPort(QString portname) {
+void TSerial::addDefaultPort(QString portname)
+{
   if (!portname.isEmpty() && !defaultPorts.contains(portname)) {
     defaultPorts.append(portname);
   }
@@ -91,14 +100,86 @@ TSerial::addDefaultPort(QString portname) {
 }
 
 //
-void
-TSerial::setLedLink(bool enable) {
+void TSerial::setLedLink(bool enable)
+{
   ui->ledLink->setChecked(enable);
 }
 
+bool TSerial::setBaudRateList(QVector<qint32> &values)
+{
+  QComboBox *cb = ui->cbBaudRate;
+
+  cb->clear();
+  for(auto value: values) {
+    cb->addItem(QString("%1").arg(value), value);
+  }
+
+  Q_ASSERT(cb->count() >= 1);
+
+  return cb->count() != 0;
+}
+
+bool TSerial::setStopBitList(QVector<QSerialPort::StopBits> &values)
+{
+  QComboBox *cb = ui->cbStopBit;
+
+  cb->clear();
+  for(auto value: values) {
+    cb->addItem(QString("%1").arg(value), value);
+  }
+
+  Q_ASSERT(cb->count() >= 1);
+
+  return cb->count() != 0;
+}
+
+bool TSerial::setParityList(QVector<QSerialPort::Parity> &values)
+{
+  QComboBox *cb = ui->cbParity;
+
+  QMap<QSerialPort::Parity, QString> parityString;
+  parityString.insert(QSerialPort::NoParity,   "  Нет (N)");
+  parityString.insert(QSerialPort::EvenParity, "  Чет (E)");
+  parityString.insert(QSerialPort::OddParity,  "Нечет (O)");
+
+  cb->clear();
+  for(auto &value: values) {
+    Q_ASSERT(parityString.count(value) == 1);
+    cb->addItem(parityString.value(value), value);
+  }
+
+  Q_ASSERT(cb->count() >= 1);
+
+  return cb->count() != 0;
+}
+
+
 //
-void
-TSerial::refreshPortList() {
+qint32 TSerial::getBaudRate() const
+{
+  return ui->cbBaudRate->currentData().toInt();
+}
+
+
+//
+QSerialPort::Parity TSerial::getParity() const
+{
+  qint16 value = ui->cbParity->currentData().toInt();
+  return static_cast<QSerialPort::Parity> (value);
+}
+
+
+//
+QSerialPort::StopBits TSerial::getStopBits() const
+{
+  qint16 value = ui->cbStopBit->currentData().toInt();
+  return static_cast<QSerialPort::StopBits> (value);
+}
+
+
+//
+void TSerial::refreshPortList()
+{
   QString portname;
   QList<QString> ports;
   QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
@@ -132,12 +213,18 @@ TSerial::refreshPortList() {
   }
 }
 
+
 //
-void
-TSerial::connectSerialPort() {
+void TSerial::connectSerialPort()
+{
   if (sport.isNull() && thread.isNull()) {
-    sport = new TSerialPort(ui->cbPort->currentText(), mBaudrate,
-                            mParity, mStopBits);
+    QSerialPort::Parity parity =
+        static_cast<QSerialPort::Parity> (ui->cbParity->currentData().toInt());
+    QSerialPort::StopBits stopbits =
+        static_cast<QSerialPort::StopBits> (ui->cbStopBit->currentData().toInt());
+
+    sport = new TSerialPort(ui->cbPort->currentText(),
+        ui->cbBaudRate->currentData().toInt(), parity, stopbits);
 
     thread = new QThread(this);
 
@@ -148,6 +235,7 @@ TSerial::connectSerialPort() {
     connect(sport, &TSerialPort::finished, this, &TSerial::closeSerialPort);
     connect(sport, &TSerialPort::finished, thread, &QThread::quit);
     connect(sport, &TSerialPort::finished, sport, &TSerialPort::deleteLater);
+    connect(sport, &TSerialPort::finished, this, &TSerial::changeConfigEnabled);
     connect(sport, &TSerialPort::readByte, this, &TSerial::read);
     connect(sport, &TSerialPort::sendFinished, this, &TSerial::sendFinished);
 
@@ -156,10 +244,6 @@ TSerial::connectSerialPort() {
     disconnect(ui->pbOpen, &QPushButton::clicked,
                this, &TSerial::connectSerialPort);
     connect(ui->pbOpen, &QPushButton::clicked, sport, &TSerialPort::stop);
-
-
-    ui->cbPort->setEnabled(false);
-    ui->pbOpen->setText("Close");
 
     sport->moveToThread(thread);
     thread->start();
@@ -170,27 +254,48 @@ TSerial::connectSerialPort() {
 }
 
 //
-void
-TSerial::closeSerialPort() {
+void TSerial::closeSerialPort()
+{
   connect(ui->pbOpen, &QPushButton::clicked,
           this, &TSerial::connectSerialPort);
 
   refreshPortList();
   ui->cbPort->setEnabled(true);
-  ui->pbOpen->setText("Open");
   ui->pbOpen->setEnabled(true);
 
   emit closePort();
 }
 
+
 //
-void
-TSerial::setLedRx(bool enable) {
+void TSerial::setLedRx(bool enable)
+{
   ui->ledRx->setChecked(enable);
 }
 
+
 //
-void
-TSerial::setLedTx(bool enable) {
+void TSerial::setLedTx(bool enable)
+{
   ui->ledTx->setChecked(enable);
+}
+
+
+//
+void TSerial::changeConfigEnabled()
+{
+  bool enable = sport.isNull();
+
+  if (enable) {
+    connect(ui->pbOpen, &QPushButton::clicked,
+            this, &TSerial::changeConfigEnabled, Qt::UniqueConnection);
+  } else {
+    disconnect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::changeConfigEnabled);
+  }
+
+  ui->pbOpen->setText(enable ? "Open" : "Close");
+  ui->cbPort->setEnabled(enable);
+  ui->cbBaudRate->setEnabled(enable);
+  ui->cbParity->setEnabled(enable);
+  ui->cbStopBit->setEnabled(enable);
 }

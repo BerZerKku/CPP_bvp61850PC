@@ -17,30 +17,6 @@ TControl::~TControl() {
 }
 
 //
-void
-TControl::disableModbusSlot() {
-  setEnable(false);
-}
-
-//
-void
-TControl::enableModbusSlot() {
-  setEnable(true);
-}
-
-//
-void
-TControl::disableBspSlot() {
-  ui->cbBsp->setEnabled(true);
-}
-
-//
-void
-TControl::enableBspSlot() {
-  ui->cbBsp->setEnabled(false);
-}
-
-//
 TControl::settings_t
 TControl::getBspSettings() const {
   return bspSettings;
@@ -75,8 +51,6 @@ TControl::bspInit() {
 
   ui->cbBsp->addItem("BSP");
   ui->cbBsp->addItem("BSP-PI");
-
-  disableBspSlot();
 }
 
 //
