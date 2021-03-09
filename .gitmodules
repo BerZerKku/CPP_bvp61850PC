@@ -1,4 +1,0 @@
-[submodule "bvpCommon"]
-	path = bvpCommon
-	url = https://bucket.prosyst.ru/scm/ava/cpp_bvpcommon.git
-	# url = https://github.com/BerZerKku/CPP_bvpCommon.git
