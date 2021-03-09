@@ -21,7 +21,8 @@ HEADERS += \
 SOURCES += \
     googletest/gtest-all.cc \
     main.cpp \
-    BvpPkgTest.cpp
+    tst_extAlarm.cpp \
+#    tst_bvpCommon.cpp \
 
 
 

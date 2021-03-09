@@ -5,7 +5,6 @@
 #include "debug.hpp"
 #include "hardware.hpp"
 #include "param.h"
-#include "wrapper.h"
 
 extern uint8_t getExtAlarmSignals();
 extern void setExtAlarmSignals(uint16_t alarm);
@@ -31,11 +30,9 @@ enum extAlarmOut_t : uint16_t {
     EXT_ALARM_OUT_disablePrm    = 0x0080
 };
 
-
-
 class TExtAlarm {
 
-public:
+   public:
     ///
     TExtAlarm() : mParam(TParam::getInstance())  {
         assert(mParam != nullptr);
@@ -80,7 +77,9 @@ public:
         return alarmreset;
     }
 
-private:
+   private:
+    ///
+    TParam * const mParam = nullptr;
 
     /**
      * @brief getAlarmReset
@@ -99,13 +98,16 @@ private:
         return reset;
     }
 
+    /**
+     * @brief getDisablePrm
+     * @return
+     */
     switchOff_t getDisablePrm() const {
         bool ok = true;
         uint32_t value = mParam->getValue(PARAM_blkComPrmAll, SRC_int, ok);
 
-        return ok ? static_cast<switchOff_t>(value) : ON_OFF_off;
+        return ok ? switchOff_t (value) : ON_OFF_off;
     }
-
 
     /**
      * @brief getExtAlarm
@@ -138,9 +140,9 @@ private:
         return value;
     }
 
-
-    ///
-    TParam * const mParam = nullptr;
+#ifdef TEST_FRIENDS
+    TEST_FRIENDS;
+#endif
 };
 
 } // namespace BVP

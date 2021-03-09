@@ -81,6 +81,11 @@ setBlkComPrmAll(param_t param, src_t src, uint32_t &value) {
       ok = true;
     } break;
 
+    case SRC_int: {
+        value = (value == ON_OFF_on) ? ON_OFF_on : ON_OFF_off;
+        ok = true;
+    } break;
+
     case SRC_vkey: {
       if (value > 0) {
         uint32_t dir = params->getValue(PARAM_dirControl, src, ok);
