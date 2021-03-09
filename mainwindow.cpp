@@ -6,6 +6,76 @@ const uint8_t MainWindow::comReadHoldingRegisters = 0x03;
 const uint8_t MainWindow::comWriteMultipleRegisters = 0x10;
 const uint8_t MainWindow::comReadWriteMultipleRegisters = 0x17;
 
+static TAlarm *wAlarm = nullptr;
+
+uint8_t getExtAlarmSignals() {
+    Q_ASSERT(wAlarm != nullptr);
+
+    BVP::extAlarmIn_t signal;
+    uint8_t value = 0;
+
+    signal = BVP::EXT_ALARM_IN_channelFault;
+    if (wAlarm->getSignal(signal)) {
+        value |= signal;
+    }
+
+    signal = BVP::EXT_ALARM_IN_comPrm;
+    if (wAlarm->getSignal(signal)) {
+        value |= signal;
+    }
+
+    signal = BVP::EXT_ALARM_IN_comPrd;
+    if (wAlarm->getSignal(signal)) {
+        value |= signal;
+    }
+
+    signal = BVP::EXT_ALARM_IN_warning;
+    if (wAlarm->getSignal(signal)) {
+        value |= signal;
+    }
+
+    signal = BVP::EXT_ALARM_IN_fault;
+    if (wAlarm->getSignal(signal)) {
+        value |= signal;
+    }
+
+    qDebug() << "get: " << value;
+
+    return value;
+}
+
+void setExtAlarmSignals(uint16_t alarm) {
+    Q_ASSERT(wAlarm != nullptr);
+
+    BVP::extAlarmOut_t signal;
+
+    qDebug() << "  set: " << alarm;
+
+    signal = BVP::EXT_ALARM_OUT_model61850;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_test61850;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_channelFault;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_warning;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_fault;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_comPrd;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_comPrm;
+    wAlarm->setSignal(signal, alarm & signal);
+
+    signal = BVP::EXT_ALARM_OUT_disablePrm;
+    wAlarm->setSignal(signal, alarm & signal);
+}
+
 //
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
@@ -13,6 +83,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
   ui->setupUi(this);
   setWindowTitle("bvp61850 STM32");
+
+  wAlarm = ui->fAlarm; // const_cast<MainWindow*> (this);
 
   initVp();
   initAvantPi();
@@ -178,8 +250,6 @@ void MainWindow::serialStart(TSerial *serial)
   cfg->protocol->setBuffer(cfg->buf, std::end(cfg->buf) - std::begin(cfg->buf));
   cfg->protocol->setID(cfg->srcId);
 
-  qDebug() << cfg->baudrate;
-
   Q_ASSERT(cfg->protocol->setup(cfg->baudrate,
                                cfg->parity != QSerialPort::NoParity,
                                cfg->stopBits));
@@ -293,4 +363,7 @@ void MainWindow::viewReadRegSlot() {
   value = static_cast<quint16> (val32 >> 16);
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
   ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
+
+  uint8_t insignals = getExtAlarmSignals();
+  setExtAlarmSignals(mAlarm.getAlarmOutSignals(insignals));
 }

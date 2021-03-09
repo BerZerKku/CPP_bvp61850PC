@@ -1,15 +1,19 @@
 #ifndef PARAMTREE_H
 #define PARAMTREE_H
 
+#include <QFontDatabase>
 #include <QMap>
 #include <QTreeWidget>
 #include <QWidget>
+
 #include <bvpCommon/param.h>
 
 class TParamTree : public QTreeWidget {
 public:
   TParamTree(QWidget *parent=nullptr);
   void updateParameters();
+
+  const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 private:
   QMap<BVP::param_t, QTreeWidgetItem*> mapItems;

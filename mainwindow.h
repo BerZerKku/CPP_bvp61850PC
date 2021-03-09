@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QTimer>
 #include "bvpCommon/param.h"
+#include "bvpCommon/extAlarm.hpp"
 #include "bvpCommon/serial/avantpc.h"
 #include "bvpCommon/serial/avantpi.h"
 #include "bvpCommon/serial/modbusVp.h"
@@ -41,7 +42,7 @@ class MainWindow : public QMainWindow
 
 public:
   MainWindow(QWidget *parent = nullptr);
-  ~MainWindow();
+  ~MainWindow() override;
 
 private:
   Ui::MainWindow *ui;
@@ -59,6 +60,7 @@ private:
   uint16_t getUInt16(QVector<uint8_t> &pkg);
 
   BVP::TParam *mParam;
+  BVP::TExtAlarm mAlarm;
 
   QMap<TSerial*, serialCfg_t*> sPort;
 
@@ -70,5 +72,8 @@ private:
   void serialProc();
 
   void viewReadRegSlot();
+
+  friend uint8_t getExtAlarmSignals();
+  friend void setExtAlarmSignals(uint16_t alarm);
 };
 #endif // MAINWINDOW_H

@@ -1,6 +1,6 @@
 #include "paramtree.h"
-#include <QLineEdit>
 #include <QHeaderView>
+#include <QLineEdit>
 
 //
 TParamTree::TParamTree(QWidget *parent) :
@@ -124,6 +124,7 @@ TParamTree::crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name) {
 
   item->setText(0, name);
 
+  lineedit->setFont(fixedFont);
   lineedit->setReadOnly(true);
   lineedit->setFocusPolicy(Qt::NoFocus);
   lineedit->setStyleSheet("border: none");

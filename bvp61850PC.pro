@@ -11,6 +11,7 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    alarm.cpp \
     bvpCommon/debug.cpp \
     bvpCommon/serial/avantpc.cpp \
     bvpCommon/serial/avantpi.cpp \
@@ -30,10 +31,13 @@ SOURCES += \
     readreg/vpitem.cpp \
     readreg/vpreg.cpp \
     serial.cpp \
-    serial/serialport.cpp
+    serial/serialport.cpp \
+    wrapper.cpp
 
 HEADERS += \
+    alarm.h \
     bvpCommon/debug.hpp \
+    bvpCommon/extAlarm.hpp \
     bvpCommon/global.hpp \
     bvpCommon/hardware.hpp \
     bvpCommon/paramDB.h \
@@ -55,9 +59,11 @@ HEADERS += \
     readreg/vpitem.h \
     readreg/vpreg.h \
     serial.h \
-    serial/serialport.h
+    serial/serialport.h \
+    wrapper.h
 
 FORMS += \
+    alarm.ui \
     control.ui \
     mainwindow.ui \
     serial.ui \
