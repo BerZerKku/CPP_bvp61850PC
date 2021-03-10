@@ -1,6 +1,6 @@
 include(../bvp61850.pri)
 
-QT       += core gui serialport widgets
+QT += core gui serialport widgets
 
 CONFIG += c++11
 

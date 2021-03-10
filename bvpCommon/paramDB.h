@@ -24,7 +24,7 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .isValue = false, .rValue = 0, .wValue = 0,
      .set = setControl, .get = getControl},
     //
-    // РўРµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
+    // Текущее состояние
     //
     {.param =  PARAM_error,
      .isValue =  false, .rValue = 0, .wValue = 0,
@@ -75,7 +75,7 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .isValue = false, .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     //
-    // Р”Р°С‚Р° Рё РІСЂРµРјСЏ
+    // Дата и время
     //
     {.param = PARAM_dateYear,
      .isValue = false, .rValue = 0, .wValue = 0,
@@ -99,19 +99,19 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .isValue = false, .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     //
-    // РћР±С‰РёРµ РїР°СЂР°РјРµС‚СЂС‹
+    // Общие параметры
     //
     {.param = PARAM_alarmReset,
      .isValue = false, .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     //
-    // Р’РЅСѓС‚СЂРµРЅРЅРёРµ РїР°СЂР°РјРµС‚СЂС‹
+    // Внутренние параметры
     //
     {.param = PARAM_extAlarm,
      .isValue = false, .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     //
-    // РџР°СЂР°РјРµС‚СЂС‹ РїР°РЅРµР»Рё РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РєР»СЋС‡РµР№
+    // Параметры панели виртуальных ключей
     //
     {.param = PARAM_dirControl,
      .isValue = false, .rValue = 0, .wValue = 0,
@@ -141,7 +141,7 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .isValue = false, .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     //
-    // РљРЅРѕРїРєРё РїР°РЅРµР»Рё РІРёСЂС‚СѓР°Р»СЊРЅС‹С… РєР»СЋС‡РµР№.
+    // Кнопки панели виртуальных ключей.
     //
     {.param = PARAM_vpBtnSAnSbSac,
      .isValue = false, .rValue = 0, .wValue = 0,

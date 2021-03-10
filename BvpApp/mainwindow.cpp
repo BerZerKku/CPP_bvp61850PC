@@ -257,6 +257,21 @@ void MainWindow::procAlarm()
     bool ok;
     uint32_t uval32;
 
+    uval32 = mParam->getValue(BVP::PARAM_control, BVP::SRC_int, ok);
+    // FIXME Почему вылетает в ошибку ?!
+//    Q_ASSERT(ok);
+    if (ok) {
+        // TODO Может отслеживать текущее состояния сигнализаций с МК, а не принятые значения по стандартному протоколу?
+        // И уже здесь принимать решение какие сигналы посылать.
+        if (uval32 & (1 << BVP::CTRL_resetErrors)) {
+            // TODO Добавить реакцию на сброс ошибок.
+            // Т.е. несиправности/предупреждения на данный момент есть!
+        }  else if (uval32 & (1 << BVP::CTRL_resetIndication)) {
+            // TODO Добавить рекцию на сброс индикации! Т.е. неисправностей уже нет!
+        }
+        // TODO добавить в TExtAlarm метод для сброса?!
+    }
+
     uval32 = mParam->getValue(BVP::PARAM_alarmReset, BVP::SRC_int, ok);
     if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
         uval32 = mAlarm.kAlarmResetDefault;

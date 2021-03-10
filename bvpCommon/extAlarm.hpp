@@ -8,7 +8,7 @@
 
 namespace BVP {
 
-/// РЎРёРіРЅР°Р»С‹ СЃРёРіРЅР°Р»РёР·Р°С†РёРё
+/// Сигналы сигнализации
 enum extAlarm_t {
     EXT_ALARM_model61850 = 0,
     EXT_ALARM_test61850,
@@ -24,14 +24,18 @@ enum extAlarm_t {
 
 class TExtAlarm {
 
-    /// РЎРѕСЃС‚РѕСЏРЅРёРµ СЃРёРіРЅР°Р»РѕРІ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
-    const uint16_t kAlarmDefault = (1 << EXT_ALARM_fault);
-    /// РњР°СЃРєР° РґР»СЏ РІСЃРµС… Р·Р°РґРµР№СЃС‚РІРѕРІР°РЅРЅС‹С… СЃРёРіРЅР°Р»РѕРІ
+    /// Состояние сигналов по умолчанию
+    const uint16_t kAlarmDefault = 0; // (1 << EXT_ALARM_fault);
+
+    /// Маска для всех задействованных сигналов
     const uint16_t kAlarmMask = (1 << EXT_ALARM_MAX) - 1;
 
 public:
 
+    /// Режим сброса сигналов по умолчанию
     const alarmReset_t kAlarmResetDefault = ALARM_RESET_manual;
+
+    /// Состояние режима сброса по умолчанию
     const switchOff_t kDisablePrmDefault = ON_OFF_off;
 
     ///
@@ -41,12 +45,12 @@ public:
     ~TExtAlarm() {}
 
     /**
-     * @brief РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРµР¶РёРј СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
+     * @brief Устанавливает режим сброса сигнализации.
      *
-     *  Р’ СЃР»СѓС‡Р°Рµ СѓСЃС‚Р°РЅРѕРІРєРё РѕС€РёР±РѕС‡РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РѕРЅРѕ Р±СѓРґРµС‚ Р·Р°РјРµРЅРµРЅРѕ РЅР°
-     *  Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ \a kAlarmResetDefault.
+     *  В случае установки ошибочного значения оно будет заменено на
+     *  значение по умолчанию \a kAlarmResetDefault.
      *
-     * @param[in] reset Р РµР¶РёРј СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
+     * @param[in] reset Режим сброса сигнализации.
      */
     void setAlarmReset(alarmReset_t reset) {
         if (reset >= ALARM_RESET_MAX) {
@@ -56,39 +60,39 @@ public:
         mAlarmReset = reset;
     }
 
-    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµР¶РёРј СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
+    /// Возвращает режим сброса сигнализации.
     alarmReset_t getAlarmReset() const {
         return mAlarmReset;
     }
 
     /**
-     * @brief РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЃРµ СЃРёРіРЅР°Р»С‹ СЃРёРіРЅР°Р»РёР·Р°С†РёРё СЂР°Р·РѕРј.
+     * @brief Устанавливает все сигналы сигнализации разом.
      *
-     * Р—РЅР°С‡РµРЅРёСЏ РїРµСЂРµРґР°СЋС‚СЃСЏ РїРѕР±РёС‚РЅРѕ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ \a extAlarm_t.
-     * Р’СЃРµ "Р»РёС€РЅРёРµ" Р±РёС‚С‹ Р±СѓРґСѓС‚ РѕР±РЅСѓР»РµРЅС‹.
+     * Значения передаются побитно в соответствии с \a extAlarm_t.
+     * Все "лишние" биты будут обнулены.
      *
-     * @param[in] alarm РЎРёРЅР°Р»С‹ СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
+     * @param[in] alarm Синалы сигнализации.
      */
     void setAlarmOutput(uint16_t alarm) {
         mAlarm = alarm & kAlarmMask;
     }
 
     /**
-     * @brief Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРёРіРЅР°Р»С‹ СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
+     * @brief Возвращает сигналы сигнализации.
      *
-     * Р—РЅР°С‡РµРЅРёСЏ СѓСЃС‚Р°РЅРѕРІР»РµРЅС‹ РїРѕР±РёС‚РЅРѕ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ \a extAlarm_t.
+     * Значения установлены побитно в соответствии с \a extAlarm_t.
      *
-     * @return РЎРёРіРЅР°Р»С‹ СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
+     * @return Сигналы сигнализации.
      */
     uint16_t getAlarmOutput() const {
         return mAlarm;
     }
 
     /**
-     * @brief РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРёРіРЅР°Р»Р° СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
-     * @param[in] signal РЎРёРіРЅР°Р».
-     * @param[in] value Р—РЅР°С‡РµРЅРёРµ (bool - Р°РєС‚РёРІРЅС‹Р№)
-     * @return Р’РѕР·РІСЂР°С‰Р°РµС‚ true РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃРёРіРЅР°Р»Р°.
+     * @brief Устанавливает значение сигнала сигнализации.
+     * @param[in] signal Сигнал.
+     * @param[in] value Значение (bool - активный)
+     * @return Возвращает true для корректного значения сигнала.
      */
     bool setAlarmInputSignal(extAlarm_t signal, bool value) {
         alarmReset_t reset = getAlarmReset(signal);
@@ -99,9 +103,9 @@ public:
     }
 
     /**
-     * @brief Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРёРіРЅР°Р»Р° СЃРёРіРЅР°Р»РёР·Р°С†РёРё.
-     * @param[in] signal РЎРёРіРЅР°Р».
-     * @return Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё СЃРёРіРЅР°Р» Р°РєС‚РёРІРµРЅ, РёРЅР°С‡Рµ false.
+     * @brief Возвращает значение сигнала сигнализации.
+     * @param[in] signal Сигнал.
+     * @return Возвращает true если сигнал активен, иначе false.
      */
     bool getAlarmOutputSignal(extAlarm_t signal) const {
         return signal < EXT_ALARM_MAX ? (mAlarm & (1 << signal)) : false;
@@ -110,20 +114,20 @@ public:
 
 private:
 
-    /// Р РµР¶РёРј СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё
+    /// Режим сброса сигнализации
     alarmReset_t mAlarmReset = kAlarmResetDefault;
-    /// РЎРёРіРЅР°Р»С‹ СЃРёРіРЅР°Р»РёР·Р°С†РёРё
+    /// Сигналы сигнализации
     uint16_t mAlarm = kAlarmDefault;
 
     /**
-     * @brief Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµР¶РёРј СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё РґР»СЏ СЃРёРіРЅР°Р»Р°.
+     * @brief Возвращает режим сброса сигнализации для сигнала.
      *
-     * РћСЃРѕР±РµРЅРЅС‹Рµ СЃРёРіРЅР°Р»С‹:
-     * - \a EXT_ALARM_comPrd РІСЃРµРіРґР° \a ALARM_RESET_manual
-     * - \a EXT_ALARM_comPrm РІСЃРµРіРґР° \a ALARM_RESET_manual
+     * Особенные сигналы:
+     * - \a EXT_ALARM_comPrd всегда \a ALARM_RESET_manual
+     * - \a EXT_ALARM_comPrm всегда \a ALARM_RESET_manual
      *
-     * @param[in] signal РЎРёРіРЅР°Р».
-     * @return Р РµР¶РёРј СЃР±СЂРѕСЃР°.
+     * @param[in] signal Сигнал.
+     * @return Режим сброса.
      */
     alarmReset_t getAlarmReset(extAlarm_t signal) const {
         alarmReset_t reset = mAlarmReset;
@@ -136,11 +140,11 @@ private:
     }
 
     /**
-     * @brief РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ СЃРёРіРЅР°Р»Р°
-     * @param[in] signal РЎРёРіРЅР°Р».
-     * @param[in] value Р—РЅР°С‡РµРЅРёРµ (bool - Р°РєС‚РёРІРЅС‹Р№)
-     * @param[in] reset Р РµР¶РёРј СЃР±СЂРѕСЃР° РґР»СЏ СЃРёРіРЅР°Р»Р°.
-     * @return Р—РЅР°С‡РµРЅРёРµ РІСЃРµС… СЃРёРіРЅР°Р»РѕРІ РїРѕР±РёС‚РЅРѕ СЃРѕРіР»Р°СЃРЅРѕ \a extAlarm_t.
+     * @brief Устанавливает новое значение сигнала
+     * @param[in] signal Сигнал.
+     * @param[in] value Значение (bool - активный)
+     * @param[in] reset Режим сброса для сигнала.
+     * @return Значение всех сигналов побитно согласно \a extAlarm_t.
      */
     uint16_t setSignal(extAlarm_t signal, bool value, alarmReset_t reset) {
         assert(signal <= EXT_ALARM_MAX);

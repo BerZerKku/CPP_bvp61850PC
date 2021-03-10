@@ -22,7 +22,7 @@ namespace BVP {
 class TExtAlarm_Test: public ::testing::Test {
 
 public:
-    const extAlarm_t kAlarmOutDefault = EXT_ALARM_fault;
+    const uint16_t kAlarmOutDefault = 0; //(1 << EXT_ALARM_fault);
     const alarmReset_t kAlarmResetDefault = ALARM_RESET_manual;
 
     TExtAlarm *mAlarm;
@@ -93,11 +93,11 @@ TEST_F(TExtAlarm_Test, constant)
     ASSERT_EQ(i++, EXT_ALARM_MAX);
 }
 
-// РџСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІРєРё С‚РµРєСѓС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРёРіРЅР°Р»РѕРІ СЃРёРіРЅР°Р»РёР·Р°С†РёРё
+// Проверка установки текущего состояния сигналов сигнализации
 TEST_F(TExtAlarm_Test, alarmOutput)
 {
     uint16_t value;
-    ASSERT_EQ(1 <<  kAlarmOutDefault, mAlarm->getAlarmOutput());
+    ASSERT_EQ(kAlarmOutDefault, mAlarm->getAlarmOutput());
 
     value = (1 << EXT_ALARM_comPrd);
     mAlarm->setAlarmOutput(value);
@@ -118,12 +118,12 @@ TEST_F(TExtAlarm_Test, alarmOutput)
     ASSERT_EQ(value, mAlarm->getAlarmOutput());
 }
 
-// РџСЂРѕРІРµСЂРєР° СЃС‡РёС‚С‹РІР°РЅРёСЏ СЃРёРіРЅР°Р»РѕРІ СЃРёРіРЅР»РёР·Р°С†РёРё
+// Проверка считывания сигналов сигнлизации
 TEST_F(TExtAlarm_Test, getAlarmOutputSignal)
 {
     uint16_t value;
 
-    value = uint16_t(1 <<  kAlarmOutDefault);
+    value = kAlarmOutDefault;
     ASSERT_TRUE(checkSignals(value));
 
     value |= uint16_t (1 << EXT_ALARM_comPrd);
@@ -140,7 +140,7 @@ TEST_F(TExtAlarm_Test, getAlarmOutputSignal)
 }
 
 
-// РџСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІРєРё СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё
+// Проверка установки сброса сигнализации
 TEST_F(TExtAlarm_Test, alarmReset)
 {
     alarmReset_t value;
@@ -171,7 +171,7 @@ TEST_F(TExtAlarm_Test, alarmReset)
     ASSERT_EQ(kAlarmResetDefault, mAlarm->getAlarmReset());
 }
 
-// РџСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІРєРё СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»РёР·Р°С†РёРё РґР»СЏ РѕС‚РґРµР»СЊРЅС‹С… СЃРёРіРЅР°Р»РѕРІ
+// Проверка установки сброса сигнализации для отдельных сигналов
 TEST_F(TExtAlarm_Test, alarmReset_signal)
 {
     for(alarmReset_t reset = alarmReset_t(0); reset < ALARM_RESET_MAX;
@@ -182,21 +182,21 @@ TEST_F(TExtAlarm_Test, alarmReset_signal)
     }
 }
 
-// РџСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІРєРё СЃРёРіРЅР°Р»Р°
+// Проверка установки сигнала
 TEST_F(TExtAlarm_Test, setSignal)
 {
     uint16_t value = 0;
     uint16_t result;
     extAlarm_t signal = EXT_ALARM_model61850;
 
-    // РџСЂРѕРІРµСЂРєР° РґРѕР±Р°РІР»РµРЅРёСЏ СЃРёРіРЅР°Р»Р° СЃРѕ Р·РЅР°С‡РµРЅРёРµРј false
+    // Проверка добавления сигнала со значением false
     result = 0;
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_manual));
 
-    // РџСЂРѕРІРµСЂРєР° РґРѕР±Р°РІР»РµРЅРёСЏ СЃРёРіРЅР°Р»Р° СЃРѕ Р·РЅР°С‡РµРЅРёРµРј true
+    // Проверка добавления сигнала со значением true
     result = 1 << EXT_ALARM_model61850;
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_auto));
@@ -205,21 +205,21 @@ TEST_F(TExtAlarm_Test, setSignal)
 
     value = (1 << EXT_ALARM_test61850);
 
-    // РџСЂРѕРІРµСЂРєР° РґРѕР±Р°РІР»РµРЅРёСЏ СЃРёРіРЅР°Р»Р° СЃРѕ Р·РЅР°С‡РµРЅРёРµРј false РїСЂРё РЅР°Р»РёС‡РёРё РґСЂСѓРіРѕРіРѕ СЃРёРіРЅР°Р»Р°
+    // Проверка добавления сигнала со значением false при наличии другого сигнала
     result = value;
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_manual));
 
-    // РџСЂРѕРІРµСЂРєР° РґРѕР±Р°РІР»РµРЅРёСЏ СЃРёРіРЅР°Р»Р° СЃРѕ Р·РЅР°С‡РµРЅРёРµРј true РїСЂРё РЅР°Р»РёС‡РёРё РґСЂСѓРіРѕРіРѕ СЃРёРіРЅР°Р»Р°
+    // Проверка добавления сигнала со значением true при наличии другого сигнала
     result |= (1 << signal);
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_manual));
 
-    // РџСЂРѕРІРµСЂРєР° СЃР±СЂРѕСЃР° СЃРёРіРЅР°Р»Р°
+    // Проверка сброса сигнала
     signal = EXT_ALARM_channelFault;
     result = value;
     value |= (1 << signal);
@@ -228,7 +228,7 @@ TEST_F(TExtAlarm_Test, setSignal)
     mAlarm->setAlarmOutput(value);
     ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_auto));
 
-    // РџСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІРєРё РЅРµРІРµСЂРЅРѕРіРѕ СЃРёРіРЅР°Р»Р°
+    // Проверка установки неверного сигнала
     result = value;
     signal = EXT_ALARM_MAX;
     mAlarm->setAlarmOutput(value);
@@ -237,7 +237,7 @@ TEST_F(TExtAlarm_Test, setSignal)
     ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_manual));
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° СЃРёРіРЅР°Р»РѕРІ РїСЂРё Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРј СЃР±СЂРѕСЃРµ
+// Установка сигналов при автоматическом сбросе
 TEST_F(TExtAlarm_Test, setAlarmInputSignal_auto)
 {    
     uint16_t result;
@@ -245,24 +245,24 @@ TEST_F(TExtAlarm_Test, setAlarmInputSignal_auto)
     mAlarm->setAlarmOutput(0);
     ASSERT_EQ(int(0), mAlarm->getAlarmOutput());
 
-    // РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ СЃР±СЂРѕСЃ
+    // Автоматический сброс
     mAlarm->setAlarmReset(ALARM_RESET_auto);
 
-    // СЃР±СЂРѕСЃ СЃРёРіРЅР°Р»Р° РїСЂРё РµРіРѕ РѕС‚СЃСѓС‚СЃС‚РІРёРё
+    // сброс сигнала при его отсутствии
     for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
         ASSERT_TRUE(checkSignals(0));
     }
 
     result = 0;
-    // СѓСЃС‚Р°РЅРѕРІРєР° СЃРёРіРЅР°Р»Р°
+    // установка сигнала
     for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, true));
         result |= (1 << s);
         ASSERT_TRUE(checkSignals(result));
     }
 
-    // СЃР±СЂРѕСЃ СЃРёРіРЅР°Р»Р° РїСЂРё РµРіРѕ РЅР°Р»РёС‡РёРё
+    // сброс сигнала при его наличии
     for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
         if (mAlarm->getAlarmReset(s) != ALARM_RESET_manual) {
@@ -272,7 +272,7 @@ TEST_F(TExtAlarm_Test, setAlarmInputSignal_auto)
     }
 }
 
-// РЈСЃС‚Р°РЅРѕРІРєР° СЃРёРіРЅР°Р»РѕРІ РїСЂРё СЂСѓС‡РЅРѕРј СЃР±СЂРѕСЃРµ
+// Установка сигналов при ручном сбросе
 TEST_F(TExtAlarm_Test, setAlarmInputSignal_manual) {
     uint16_t result;
 
@@ -281,21 +281,21 @@ TEST_F(TExtAlarm_Test, setAlarmInputSignal_manual) {
 
     mAlarm->setAlarmReset(ALARM_RESET_manual);
 
-    // СЃР±СЂРѕСЃ СЃРёРіРЅР°Р»Р° РїСЂРё РµРіРѕ РѕС‚СЃСѓС‚СЃС‚РІРёРё
+    // сброс сигнала при его отсутствии
     for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
         ASSERT_TRUE(checkSignals(0));
     }
 
     result = 0;
-    // СѓСЃС‚Р°РЅРѕРІРєР° СЃРёРіРЅР°Р»Р°
+    // установка сигнала
     for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, true));
         result |= (1 << s);
         ASSERT_TRUE(checkSignals(result));
     }
 
-    // СЃР±СЂРѕСЃ СЃРёРіРЅР°Р»Р° РїСЂРё РµРіРѕ РЅР°Р»РёС‡РёРё
+    // сброс сигнала при его наличии
     for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
         ASSERT_TRUE(checkSignals(result));
