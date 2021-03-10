@@ -73,35 +73,35 @@
        </widget>
       </item>
       <item row="8" column="2">
-       <widget class="QPushButton" name="pbComPrd">
+       <widget class="QColorButton" name="pbComPrd">
         <property name="text">
          <string>Срабатывание ПРД</string>
         </property>
        </widget>
       </item>
       <item row="9" column="2">
-       <widget class="QPushButton" name="pbComPrm">
+       <widget class="QColorButton" name="pbComPrm">
         <property name="text">
          <string>Срабатывание ПРМ</string>
         </property>
        </widget>
       </item>
       <item row="4" column="2">
-       <widget class="QPushButton" name="pbWarning">
+       <widget class="QColorButton" name="pbWarning">
         <property name="text">
          <string>Предупреждение</string>
         </property>
        </widget>
       </item>
       <item row="10" column="2">
-       <widget class="QPushButton" name="pbPrmOut">
+       <widget class="QColorButton" name="pbPrmOut">
         <property name="text">
          <string>ПРМ выведен на сигнал</string>
         </property>
        </widget>
       </item>
       <item row="5" column="2">
-       <widget class="QPushButton" name="pbFault">
+       <widget class="QColorButton" name="pbFault">
         <property name="text">
          <string>Неисправность устройства</string>
         </property>
@@ -153,6 +153,11 @@
    <extends>QWidget</extends>
    <header location="global">widget/qledindicator.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QColorButton</class>
+   <extends>QPushButton</extends>
+   <header>widget/qcolorbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

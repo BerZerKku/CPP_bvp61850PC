@@ -6,138 +6,156 @@
 #include "hardware.hpp"
 #include "param.h"
 
-extern uint8_t getExtAlarmSignals();
-extern void setExtAlarmSignals(uint16_t alarm);
-
 namespace BVP {
 
-enum extAlarmIn_t : uint8_t {
-    EXT_ALARM_IN_channelFault   = 0x01,
-    EXT_ALARM_IN_comPrm         = 0x02,
-    EXT_ALARM_IN_comPrd         = 0x04,
-    EXT_ALARM_IN_warning        = 0x08,
-    EXT_ALARM_IN_fault          = 0x10,
-};
-
-enum extAlarmOut_t : uint16_t {
-    EXT_ALARM_OUT_model61850    = 0x0001,
-    EXT_ALARM_OUT_test61850     = 0x0002,
-    EXT_ALARM_OUT_channelFault  = 0x0004,
-    EXT_ALARM_OUT_warning       = 0x0008,
-    EXT_ALARM_OUT_fault         = 0x0010,
-    EXT_ALARM_OUT_comPrd        = 0x0020,
-    EXT_ALARM_OUT_comPrm        = 0x0040,
-    EXT_ALARM_OUT_disablePrm    = 0x0080
+/// Сигналы сигнализации
+enum extAlarm_t {
+    EXT_ALARM_model61850 = 0,
+    EXT_ALARM_test61850,
+    EXT_ALARM_channelFault,
+    EXT_ALARM_warning,
+    EXT_ALARM_fault,
+    EXT_ALARM_comPrd,
+    EXT_ALARM_comPrm,
+    EXT_ALARM_disablePrm,
+    //
+    EXT_ALARM_MAX
 };
 
 class TExtAlarm {
 
-   public:
+    /// Состояние сигналов по умолчанию
+    const uint16_t kAlarmDefault = (1 << EXT_ALARM_fault);
+    /// Маска для всех задействованных сигналов
+    const uint16_t kAlarmMask = (1 << EXT_ALARM_MAX) - 1;
+
+public:
+
+    const alarmReset_t kAlarmResetDefault = ALARM_RESET_manual;
+    const switchOff_t kDisablePrmDefault = ON_OFF_off;
+
     ///
-    TExtAlarm() : mParam(TParam::getInstance())  {
-        assert(mParam != nullptr);
-    }
+    TExtAlarm() {}
 
     ///
     ~TExtAlarm() {}
 
     /**
-     * @brief proc
+     * @brief Устанавливает режим сброса сигнализации.
+     *
+     *  В случае установки ошибочного значения оно будет заменено на
+     *  значение по умолчанию \a kAlarmResetDefault.
+     *
+     * @param[in] reset Режим сброса сигнализации.
      */
-    uint16_t getAlarmOutSignals(uint8_t insignals) {
-        bool check;
-        alarmReset_t alarmreset = getAlarmReset();
+    void setAlarmReset(alarmReset_t reset) {
+        if (reset >= ALARM_RESET_MAX) {
+            reset = kAlarmResetDefault;
+        }
 
-        check = insignals & EXT_ALARM_IN_fault;
-        setSignal(alarmreset, check, EXT_ALARM_OUT_fault, alarmreset);
-
-        check = insignals & EXT_ALARM_IN_warning;
-        setSignal(alarmreset, check, EXT_ALARM_OUT_warning, alarmreset);
-
-        check = insignals & EXT_ALARM_IN_comPrd;
-        setSignal(alarmreset, check, EXT_ALARM_OUT_comPrd, alarmreset);
-
-        check = insignals & EXT_ALARM_IN_comPrm;
-        setSignal(alarmreset, check, EXT_ALARM_OUT_comPrm, alarmreset);
-
-        check = insignals & EXT_ALARM_IN_channelFault;
-        setSignal(alarmreset, check, EXT_ALARM_OUT_channelFault, alarmreset);
-
-        setSignal(alarmreset, false, EXT_ALARM_OUT_model61850, alarmreset);
-
-        setSignal(alarmreset, false, EXT_ALARM_OUT_test61850, alarmreset);
-
-        check = getDisablePrm() == ON_OFF_on;
-        setSignal(alarmreset, check, EXT_ALARM_OUT_disablePrm , ALARM_RESET_auto);
-
-        assert(mParam->setValue(PARAM_alarmReset, SRC_int, alarmreset));
-
-        QDEBUG("alarmreset = " << alarmreset << ", insignals = " << insignals);
-
-        return alarmreset;
+        mAlarmReset = reset;
     }
 
-   private:
-    ///
-    TParam * const mParam = nullptr;
+    /// Возвращает режим сброса сигнализации.
+    alarmReset_t getAlarmReset() const {
+        return mAlarmReset;
+    }
 
     /**
-     * @brief getAlarmReset
-     * @return
+     * @brief Устанавливает все сигналы сигнализации разом.
+     *
+     * Значения передаются побитно в соответствии с \a extAlarm_t.
+     * Все "лишние" биты будут обнулены.
+     *
+     * @param[in] alarm Синалы сигнализации.
      */
-    alarmReset_t getAlarmReset() const {
-        alarmReset_t reset = ALARM_RESET_manual;
+    void setAlarmOutput(uint16_t alarm) {
+        mAlarm = alarm & kAlarmMask;
+    }
 
-        bool ok = true;
-        uint32_t value = mParam->getValue(PARAM_alarmReset, SRC_int, ok);
+    /**
+     * @brief Возвращает сигналы сигнализации.
+     *
+     * Значения установлены побитно в соответствии с \a extAlarm_t.
+     *
+     * @return Сигналы сигнализации.
+     */
+    uint16_t getAlarmOutput() const {
+        return mAlarm;
+    }
 
-        if ((ok) && (value < ALARM_RESET_MAX)) {
-            reset = static_cast<alarmReset_t> (value);
+    /**
+     * @brief Устанавливает значение сигнала сигнализации.
+     * @param[in] signal Сигнал.
+     * @param[in] value Значение (bool - активный)
+     * @return Возвращает true для корректного значения сигнала.
+     */
+    bool setAlarmInputSignal(extAlarm_t signal, bool value) {
+        alarmReset_t reset = getAlarmReset(signal);
+
+        setSignal(signal, value, reset);
+
+        return (signal <= EXT_ALARM_MAX);
+    }
+
+    /**
+     * @brief Возвращает значение сигнала сигнализации.
+     * @param[in] signal Сигнал.
+     * @return Возвращает true если сигнал активен, иначе false.
+     */
+    bool getAlarmOutputSignal(extAlarm_t signal) const {
+        return signal < EXT_ALARM_MAX ? (mAlarm & (1 << signal)) : false;
+
+    }
+
+private:
+
+    /// Режим сброса сигнализации
+    alarmReset_t mAlarmReset = kAlarmResetDefault;
+    /// Сигналы сигнализации
+    uint16_t mAlarm = kAlarmDefault;
+
+    /**
+     * @brief Возвращает режим сброса сигнализации для сигнала.
+     *
+     * Особенные сигналы:
+     * - \a EXT_ALARM_comPrd всегда \a ALARM_RESET_manual
+     * - \a EXT_ALARM_comPrm всегда \a ALARM_RESET_manual
+     *
+     * @param[in] signal Сигнал.
+     * @return Режим сброса.
+     */
+    alarmReset_t getAlarmReset(extAlarm_t signal) const {
+        alarmReset_t reset = mAlarmReset;
+
+        if ((signal == EXT_ALARM_comPrd) || (signal == EXT_ALARM_comPrm)) {
+            reset = ALARM_RESET_manual;
         }
 
         return reset;
     }
 
     /**
-     * @brief getDisablePrm
-     * @return
+     * @brief Устанавливает новое значение сигнала
+     * @param[in] signal Сигнал.
+     * @param[in] value Значение (bool - активный)
+     * @param[in] reset Режим сброса для сигнала.
+     * @return Значение всех сигналов побитно согласно \a extAlarm_t.
      */
-    switchOff_t getDisablePrm() const {
-        bool ok = true;
-        uint32_t value = mParam->getValue(PARAM_blkComPrmAll, SRC_int, ok);
+    uint16_t setSignal(extAlarm_t signal, bool value, alarmReset_t reset) {
+        assert(signal <= EXT_ALARM_MAX);
 
-        return ok ? switchOff_t (value) : ON_OFF_off;
-    }
-
-    /**
-     * @brief getExtAlarm
-     * @return
-     */
-    uint16_t getExtAlarm() const {
-        bool ok = true;
-        uint16_t value = mParam->getValue(PARAM_extAlarm, SRC_int, ok);
-
-        return ok ? value : static_cast<uint16_t> (EXT_ALARM_OUT_fault);
-    }
-
-    /**
-     * @brief setSignal
-     * @param value
-     * @param signal
-     * @param reset
-     * @return
-     */
-    uint16_t setSignal(uint16_t value, bool check,
-                       extAlarmOut_t signal, alarmReset_t reset) const {
-        if (check) {
-            value |= signal;
-        } else {
-            if (reset == ALARM_RESET_auto) {
-                value &= ~signal;
+        if (signal < EXT_ALARM_MAX) {
+            if (value) {
+                mAlarm |= (1 << signal);
+            } else {
+                if (reset == ALARM_RESET_auto) {
+                    mAlarm &= ~(1 << signal);
+                }
             }
         }
 
-        return value;
+        return mAlarm;
     }
 
 #ifdef TEST_FRIENDS

@@ -1,4 +1,4 @@
-#include "readreg/vpitem.h"
+#include "vpanel/vpitem.h"
 #include "ui_vpitem.h"
 
 //

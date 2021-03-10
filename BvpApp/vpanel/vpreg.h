@@ -4,7 +4,7 @@
 #include <array>
 #include <QPushButton>
 #include <QWidget>
-#include "readreg/vpitem.h"
+#include "vpanel/vpitem.h"
 
 namespace Ui {
 class vpReg;

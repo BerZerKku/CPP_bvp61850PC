@@ -1,4 +1,4 @@
-#include "readreg/vpreg.h"
+#include "vpanel/vpreg.h"
 #include "ui_vpreg.h"
 #include <QDebug>
 #include <QSignalMapper>

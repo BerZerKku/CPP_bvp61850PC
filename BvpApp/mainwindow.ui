@@ -108,13 +108,13 @@
   <customwidget>
    <class>TReadReg</class>
    <extends>QWidget</extends>
-   <header>readreg/readreg.h</header>
+   <header>vpanel/readreg.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>TControl</class>
    <extends>QWidget</extends>
-   <header>control.h</header>
+   <header>control/control.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -126,7 +126,7 @@
   <customwidget>
    <class>TAlarm</class>
    <extends>QWidget</extends>
-   <header location="global">alarm.h</header>
+   <header location="global">alarm/alarm.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

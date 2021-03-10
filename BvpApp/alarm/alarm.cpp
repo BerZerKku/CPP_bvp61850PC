@@ -13,11 +13,11 @@ TAlarm::TAlarm(QWidget *parent) :
     setLedYellow(ui->ledWarning);
     setLedRed(ui->ledFaultChannel);
 
-    setPushButton(ui->pbComPrd);
-    setPushButton(ui->pbComPrm);
-    setPushButton(ui->pbFault);
-    setPushButton(ui->pbPrmOut);
-    setPushButton(ui->pbWarning);
+    setButtonRed(ui->pbComPrd);
+    setButtonRed(ui->pbComPrm);
+    setButtonRed(ui->pbFault);
+    setButtonRed(ui->pbPrmOut);
+    setButtonYellow(ui->pbWarning);
 }
 
 TAlarm::~TAlarm()
@@ -25,66 +25,96 @@ TAlarm::~TAlarm()
     delete ui;
 }
 
-void TAlarm::setSignal(BVP::extAlarmOut_t signal, bool value)
+void TAlarm::setSignal(BVP::extAlarm_t signal, bool value)
 {
-    Q_ASSERT((signal > 0) && (signal <= BVP::EXT_ALARM_OUT_disablePrm));
+    Q_ASSERT((signal >= 0) && (signal < BVP::EXT_ALARM_MAX));
 
     switch(signal) {
-        case BVP::EXT_ALARM_OUT_model61850:
+        case BVP::EXT_ALARM_model61850:
             ui->ledModel61850->setChecked(value);
             break;
-        case BVP::EXT_ALARM_OUT_test61850:
+        case BVP::EXT_ALARM_test61850:
             ui->ledTest61850->setChecked(value);
             break;
-        case BVP::EXT_ALARM_OUT_channelFault:
+        case BVP::EXT_ALARM_channelFault:
             ui->ledFaultChannel->setChecked(value);
             break;
-        case BVP::EXT_ALARM_OUT_warning:
+        case BVP::EXT_ALARM_warning:
             ui->ledWarning->setChecked(value);
+            ui->pbWarning->set(value);
             break;
-        case BVP::EXT_ALARM_OUT_fault:
+        case BVP::EXT_ALARM_fault:
             ui->ledFault->setChecked(value);
+            ui->pbFault->set(value);
             break;
-        case BVP::EXT_ALARM_OUT_comPrd:
-
+        case BVP::EXT_ALARM_comPrd:
+            ui->pbComPrd->set(value);
             break;
-        case BVP::EXT_ALARM_OUT_comPrm:
+        case BVP::EXT_ALARM_comPrm:
+            ui->pbComPrm->set(value);
             break;
-        case BVP::EXT_ALARM_OUT_disablePrm:
+        case BVP::EXT_ALARM_disablePrm:
+            ui->pbPrmOut->set(value);
+            break;
+        case BVP::EXT_ALARM_MAX:
             break;
     }
 }
 
-bool TAlarm::getSignal(BVP::extAlarmIn_t signal)
+bool TAlarm::getSignal(BVP::extAlarm_t signal)
 {
     bool value = false;
 
-    Q_ASSERT((signal > 0) && (signal <= BVP::EXT_ALARM_IN_fault));
+    Q_ASSERT((signal >= 0) && (signal < BVP::EXT_ALARM_MAX));
 
     switch(signal) {
-        case BVP::EXT_ALARM_IN_channelFault:
+        case BVP::EXT_ALARM_model61850:
+            break;
+        case BVP::EXT_ALARM_test61850:
+            break;
+        case BVP::EXT_ALARM_channelFault:
             value = ui->chbFaultChannel->isChecked();
             break;
-        case BVP::EXT_ALARM_IN_comPrm:
+        case BVP::EXT_ALARM_comPrm:
             value = ui->chbComPrm->isChecked();
             break;
-        case BVP::EXT_ALARM_IN_comPrd:
+        case BVP::EXT_ALARM_comPrd:
             value = ui->chbComPrd->isChecked();
             break;
-        case BVP::EXT_ALARM_IN_warning:
+        case BVP::EXT_ALARM_warning:
             value = ui->chbWarning->isChecked();
             break;
-        case BVP::EXT_ALARM_IN_fault:
+        case BVP::EXT_ALARM_fault:
             value = ui->chbFault->isChecked();
+            break;
+        case BVP::EXT_ALARM_disablePrm:
+            break;
+        case BVP::EXT_ALARM_MAX:
             break;
     }
 
     return value;
 }
 
-void TAlarm::setPushButton(QPushButton *pb)
+void TAlarm::setButton(QColorButton *pb, Qt::GlobalColor color)
 {
-    pb->setEnabled(false);
+    pb->set(false);
+    pb->setColor(color);
+}
+
+void TAlarm::setButtonGreen(QColorButton *pb)
+{
+    setButton(pb, Qt::green);
+}
+
+void TAlarm::setButtonRed(QColorButton *pb)
+{
+    setButton(pb, Qt::red);
+}
+
+void TAlarm::setButtonYellow(QColorButton *pb)
+{
+    setButton(pb, Qt::yellow);
 }
 
 void TAlarm::setLed(QLedIndicator *led, QColor on1, QColor on2, QColor off2)

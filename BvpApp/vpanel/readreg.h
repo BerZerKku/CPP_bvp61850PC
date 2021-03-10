@@ -1,12 +1,12 @@
 #ifndef TREADREG_H
 #define TREADREG_H
 
-#include "qcolorbutton.h"
 #include <QLineEdit>
 #include <QSignalMapper>
 #include <QVector>
 #include <QWidget>
-#include "readreg/vpreg.h"
+#include "vpanel/vpreg.h"
+#include "widget/qcolorbutton.h"
 
 class TReadReg : public QWidget {
   Q_OBJECT

@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
-#SUBDIRS += BvpApp
+SUBDIRS += BvpApp
 
 SUBDIRS += BvpTest

@@ -9,7 +9,7 @@
 #include "bvpCommon/serial/avantpc.h"
 #include "bvpCommon/serial/avantpi.h"
 #include "bvpCommon/serial/modbusVp.h"
-#include "serial.h"
+#include "serial/serial.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -51,6 +51,11 @@ private:
   QTimer timer1ms;
   QTimer timer100ms;
 
+  BVP::TParam *mParam;
+  BVP::TExtAlarm mAlarm;
+
+  QMap<TSerial*, serialCfg_t*> sPort;
+
   void initAvantPc();
   void initAvantPi();
   void initVp();
@@ -59,10 +64,7 @@ private:
 
   uint16_t getUInt16(QVector<uint8_t> &pkg);
 
-  BVP::TParam *mParam;
-  BVP::TExtAlarm mAlarm;
 
-  QMap<TSerial*, serialCfg_t*> sPort;
 
  private slots:
 
@@ -71,9 +73,11 @@ private:
 
   void serialProc();
 
+  void procAlarm();
   void viewReadRegSlot();
 
-  friend uint8_t getExtAlarmSignals();
-  friend void setExtAlarmSignals(uint16_t alarm);
+  friend bool getExtAlarmSignal(BVP::extAlarm_t signal);
+  friend void setExtAlarmSignal(BVP::extAlarm_t signal, bool value);
 };
+
 #endif // MAINWINDOW_H
