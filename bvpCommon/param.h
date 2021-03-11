@@ -101,6 +101,14 @@ enum switchOff_t {
 };
 
 ///
+enum vpBtnControl_t {
+    VP_BTN_CONTROL_sac1 = 0x00000001,
+    VP_BTN_CONTROL_sac2 = 0x00000002,
+    VP_BTN_CONTROL_sb   = 0x00000004,
+    VP_BTN_CONTROL_san  = 0x0000FF00
+};
+
+///
 
 /** Класс параметров.
  *
@@ -128,13 +136,6 @@ class TParam {
         bool (*set) (param_t, BVP::src_t, uint32_t&);
         ///< Доп. обработка при чтении значения параметра.
         bool (*get) (param_t, BVP::src_t, uint32_t&);
-    };
-
-    enum vpBtnControl_t {
-        VP_BTN_CONTROL_sac1 = 0x00000001,
-        VP_BTN_CONTROL_sac2 = 0x00000002,
-        VP_BTN_CONTROL_sb   = 0x00000004,
-        VP_BTN_CONTROL_san  = 0x0000FF00
     };
 
 public:

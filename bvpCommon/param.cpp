@@ -209,6 +209,16 @@ bool setControl(param_t param, src_t src, uint32_t &value)
     TParam *params = TParam::getInstance();
 
     switch(src) {
+        case SRC_int: {
+           uint32_t v = params->getValue(param, src, ok);
+
+           // FIXME Вылетает ошибка
+//           Q_ASSERT(ok);
+           if (ok) {
+               value = v | value;
+           }
+        } break;
+
         case SRC_pi: {
             if (params->isValueSet(param)) {
                 uint32_t v = params->getValue(param, src, ok);
@@ -340,26 +350,26 @@ bool setVpBtnSAnSbSac(param_t param, src_t src, uint32_t &value)
             uint32_t tvalue = value ^ params->getValue(param, src, ok);
 
             if (tvalue > 0) {
-                if (tvalue & TParam::VP_BTN_CONTROL_sac1) {
+                if (tvalue & VP_BTN_CONTROL_sac1) {
                     params->setValue(PARAM_blkComPrmAll, src,
-                                     value & TParam::VP_BTN_CONTROL_sac1);
+                                     value & VP_BTN_CONTROL_sac1);
                 }
 
-                if (tvalue & TParam::VP_BTN_CONTROL_sac2) {
+                if (tvalue & VP_BTN_CONTROL_sac2) {
                     params->setValue(PARAM_dirControl, src,
-                                     value & TParam::VP_BTN_CONTROL_sac2);
+                                     value & VP_BTN_CONTROL_sac2);
                 }
 
-                if (tvalue & TParam::VP_BTN_CONTROL_sb) {
-                    params->setValue(PARAM_control, src,
-                                     value & TParam::VP_BTN_CONTROL_sb);
+                if (tvalue & VP_BTN_CONTROL_sb) {
+//                    params->setValue(PARAM_control, src,
+//                                     value & VP_BTN_CONTROL_sb);
                 }
 
-                if (tvalue & TParam::VP_BTN_CONTROL_san) {
-                    static_assert(TParam::VP_BTN_CONTROL_san == 0x0000FF00,
+                if (tvalue & VP_BTN_CONTROL_san) {
+                    static_assert(VP_BTN_CONTROL_san == 0x0000FF00,
                             "Wrong position buttons SAnn.x");
                     params->setValue(PARAM_blkComPrmDir, src,
-                                     (value & TParam::VP_BTN_CONTROL_san) >> 8);
+                                     (value & VP_BTN_CONTROL_san) >> 8);
                 }
             }
         }
