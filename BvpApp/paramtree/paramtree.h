@@ -1,4 +1,4 @@
-#ifndef PARAMTREE_H
+﻿#ifndef PARAMTREE_H
 #define PARAMTREE_H
 
 #include <QFontDatabase>

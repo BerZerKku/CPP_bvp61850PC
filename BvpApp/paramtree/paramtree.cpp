@@ -1,4 +1,4 @@
-#include "paramtree.h"
+﻿#include "paramtree.h"
 #include <QHeaderView>
 #include <QLineEdit>
 
@@ -13,8 +13,6 @@ TParamTree::TParamTree(QWidget *parent) :
   crtGroupCtrl();
   crtGroupError();
   crtGroupErrorRemote();
-
-  expandAll();
 
   header()->resizeSections(QHeaderView::ResizeToContents);
   header()->setSectionResizeMode(0, QHeaderView::Fixed);
@@ -44,6 +42,8 @@ TParamTree::crtGroupCtrl() {
   crtItem(top, BVP::PARAM_control, "Сигналы управления");
 
   insertTopLevelItem(topLevelItemCount(), top);
+  expandItem(top);
+
 }
 
 //
@@ -112,8 +112,10 @@ TParamTree::crtGroupVp() {
   crtItem(top, BVP::PARAM_blkComPrm64to33, "Блк. команд приемника 64..33");
   crtItem(top, BVP::PARAM_blkComPrd32to01, "Блк. команд передатчика 32..01");
   crtItem(top, BVP::PARAM_blkComPrd64to33, "Блк. команд передатчика 64..33");
+  crtItem(top, BVP::PARAM_vpBtnSAnSbSac, "Кнопки виртуальной панели");
 
   insertTopLevelItem(topLevelItemCount(), top);
+  expandItem(top);
 }
 
 //
@@ -153,7 +155,7 @@ TParamTree::updateParameter(BVP::param_t param) {
     }
   }
 
-  if (!p->isValueSet(param)) {
+  if (!p->isSet(param)) {
     color = Qt::darkYellow;
   }
 
@@ -164,4 +166,6 @@ TParamTree::updateParameter(BVP::param_t param) {
   lineedit->setText(QString("%1 / %2").
                     arg(rvalue, 8, 16, QLatin1Char('0')).
                     arg(wvalue, 8, 16, QLatin1Char('0')));
+
+  lineedit->setToolTip(QString("%1 / %2").arg(rvalue).arg(wvalue));
 }

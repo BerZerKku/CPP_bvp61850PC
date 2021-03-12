@@ -317,6 +317,11 @@ TModbusVp::setID(uint32_t id) {
     *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
 }
 
+uint32_t TModbusVp::getID() const
+{
+    return static_cast<uint32_t> (mSrc);
+}
+
 //
 void
 TModbusVp::incLostMessageCounter() {
@@ -590,6 +595,8 @@ TModbusVp::getReadRegMsgData(const uint8_t buf[], uint16_t number, bool &ok) {
             case REG_READ_sanSbSac: {
                 param = PARAM_vpBtnSAnSbSac;
                 val32 = static_cast<uint32_t> (value);
+                hdlrButtonSac1(val32 & VP_BTN_CONTROL_sac1);
+                hdlrButtonSac2(val32 & VP_BTN_CONTROL_sac2);
             } break;
             case REG_READ_sa16to01: {
                 param = PARAM_vpBtnSA32to01;
@@ -632,6 +639,36 @@ uint16_t TModbusVp::calcCRC(const uint8_t buf[], size_t len, uint16_t crc) {
     }
 
     return crc;
+}
+
+void TModbusVp::hdlrButtonSac1(bool value)
+{
+    static bool last = false;
+    const param_t param = PARAM_blkComPrmAll;
+
+    if (!last && value) {
+        bool ok = true;
+        uint32_t v = mParam->getValue(param, mSrc, ok);
+        v = ok ? (v + 1) % DISABLE_PRM_MAX : DISABLE_PRM_enable;
+        mParam->setValue(param, mSrc, v);
+    }
+
+    last = value;
+}
+
+void TModbusVp::hdlrButtonSac2(bool value)
+{
+    static bool last = false;
+    const param_t param = PARAM_dirControl;
+
+    if (!last && value) {
+        bool ok = true;
+        uint32_t v = mParam->getValue(param, mSrc, ok);
+        v = ok ? (v + 1)  % DIR_CONTROL_MAX : DIR_CONTROL_local;
+        mParam->setValue(param, mSrc, v);
+    }
+
+    last = value;
 }
 
 } // namespace BVP

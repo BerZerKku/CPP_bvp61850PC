@@ -68,6 +68,7 @@ public:
   bool setNetAddress(uint16_t address) override;
   bool vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) override;
   void setID(uint32_t id) override;
+  uint32_t getID() const override;
   void vTick() override;
   bool isConnection() const override;
 
@@ -176,6 +177,9 @@ private:
    *  @return Значение CRC.
    */
   uint16_t calcCRC(const uint8_t buf[], size_t len, uint16_t crc=0xFFFF);
+
+  void hdlrButtonSac1(bool value);
+  void hdlrButtonSac2(bool value);  
 };
 
 } // namespace BVP

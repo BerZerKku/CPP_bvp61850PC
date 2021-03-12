@@ -224,7 +224,12 @@ void
 TProtocolAvant::setID(uint32_t id) {
   Q_ASSERT(id < SRC_MAX);
 
-  *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
+    *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
+}
+
+uint32_t TProtocolAvant::getID() const
+{
+    return static_cast<uint32_t> (mSrc);
 }
 
 //

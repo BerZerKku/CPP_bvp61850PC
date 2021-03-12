@@ -66,11 +66,15 @@ enum src_t {
     SRC_MAX
 };
 
-/// Сигналы управления.
+/** Сигналы управления.
+ *
+ *  Команда перезагрузки аппарата должна стоять в конце!
+ *  Чтобы перед ней были переданы все остальные.
+ */
 enum ctrl_t {
     CTRL_resetIndication = 0,
-    CTRL_resetErrors,
-    CTRL_reset,
+    CTRL_resetErrors,           ///< Сброс неисправностей. Пока == CTRL_reset
+    CTRL_reset,                 ///< Сброс аппарта. Желательно ставить в конец.
     //
     CTRL_MAX
 
@@ -90,6 +94,14 @@ enum alarmReset_t {
     ALARM_RESET_manual,
     //
     ALARM_RESET_MAX
+};
+
+/// Состояния параметра "Вывод ПРМ (SAC1)"
+enum disablePrm_t {
+    DISABLE_PRM_disable = 0,
+    DISABLE_PRM_enable,
+    //
+    DISABLE_PRM_MAX
 };
 
 ///
@@ -128,10 +140,12 @@ class TParam {
 
     /// Поля настроек параметра.
     struct paramFields_t {
-        param_t param;    ///< Параметр
-        bool isValue;     ///< Флаг наличия считанного значения.
-        uint32_t rValue;  ///< Считанное значение.
-        uint32_t wValue;  ///< Значение для записи.
+        param_t param;              ///< Параметр
+        uint32_t source;            ///< Источник установки данного значения (биты).
+        bool isSet;         ///< Флаг наличия считанного значения.
+        bool isModified;     ///< Флаг наличия нового знаения.
+        uint32_t rValue;            ///< Считанное значение.
+        uint32_t wValue;            ///< Значение для записи.
         ///< Доп. обработка при установке значения параметра.
         bool (*set) (param_t, BVP::src_t, uint32_t&);
         ///< Доп. обработка при чтении значения параметра.
@@ -147,67 +161,66 @@ public:
     void operator=(const TParam&) = delete;
 
     /** Возвращает экземпляр класса параметров.
-   *
-   *  @return Класс параметров.
-   */
+     *
+     *  @return Класс параметров.
+     */
     static TParam* getInstance();
 
     /** Проверяет наличие установленного значения параметра.
-   *
-   *  @param[in] param Параметр.
-   *  @return true если значение было установлено, иначе false.
-   */
-    bool isValueSet(param_t param) const;
+     *
+     *  @param[in] param Параметр.
+     *  @return true если значение было установлено, иначе false.
+     */
+    bool isSet(param_t param) const;
 
-    /** Проверяет возможность чтения параметра из указанного источника.
-   *
-   *  @param[in] param Параметр.
-   *  @param[in] src Источник доступа.
-   *  @return true если чтение разрешено, иначе false.
-   */
-    bool isAccessRead(param_t param, src_t src) const;
+    /**
+     * @brief isModified
+     * @param param
+     * @return
+     */
+    bool isModified(param_t param) const;
 
-    /** Проверяет возможность установки параметра из указанного источника.
-   *
-   *  @param[in] param Параметр.
-   *  @param[in] src Источник доступа.
-   *  @return true если запись разрешена, иначе false.
-   */
-    bool isAccessSet(param_t param, src_t src) const;
+    /** Проверяет наличие доступа к параметру из указанного источника.
+     *
+     *  @param[in] param Параметр.
+     *  @param[in] src Источник доступа.
+     *  @return true если доступ разрешен, иначе false.
+     */
+    bool isAccess(param_t param, src_t src) const;
 
     /** Возвращает значение параметра.
-   *
-   *  Значение не будет получено, если параметр еще не установлен или
-   *  не достаточно прав доступа.
-   *
-   *  @param[in] param Параметр.
-   *  @param[in] src Источник доступа.
-   *  @param[out] ok true если значение считано, иначе false.
-   *  @return Значение параметра.
-   */
+     *
+     *  Значение не будет получено, если параметр еще не установлен или
+     *  не достаточно прав доступа.
+     *
+     *  @param[in] param Параметр.
+     *  @param[in] src Источник доступа.
+     *  @param[out] ok true если значение считано, иначе false.
+     *  @return Значение параметра.
+     */
     uint32_t getValue(param_t param, src_t src, bool &ok);
 
     /** Возвращает считанное значение параметра.
-   *
-   *  @param[in] param Параметр.
-   *  @return Значение параметра.
-   */
+     *
+     *  @param[in] param Параметр.
+     *  @return Значение параметра.
+     */
     uint32_t getValueR(param_t param);
 
     /** Возвраащет значение параметра для записи.
-   *
-   *  @param[in] param Параметр.
-   *  @return  Значение параметра.
-   */
+     *
+     *  @param[in] param Параметр.
+     *  @return  Значение параметра.
+     */
     uint32_t getValueW(param_t param);
 
     /** Устанавливает значение параметра.
-   *
-   *  @param[in] param Параметр.
-   *  @param[in] src Источник доступа.
-   *  @param[in] value Значение параметра.
-   *  @return true если установлено новое значение, иначе false.
-   */
+     *
+     *  @param[in] param Параметр.
+     *  @param[in] src Источник доступа.
+     *  @param[in] value Значение параметра.
+     *  @return true если установлено новое значение, иначе false.
+     */
     bool setValue(param_t param, src_t src, uint32_t value);
 
 private:
@@ -215,19 +228,14 @@ private:
     static paramFields_t params[PARAM_MAX];
 
     friend bool getBlkComPrm(param_t param, src_t src, uint32_t &value);
-    friend bool getControl(param_t param, src_t src, uint32_t &value);
 
-    friend bool setBlkComPrmAll(param_t param, src_t src, uint32_t &value);
     friend bool setBlkComPrm(param_t param, src_t src, uint32_t &value);
     friend bool setBtnSA(param_t param, src_t src, uint32_t &value);
-    friend bool setControl(param_t param, src_t src, uint32_t &value);
     friend bool setError(param_t param, src_t src, uint32_t &value);
-    friend bool setDirControl(param_t param, src_t src, uint32_t &value);
     friend bool setVpBtnSAnSbSac(param_t param, src_t src, uint32_t &value);
     friend bool setWarning(param_t param, src_t src, uint32_t &value);
 
-
-    void setLocalValue(param_t param, uint32_t value);
+    void setLocalValue(param_t param, src_t src, uint32_t value);
 };
 
 } // namespace BVP

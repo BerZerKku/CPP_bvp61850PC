@@ -28,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("bvp61850 STM32");
 
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("Windows-1251"));
+
     wAlarm = ui->fAlarm; // const_cast<MainWindow*> (this);
 
     initVp();
@@ -36,17 +38,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     mParam = BVP::TParam::getInstance();
 
-    // FIXME Без установки этих параметров нет связи с Панелью ВК
-//    mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_pi, 0);
-//    mParam->setValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_pi, 0);
-//    mParam->setValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_pi, 0);
-    mParam->setValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_pi, 0x50505050);
-//    mParam->setValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_pi, 0);
-//    mParam->setValue(BVP::PARAM_blkComPrd32to01, BVP::SRC_pi, 0);
-//    mParam->setValue(BVP::PARAM_blkComPrd64to33, BVP::SRC_pi, 0);
-    mParam->setValue(BVP::PARAM_dirControl, BVP::SRC_pi, BVP::DIR_CONTROL_local);
-    mParam->setValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, BVP::ON_OFF_off);
-    mParam->setValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, 0x55);
+    //    mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_pi, 0);
+    //    mParam->setValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_pi, 0);
+    //    mParam->setValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_pi, 0);
+//    mParam->setValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_pi, 0x50505050);
+    //    mParam->setValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_pi, 0);
+    //    mParam->setValue(BVP::PARAM_blkComPrd32to01, BVP::SRC_pi, 0);
+    //    mParam->setValue(BVP::PARAM_blkComPrd64to33, BVP::SRC_pi, 0);
+//    mParam->setValue(BVP::PARAM_dirControl, BVP::SRC_pi, BVP::DIR_CONTROL_local);
+//    mParam->setValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, BVP::ON_OFF_off);
+//    mParam->setValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, 0x55);
 
     connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
     timer1ms.start(1);
@@ -98,7 +99,7 @@ void MainWindow::initAvantPi()
     serialCfg_t *cfg = new serialCfg_t;
 
     cfg->label = "BSP-PI";
-    cfg->defaultPorts.append("COM20");
+    cfg->defaultPorts.append("COM6"); // COM20, COM6
     cfg->defaultPorts.append("tnt0");
     cfg->baudList.append({4800, 19200});
     cfg->parityList.append({QSerialPort::NoParity});
@@ -238,9 +239,9 @@ void MainWindow::serialProc() {
                         pkg.append(data[i]);
                     }
 
-                    //          if (serial == ui->serialVp) {
-                    //            qDebug() << "Tx to VP: " << Qt::hex << pkg << Qt::endl;
-                    //          }
+//                    if (cfg->protocol->getID() == BVP::SRC_pi) {
+//                        qDebug() << "Tx to PI: " << Qt::hex << pkg << Qt::endl;
+//                    }
 
                     for(auto &byte: pkg) {
                         serial->write(byte);
@@ -257,28 +258,29 @@ void MainWindow::serialProc() {
 void MainWindow::procAlarm()
 {
     static bool resetbtn = false;
+    const BVP::src_t src = BVP::SRC_int;
     bool ok;
     uint32_t uval32;
 
-    uval32 = mParam->getValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_int, ok);
+    uval32 = mParam->getValue(BVP::PARAM_vpBtnSAnSbSac, src, ok);
     if (ok) {
         bool tresetbtn = (uval32 & BVP::VP_BTN_CONTROL_sb) > 0;
 
         // FIXME Не работает!
-
         if (!resetbtn && tresetbtn) {
-            mParam->setValue(BVP::PARAM_control, BVP::SRC_int,
-                             (1 << BVP::CTRL_resetIndication));
+            uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
+            if (!ok) {
+                uval32 = 0;
+            }
+            uval32 |= (1 << BVP::CTRL_resetIndication);
 
-            if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault)) {
-                mParam->setValue(BVP::PARAM_control, BVP::SRC_int,
-                                 (1 << BVP::CTRL_resetErrors));
+            if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
+                mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
+                uval32 |= (1 << BVP::CTRL_resetErrors);
+
             }
 
-            if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
-                mParam->setValue(BVP::PARAM_control, BVP::SRC_int,
-                                 (1 << BVP::CTRL_resetErrors));
-            }
+            mParam->setValue(BVP::PARAM_control, src, uval32);
 
             // FIXME Почему вылетает в ошибку ?!
             //    Q_ASSERT(ok);
@@ -299,7 +301,7 @@ void MainWindow::procAlarm()
     }
 
 
-    uval32 = mParam->getValue(BVP::PARAM_alarmReset, BVP::SRC_int, ok);
+    uval32 = mParam->getValue(BVP::PARAM_alarmReset, src, ok);
     if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
         uval32 = mAlarm.kAlarmResetDefault;
     }
@@ -311,12 +313,12 @@ void MainWindow::procAlarm()
 
         if (signal == BVP::EXT_ALARM_disablePrm) {
             uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll,
-                                          BVP::SRC_int, ok);
+                                      BVP::SRC_int, ok);
             if (!ok) {
                 uval32 = mAlarm.kDisablePrmDefault;
             }
 
-            value = (uval32 == BVP::ON_OFF_on);
+            value = (uval32 == BVP::DISABLE_PRM_disable);
         } else {
             value = getExtAlarmSignals(signal);
         }

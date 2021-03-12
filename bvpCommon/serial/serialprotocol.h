@@ -85,6 +85,8 @@ public:
      */
     virtual void setID(uint32_t id) = 0;
 
+    virtual uint32_t getID() const = 0;
+
     /** Устанавливает настройки последовательного порта.
      *
      *  @param[in] baudrate Скорость работы порта, бит/с.
@@ -133,6 +135,7 @@ protected:
         STATE_MAX
     };
 
+    const uint32_t mId = uint32_t(-1);
     regime_t mRegime;       ///< Режим работы протокола.
     TParam * const mParam;  ///< Параметры.
     uint8_t * const mBuf;   ///< Буфер данных.

@@ -13,7 +13,7 @@
 #if defined(QT_CORE_LIB)
 
 #include <QDebug>
-#define QDEBUG(x) qDebug() << x;
+#define QDEBUG(x) (qDebug() << x)
 
 #else
 

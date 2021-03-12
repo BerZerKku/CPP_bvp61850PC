@@ -25,7 +25,7 @@ enum extAlarm_t {
 class TExtAlarm {
 
     /// Состояние сигналов по умолчанию
-    const uint16_t kAlarmDefault = 0; // (1 << EXT_ALARM_fault);
+    const uint16_t kAlarmDefault = 0;
 
     /// Маска для всех задействованных сигналов
     const uint16_t kAlarmMask = (1 << EXT_ALARM_MAX) - 1;
@@ -36,7 +36,7 @@ public:
     const alarmReset_t kAlarmResetDefault = ALARM_RESET_manual;
 
     /// Состояние режима сброса по умолчанию
-    const switchOff_t kDisablePrmDefault = ON_OFF_off;
+    const disablePrm_t kDisablePrmDefault = DISABLE_PRM_enable;
 
     ///
     TExtAlarm() {}

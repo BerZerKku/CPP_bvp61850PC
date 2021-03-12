@@ -1,4 +1,4 @@
-#ifndef AVANT_PI_H
+﻿#ifndef AVANT_PI_H
 #define AVANT_PI_H
 
 #include "ringArray.hpp"
@@ -8,34 +8,111 @@ namespace BVP {
 
 class TAvantPi : public TProtocolAvant {
 
-  /// Значение байта данных для команды COM_AVANT_control "Управление"
-  enum comControlBytes_t {
-    COM_CONTROL_BYTES_selfReset = 1 //<
-  };
+    /// Значение байта данных для команды COM_AVANT_control "Управление"
+    enum comControlBytes_t {
+        COM_CONTROL_BYTES_selfReset = 1 //<
+    };
+
+    /// Значение байта данных для команды COM_AVANT_getPrmDisable "Вывод ПРМ (SAC1)"
+    enum comPrmDisableBytes_t {
+        COM_PRM_DISABLE_BYTES_prmDisable = 1,
+        //
+        COM_PRM_DISABLE_BYTES_MAX
+    };
+
+    /// Значение байта данных для команды COM_AVANT_getMisc "Параметры другие"
+    enum comMiscBytes_t {
+        COM_MISC_BYTES_netAdr = 1,
+        COM_MISC_BYTES_protocol,
+        COM_MISC_BYTES_baudrate,
+        COM_MISC_BYTES_dataBits,
+        COM_MISC_BYTES_parity,
+        COM_MISC_BYTES_stopBits,
+        COM_MISC_BYTES_password,
+        COM_MISC_BYTES_vpSac2 = COM_MISC_BYTES_password + 2,
+        //
+        COM_MISC_BYTES_MAX
+    };
 
 
- public:
-  TAvantPi(regime_t regime);
+public:
+    TAvantPi(regime_t regime);
 
-  bool vWriteAvant() override;
-  bool vReadAvant() override;
+private:
+    TRingArray<comAvant_t, 3, COM_AVANT_getError> ringComArray;
 
- private:
-  TRingArray<comAvant_t, 3, COM_AVANT_getError> ringComArray;
+    /**
+     * @brief Формирование команды управления.
+     *
+     * @return true если команды была сформирована, иначе false.
+     */
+    bool writeComControl();
 
+    /**
+     * @brief Формирование команды записи "Другие параметры"
+     * @return
+     */
+    bool writeComMisc();
 
-  comAvant_t mComCycle[]; ///< Массив команд опрашиваемых по кругу.
+    /**
+     * @brief Формирование команды записи "Вывод ПРМ (SAC1)"
+     * @return
+     */
+    bool writeComPrmDisable();
 
-  /** Формирование команды управления.
-   *
-   *  @return true если команда сформирована, иначе false.
-   */
-  bool fillComControl(uint32_t value);
+    /**
+     * @brief Обработчик команды чтения неисправностей и предупреждений
+     *
+     * Команда проверяется на минимальный размер данных.
+     *
+     * @return true если в команде нет ошибок, иначе false.
+     */
+    bool comGetError();
 
-  bool comGetError(); ///< Обработчик команды чтения неисправностей и предупр.
-  bool comGetTime();  ///< Обработчик команды чтения времени.
+    /**
+     * @brief Обработчик команды чтения "Другие параметры"
+     *
+     * @return true если в команде нет ошибок, инчаче false
+     */
+    bool comGetMisc();
 
+    /**
+     * @brief Обработчик команды чтения "Вывод ПРМ (SAC1)"
+     * @param[in] group Группа команды.
+     * @return true если в команде нет ошибок, инчаче false
+     */
+    bool comGetPrmDisable(comAvantMaskGroup_t group);
 
+    /**
+     * @brief comGetMiscGet
+     * @param pos
+     * @param buf
+     * @param len
+     * @return
+     */
+    uint16_t comGetMiscGet(comMiscBytes_t pos, const uint8_t *buf, uint16_t len);
+
+    /**
+     * @brief comGetPrmDisable
+     * @param pos
+     * @param buf
+     * @param len
+     * @return
+     */
+    uint16_t comGetPrmDisableGet(comPrmDisableBytes_t pos, const uint8_t *buf, uint16_t len);
+
+    /**
+     * @brief Обработчик команды чтения даты и времени.
+     *
+     * Команда проверяется на минимальный размер данных.
+     *
+     * @return true если в команде нет ошибок, иначе false.
+     */
+    bool comGetTime();
+
+    bool vWriteAvant() override;
+
+    bool vReadAvant() override;
 };
 
 } // namespace BVP
