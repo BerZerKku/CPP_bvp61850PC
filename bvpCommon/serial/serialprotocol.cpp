@@ -1,4 +1,4 @@
-#include "serialprotocol.h"
+﻿#include "serialprotocol.h"
 
 namespace BVP {
 

@@ -21,12 +21,14 @@ static uint8_t int2bcd(uint8_t value) {
 }
 
 enum comAvant_t {
-    COM_AVANT_getPrmDisable     = 0x1E,  ///< Вывод ПРМ (SAC1)
-    COM_AVANT_getError          = 0x31,  ///< Неисправности и предупреждения
-    COM_AVANT_getTime           = 0x32,  ///< Дата/время/журнал
-    COM_AVANT_getMisc           = 0x38,  ///< Параметры другие
-    COM_AVANT_setControl        = 0x72,  ///< Управление
-    COM_AVANT_setPrmResetInd    = 0x9A   ///< Выключение индикации Приемника
+    COM_AVANT_getPrmBlock       = 0x14, ///< Блокированные команды ПРМ
+    COM_AVANT_getPrmDisable     = 0x1E, ///< Вывод ПРМ (SAC1)
+    COM_AVANT_getPrdBlock       = 0x24, ///< Блокированные команды ПРД
+    COM_AVANT_getError          = 0x31, ///< Неисправности и предупреждения
+    COM_AVANT_getTime           = 0x32, ///< Дата/время/журнал
+    COM_AVANT_getMisc           = 0x38, ///< Параметры другие
+    COM_AVANT_setControl        = 0x72, ///< Управление
+    COM_AVANT_setPrmResetInd    = 0x9A  ///< Выключение индикации Приемника
 };
 
 
@@ -48,7 +50,7 @@ class TProtocolAvant : public TSerialProtocol {
     /// Минимальная длина кадра.
     const uint16_t kMinLenFrame = 5;  // pmbl1 + pmbl2 + cm + data_len + check_sum
 
-public:
+   public:
     TProtocolAvant(regime_t regime);
     ~TProtocolAvant() override;
 
@@ -68,7 +70,7 @@ public:
     void vTick() override;
     bool isConnection() const override;
 
-protected:
+   protected:
     /// Структура посылки
     enum pos_t {
         POS_PMBL_55 = 0,    ///< Первый байт преамбулы 0x55
@@ -128,7 +130,7 @@ protected:
    */
     virtual bool vReadAvant() = 0;
 
-private:
+   private:
     /// Устанавливает состояние по умолчанию.
     void setDefaultState();
 };

@@ -9,8 +9,10 @@ TAvantPi::TAvantPi(regime_t regime) :
     Q_ASSERT(regime == REGIME_master);
 
     ringComArray.add(COM_AVANT_getMisc);
-    ringComArray.add(COM_AVANT_getTime);
     ringComArray.add(COM_AVANT_getPrmDisable);
+    ringComArray.add(COM_AVANT_getPrmBlock);
+    ringComArray.add(COM_AVANT_getPrdBlock);
+    //    ringComArray.add(COM_AVANT_getTime);
 
     Q_ASSERT(!ringComArray.isEmpty());
 }
@@ -156,18 +158,26 @@ bool TAvantPi::comGetError()
 }
 
 //
-bool TAvantPi::comGetMisc()
+bool TAvantPi::comGetMisc(comAvantMaskGroup_t group)
 {
     bool ok = false;
+    uint16_t nbytes = 0;
 
     uint16_t len = mBuf[POS_DATA_LEN];
-    if (len >= COM_MISC_BYTES_MAX) {
-        ok = true;
+    if (group == COM_AVANT_MASK_GROUP_read) {
+        if (len >= (COM_MISC_BYTES_MAX - 1)) {
+            ok = true;
 
-        uint16_t nbytes = 0;
-        while(nbytes < len) {
-            nbytes += comGetMiscGet(comMiscBytes_t(nbytes + 1),
-                                    &mBuf[POS_DATA + nbytes], len - nbytes);
+            while(nbytes < len) {
+                nbytes += comGetMiscGet(comMiscBytes_t(nbytes + 1),
+                                        &mBuf[POS_DATA + nbytes], len - nbytes);
+            }
+        }
+    } else if (group == COM_AVANT_MASK_GROUP_writeParam) {
+        if (mBuf[POS_DATA] < COM_MISC_BYTES_MAX) {
+            ok = true;
+            comGetMiscGet(comMiscBytes_t(mBuf[POS_DATA]),
+                          &mBuf[POS_DATA + 1], len - 1);
         }
     }
 
@@ -192,8 +202,7 @@ bool TAvantPi::comGetPrmDisable(comAvantMaskGroup_t group)
     } else if (group == COM_AVANT_MASK_GROUP_writeParam) {
         if (mBuf[POS_DATA] < COM_PRM_DISABLE_BYTES_MAX) {
             ok = true;
-            qDebug() << "Prm disable value is " << mBuf[POS_DATA + 1];
-            comGetPrmDisableGet(comPrmDisableBytes_t(nbytes + 1),
+            comGetPrmDisableGet(comPrmDisableBytes_t(mBuf[POS_DATA]),
                                 &mBuf[POS_DATA + 1], len - 1);
         }
     }
@@ -344,7 +353,7 @@ bool TAvantPi::vReadAvant()
             ok = comGetTime();
         } break;
         case COM_AVANT_getMisc: {
-            ok = comGetMisc();
+            ok = comGetMisc(group);
         } break;
         case COM_AVANT_getPrmDisable: {
             ok = comGetPrmDisable(group);

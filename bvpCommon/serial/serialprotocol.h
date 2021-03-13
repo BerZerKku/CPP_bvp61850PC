@@ -1,4 +1,4 @@
-#ifndef TSERIALPROTOCOL_H
+﻿#ifndef TSERIALPROTOCOL_H
 #define TSERIALPROTOCOL_H
 
 #include <cstdint>
@@ -136,17 +136,17 @@ protected:
     };
 
     const uint32_t mId = uint32_t(-1);
-    regime_t mRegime;       ///< Режим работы протокола.
-    TParam * const mParam;  ///< Параметры.
-    uint8_t * const mBuf;   ///< Буфер данных.
-    const uint16_t mSize;   ///< Размер буфера данных.
-    uint16_t mPos;          ///< Текущая позиция в буфере.
-    uint16_t mLen;          ///< Количество байт данных по протоколу.
-    const uint8_t mNetAddress;  ///< Адрес опрашиваемого устройства.
-    uint32_t mTimeReadStart;    ///< Время прошедшее с момента приема первого байта.
-    uint32_t mTimeUs;           ///< Счетчик времени.
-    const uint32_t mTimeTickUs; ///< Период вызова функции tick.
-    const uint32_t mTimeOneByteUs;  ///< Время передачи/приема одного байта данных.
+    regime_t mRegime;                   ///< Режим работы протокола.
+    TParam * const mParam;              ///< Параметры.
+    uint8_t * const mBuf;               ///< Буфер данных.
+    const uint16_t mSize;               ///< Размер буфера данных.
+    uint16_t mPos;                      ///< Текущая позиция в буфере.
+    uint16_t mLen;                      ///< Количество байт данных по протоколу.
+    const uint8_t mNetAddress;          ///< Адрес опрашиваемого устройства.
+    uint32_t mTimeReadStart;            ///< Время прошедшее с момента приема первого байта.
+    uint32_t mTimeUs;                   ///< Счетчик времени.
+    const uint32_t mTimeTickUs;         ///< Период вызова функции tick.
+    const uint32_t mTimeOneByteUs;      ///< Время передачи/приема одного байта данных.
 
     /** Добавляет принятый байт данных.
      *

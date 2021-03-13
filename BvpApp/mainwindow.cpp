@@ -38,17 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     mParam = BVP::TParam::getInstance();
 
-    //    mParam->setValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_pi, 0);
-    //    mParam->setValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_pi, 0);
-    //    mParam->setValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_pi, 0);
-//    mParam->setValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_pi, 0x50505050);
-    //    mParam->setValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_pi, 0);
-    //    mParam->setValue(BVP::PARAM_blkComPrd32to01, BVP::SRC_pi, 0);
-    //    mParam->setValue(BVP::PARAM_blkComPrd64to33, BVP::SRC_pi, 0);
-//    mParam->setValue(BVP::PARAM_dirControl, BVP::SRC_pi, BVP::DIR_CONTROL_local);
-//    mParam->setValue(BVP::PARAM_blkComPrmAll, BVP::SRC_pi, BVP::ON_OFF_off);
-//    mParam->setValue(BVP::PARAM_blkComPrmDir, BVP::SRC_pi, 0x55);
-
     connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
     timer1ms.start(1);
 
@@ -76,7 +65,7 @@ void MainWindow::initAvantPc()
 
     cfg->label = "PC";
     cfg->defaultPorts.append("COM30");
-    cfg->defaultPorts.append("tnt4");
+    cfg->defaultPorts.append("tnt3");
     cfg->baudList.append({19200});
     cfg->parityList.append({QSerialPort::NoParity});
     cfg->stopList.append({QSerialPort::TwoStop});
@@ -100,7 +89,7 @@ void MainWindow::initAvantPi()
 
     cfg->label = "BSP-PI";
     cfg->defaultPorts.append("COM6"); // COM20, COM6
-    cfg->defaultPorts.append("tnt0");
+    cfg->defaultPorts.append("tnt3");
     cfg->baudList.append({4800, 19200});
     cfg->parityList.append({QSerialPort::NoParity});
     cfg->stopList.append({QSerialPort::TwoStop});
@@ -127,7 +116,7 @@ void MainWindow::initVp()
 
     cfg->label = "Virtual keys panel";
     cfg->defaultPorts.append("COM5");
-    cfg->defaultPorts.append("tnt2");
+    cfg->defaultPorts.append("tnt5");
     cfg->baudList.append({9600});
     cfg->parityList.append({QSerialPort::EvenParity});
     cfg->stopList.append({QSerialPort::OneStop});

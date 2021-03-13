@@ -39,11 +39,10 @@ public:
     TAvantPi(regime_t regime);
 
 private:
-    TRingArray<comAvant_t, 3, COM_AVANT_getError> ringComArray;
+    TRingArray<comAvant_t, 4, COM_AVANT_getError> ringComArray;
 
     /**
      * @brief Формирование команды управления.
-     *
      * @return true если команды была сформирована, иначе false.
      */
     bool writeComControl();
@@ -62,19 +61,17 @@ private:
 
     /**
      * @brief Обработчик команды чтения неисправностей и предупреждений
-     *
      * Команда проверяется на минимальный размер данных.
-     *
      * @return true если в команде нет ошибок, иначе false.
      */
     bool comGetError();
 
     /**
      * @brief Обработчик команды чтения "Другие параметры"
-     *
+     * @param[in] group Группа команды.
      * @return true если в команде нет ошибок, инчаче false
      */
-    bool comGetMisc();
+    bool comGetMisc(comAvantMaskGroup_t group);
 
     /**
      * @brief Обработчик команды чтения "Вывод ПРМ (SAC1)"
@@ -103,9 +100,7 @@ private:
 
     /**
      * @brief Обработчик команды чтения даты и времени.
-     *
      * Команда проверяется на минимальный размер данных.
-     *
      * @return true если в команде нет ошибок, иначе false.
      */
     bool comGetTime();

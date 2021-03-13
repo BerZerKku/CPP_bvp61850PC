@@ -436,12 +436,14 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
         switch (static_cast<regWrite_t> (number)) {
             case REG_WRITE_enSanSbSac: {
                 param = PARAM_blkComPrmAll;
-                tvalue = mParam->getValue(param, mSrc, ok) > 0 ? 0 : 1;
+                tvalue = mParam->getValue(param, mSrc, ok) >
+                                 0 ? 0 : VP_BTN_CONTROL_sac1;
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_dirControl;
-                tvalue = mParam->getValue(param, mSrc, ok) > 0 ? 0 : 2;
+                tvalue = mParam->getValue(param, mSrc, ok) ==
+                                 DIR_CONTROL_remote ? 0 : VP_BTN_CONTROL_sac2;
                 if (ok) {
                     value |= tvalue;
 
@@ -486,12 +488,14 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
             } break;
             case REG_WRITE_dsSanSbSac: {
                 param = PARAM_blkComPrmAll;
-                tvalue = mParam->getValue(param, mSrc, ok) > 0 ? 1 : 0;
+                tvalue = mParam->getValue(param, mSrc, ok) >
+                                 0 ? VP_BTN_CONTROL_sac1 : 0;
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_dirControl;
-                tvalue |= mParam->getValue(param, mSrc, ok) > 0 ? 2 : 0;
+                tvalue |= mParam->getValue(param, mSrc, ok) ==
+                                  DIR_CONTROL_remote ? VP_BTN_CONTROL_sac2 : 0;
                 if (ok) {
                     value |= tvalue;
                 }
@@ -643,17 +647,19 @@ uint16_t TModbusVp::calcCRC(const uint8_t buf[], size_t len, uint16_t crc) {
 
 void TModbusVp::hdlrButtonSac1(bool value)
 {
+    bool ok = true;
     static bool last = false;
     const param_t param = PARAM_blkComPrmAll;
 
-    if (!last && value) {
-        bool ok = true;
-        uint32_t v = mParam->getValue(param, mSrc, ok);
-        v = ok ? (v + 1) % DISABLE_PRM_MAX : DISABLE_PRM_enable;
-        mParam->setValue(param, mSrc, v);
+    uint32_t v = mParam->getValue(PARAM_dirControl, mSrc, ok);
+    if (ok && (v == DIR_CONTROL_local)) {
+        if (!last && value) {
+            uint32_t v = mParam->getValue(param, mSrc, ok);
+            v = ok ? (v + 1) % DISABLE_PRM_MAX : DISABLE_PRM_enable;
+            mParam->setValue(param, mSrc, v);
+        }
+        last = value;
     }
-
-    last = value;
 }
 
 void TModbusVp::hdlrButtonSac2(bool value)
