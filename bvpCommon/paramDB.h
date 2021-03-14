@@ -5,13 +5,8 @@
 
 namespace BVP {
 
-bool setBlkComPrmAll(param_t param, src_t src, uint32_t &value);
-bool setBlkComPrm(param_t param, src_t src, uint32_t &value);
-bool setBtnSA(param_t param, src_t src, uint32_t &value);
 bool setControl(param_t param, src_t src, uint32_t &value);
 bool setError(param_t param, src_t src, uint32_t &value);
-bool setDirControl(param_t param, src_t src, uint32_t &value);
-bool setVpBtnSAnSbSac(param_t param, src_t src, uint32_t &value);
 bool setWarning(param_t param, src_t src, uint32_t &value);
 
 //
@@ -133,6 +128,10 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
+    {.param = PARAM_alarmResetBtn, .source = (1 << SRC_int) | (1 << SRC_vkey),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
     //
     // Параметры панели виртуальных ключей
     //
@@ -151,17 +150,47 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     //
-    {.param = PARAM_blkComPrm32to01, .source = (1 << SRC_pi),
+    {.param = PARAM_comPrmBlk08to01, .source = (1 << SRC_pi),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
-     .set = setBlkComPrm, .get = nullptr},
+     .set = nullptr, .get = nullptr},
+    //
+    {.param = PARAM_comPrmBlk16to09, .source = (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    //
+    {.param = PARAM_comPrmBlk24to17, .source = (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    //
+    {.param = PARAM_comPrmBlk32to25, .source = (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
     //
     {.param = PARAM_blkComPrm64to33, .source = (1 << SRC_pi),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
-     .set = setBlkComPrm, .get = nullptr},
+     .set = nullptr, .get = nullptr},
     //
-    {.param = PARAM_blkComPrd32to01, .source = (1 << SRC_pi),
+    {.param = PARAM_comPrdBlk08to01, .source = (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    //
+    {.param = PARAM_comPrdBlk16to09, .source = (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    //
+    {.param = PARAM_comPrdBlk24to17, .source = (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    //
+    {.param = PARAM_comPrdBlk32to25, .source = (1 << SRC_pi),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
@@ -173,20 +202,20 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
     //
     // Кнопки панели виртуальных ключей.
     //
-    {.param = PARAM_vpBtnSAnSbSac, .source = (1 << SRC_vkey),
+    {.param = PARAM_vpBtnSAnSbSac, .source = (1 << SRC_vkey) | (1 << SRC_int),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
-     .set = setVpBtnSAnSbSac, .get = nullptr},
+     .set = nullptr, .get = nullptr},
     //
     {.param = PARAM_vpBtnSA32to01, .source = (1 << SRC_vkey),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
-     .set = setBtnSA, .get = nullptr},
+     .set = nullptr, .get = nullptr},
     //
     {.param = PARAM_vpBtnSA64to33, .source = (1 << SRC_vkey),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
-     .set = setBtnSA, .get = nullptr},
+     .set = nullptr, .get = nullptr},
 };
 
 } // namespace BVP

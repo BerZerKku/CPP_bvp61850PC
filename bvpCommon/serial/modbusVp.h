@@ -178,19 +178,42 @@ class TModbusVp : public TSerialProtocol {
      */
     uint16_t calcCRC(const uint8_t buf[], size_t len, uint16_t crc=0xFFFF);
 
+    /**
+     * @brief Обработка нажатия на переключатели SB, SAC и Snn
+     * @param value Состояние переключателей считанное с панели.
+     */
+    void hdlrButtonSbSacSan(uint32_t value);
 
     /**
-     * @brief Обработка переключателя "Вывод ПРМ (SAC1)"
-     * Кнопка обрабаывается если разрешает положение переключателя SAC2.
-     * @param value
+     * @brief Обработка нажатия на переключатели SB, SAC и Snn
+     * @param[in] btn Нажатый переключатель.
      */
-    void hdlrButtonSac1(bool value);
+    void hdlrButtonSbSacSan(vpBtnControl_t btn);
 
     /**
-     * @brief Обработка переключателя "Управление (SAC2)"
-     * @param value
+     * @brief Обработка нажатия на переключатели блокировки команд SA
+     * @param[in] param Параметр блокировки.
+     * @param[in] cvalue Состояние переключателей считанное с панели.
+     * @param[in] lparam Параметр с предыдущим состоянием переключателей.
+     * @param[in] num Номер байта в предыдущем состоянии переключателей [1..4].
      */
-    void hdlrButtonSac2(bool value);
+    void hdlrButtonSa(param_t param, uint32_t cvalue, param_t lparam, uint8_t num);
+
+    /**
+     * @brief Возвращает текущее состояние светодиодов для двух параметров.
+     * Если бит установлен в 1, то светодиод горит.
+     * Инверсия применяется только для корректных параметров, иначе светодиод
+     * будет потушен.
+     * @param[in] hi Параметр со значением для страших восьми бит.
+     * @param[in] low Параметр со значением для младших восьми бит.
+     * @param[in] inv Инверсия корректных значений.
+     * @return Состояние светодиодов.
+     */
+    uint16_t getLedValue(param_t hi, param_t low, bool inv) const;
+
+#ifdef TEST_FRIENDS
+    TEST_FRIENDS;
+#endif
 };
 
 } // namespace BVP

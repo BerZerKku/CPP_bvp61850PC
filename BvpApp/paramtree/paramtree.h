@@ -18,7 +18,7 @@ public:
 private:
   QMap<BVP::param_t, QTreeWidgetItem*> mapItems;
 
-  void crtGroupCtrl();
+  void crtGroupInternal();
   void crtGroupTime();
   void crtGroupError();
   void crtGroupErrorRemote();

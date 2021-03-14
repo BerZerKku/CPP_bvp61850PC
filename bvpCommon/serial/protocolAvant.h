@@ -20,6 +20,7 @@ static uint8_t int2bcd(uint8_t value) {
     return static_cast<uint8_t> (((value/10) << 4) + (value%10));
 }
 
+// Команды для протокола АВАНТ
 enum comAvant_t {
     COM_AVANT_getPrmBlock       = 0x14, ///< Блокированные команды ПРМ
     COM_AVANT_getPrmDisable     = 0x1E, ///< Вывод ПРМ (SAC1)
@@ -32,14 +33,14 @@ enum comAvant_t {
 };
 
 
-//
+// Маска группы для команд протокола АВАНТ
 enum comAvantMaskGroup_t {
-    COM_AVANT_MASK_GROUP_mask       = 0xC0,
+    COM_AVANT_MASK_GROUP_mask       = 0xC0, ///< Маска бит для значения группы
     //
-    COM_AVANT_MASK_GROUP_read       = 0x00,
-    COM_AVANT_MASK_GROUP_writeRegime= 0x40,
-    COM_AVANT_MASK_GROUP_writeParam = 0x80,
-    COM_AVANT_MASK_GROUP_readJournal= 0xC0
+    COM_AVANT_MASK_GROUP_read       = 0x00, ///< Группа чтение
+    COM_AVANT_MASK_GROUP_writeRegime= 0x40, ///< Группа запись режима
+    COM_AVANT_MASK_GROUP_writeParam = 0x80, ///< Группа запись параметра
+    COM_AVANT_MASK_GROUP_readJournal= 0xC0  ///< Грпппа чтение журнала
 };
 
 class TProtocolAvant : public TSerialProtocol {

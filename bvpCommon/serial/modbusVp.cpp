@@ -48,19 +48,20 @@ TModbusVp::TModbusVp(regime_t regime) :
     mState(STATE_disable),
     mTimeToCompleteUs(0),
     mTimeToErrorUs(0),
-    cntLostMessage(kMaxLostMessage) {
-
+    cntLostMessage(kMaxLostMessage)
+{
     Q_ASSERT(regime == REGIME_master);
 }
 
 //
-TModbusVp::~TModbusVp() {
+TModbusVp::~TModbusVp()
+{
     setNetAddress(255);
 }
 
 //
-bool
-TModbusVp::setEnable(bool enable) {
+bool TModbusVp::setEnable(bool enable)
+{
     Q_ASSERT(mSrc != SRC_MAX);
     Q_ASSERT(mParam != nullptr);
     Q_ASSERT(mBuf != nullptr);
@@ -79,14 +80,14 @@ TModbusVp::setEnable(bool enable) {
 }
 
 //
-bool
-TModbusVp::isEnable() const {
+bool TModbusVp::isEnable() const
+{
     return mState != STATE_disable;
 }
 
 //
-bool
-TModbusVp::read() {
+bool TModbusVp::read()
+{
     bool isread = false;
 
     if (mState == STATE_procReply) {
@@ -131,8 +132,8 @@ TModbusVp::read() {
 }
 
 //
-void
-TModbusVp::readError() {
+void TModbusVp::readError()
+{
     if (mState == STATE_procReply) {
         mState = STATE_errorReply;
         mTimeUs = 0;
@@ -140,8 +141,8 @@ TModbusVp::readError() {
 }
 
 //
-bool
-TModbusVp::write() {
+bool TModbusVp::write()
+{
     if (mState == STATE_idle) {
         bool ok = true;
         uint16_t len = 0;
@@ -187,8 +188,8 @@ TModbusVp::write() {
 }
 
 //
-uint16_t
-TModbusVp::pop(uint8_t *data[]) {
+uint16_t TModbusVp::pop(uint8_t *data[])
+{
     uint16_t len = 0;
     *data = &mBuf[0];
 
@@ -203,8 +204,10 @@ TModbusVp::pop(uint8_t *data[]) {
 }
 
 //
-void TModbusVp::sendFinished() {
-    Q_ASSERT(mState == STATE_waitSendFinished || mState == STATE_disable);
+void TModbusVp::sendFinished()
+{
+    // FIXME При работе с виртуальными портаи периодически вылетает ошибка!
+//    Q_ASSERT(mState == STATE_waitSendFinished || mState == STATE_disable);
 
     if (mState == STATE_waitSendFinished) {
         mLen = 0;
@@ -217,8 +220,8 @@ void TModbusVp::sendFinished() {
 }
 
 //
-bool
-TModbusVp::vPush(uint8_t byte) {
+bool TModbusVp::vPush(uint8_t byte)
+{
     uint16_t pos = 0;
 
     if (mState == STATE_waitForReply) {
@@ -243,8 +246,8 @@ TModbusVp::vPush(uint8_t byte) {
 }
 
 //
-bool
-TModbusVp::setNetAddress(uint16_t address) {
+bool TModbusVp::setNetAddress(uint16_t address)
+{
     if ((address > 0) && (address <= 247)) {
         *(const_cast<uint8_t *> (&mNetAddress)) = static_cast<uint8_t> (address);
     }
@@ -253,8 +256,8 @@ TModbusVp::setNetAddress(uint16_t address) {
 }
 
 //
-bool
-TModbusVp::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) {
+bool TModbusVp::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits)
+{
     UNUSED(baudrate);
     UNUSED(parity);
     UNUSED(stopbits);
@@ -273,8 +276,8 @@ TModbusVp::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) {
 }
 
 //
-void
-TModbusVp::vTick() {
+void TModbusVp::vTick()
+{
     if (mState == STATE_disable) {
         return;
     }
@@ -304,35 +307,37 @@ TModbusVp::vTick() {
 }
 
 //
-bool
-TModbusVp::isConnection() const {
+bool TModbusVp::isConnection() const
+{
     return (mState != STATE_disable) && (cntLostMessage < kMaxLostMessage);
 }
 
 //
-void
-TModbusVp::setID(uint32_t id) {
+void TModbusVp::setID(uint32_t id)
+{
     Q_ASSERT(id < SRC_MAX);
 
     *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
 }
 
+//
 uint32_t TModbusVp::getID() const
 {
     return static_cast<uint32_t> (mSrc);
 }
 
 //
-void
-TModbusVp::incLostMessageCounter() {
+void TModbusVp::incLostMessageCounter()
+{
     if (cntLostMessage < kMaxLostMessage) {
         cntLostMessage++;
     }
 }
 
 //
-uint16_t
-TModbusVp::addReadRegMsg(uint8_t buf[], uint16_t min, uint16_t max, bool &ok) {
+uint16_t TModbusVp::addReadRegMsg(uint8_t buf[], uint16_t min,
+                                  uint16_t max, bool &ok)
+{
     uint16_t nbytes = 0;
 
     Q_ASSERT(min >= REG_READ_MIN);
@@ -393,8 +398,8 @@ uint16_t TModbusVp::addWriteRegMsg(uint8_t buf[], uint16_t min,
 }
 
 //
-uint16_t
-TModbusVp::checkReadMsg(const uint8_t buf[], uint16_t &len, bool &ok) {
+uint16_t TModbusVp::checkReadMsg(const uint8_t buf[], uint16_t &len, bool &ok)
+{
     uint16_t nbytes = 0;
 
     if (ok) {
@@ -413,8 +418,9 @@ TModbusVp::checkReadMsg(const uint8_t buf[], uint16_t &len, bool &ok) {
     return nbytes;
 }
 
-
-uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
+//
+uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
+{
     uint16_t value = 0;
     uint16_t tvalue = 0;
 
@@ -436,14 +442,16 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
         switch (static_cast<regWrite_t> (number)) {
             case REG_WRITE_enSanSbSac: {
                 param = PARAM_blkComPrmAll;
-                tvalue = mParam->getValue(param, mSrc, ok) >
-                                 0 ? 0 : VP_BTN_CONTROL_sac1;
+                tvalue = mParam->getValue(param, mSrc, ok) ==
+                                 DISABLE_PRM_disable ?
+                             0 : (uint16_t(1) << VP_BTN_CONTROL_sac1);
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_dirControl;
                 tvalue = mParam->getValue(param, mSrc, ok) ==
-                                 DIR_CONTROL_remote ? 0 : VP_BTN_CONTROL_sac2;
+                                 DIR_CONTROL_remote ?
+                             0 : (uint16_t(1) << VP_BTN_CONTROL_sac2);
                 if (ok) {
                     value |= tvalue;
 
@@ -454,48 +462,61 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
                     value |= tvalue;
                 }
             } break;
-            case REG_WRITE_enLed16to01: {
-                param = PARAM_blkComPrm32to01;
-                tvalue = static_cast<uint16_t> (
-                            ~mParam->getValue(param, mSrc, ok));
-                if (ok) {
-                    value = tvalue;
-                }
+
+            case REG_WRITE_enLed16to01: // DOWN
+            case REG_WRITE_dsLed16to01: {
+                value = getLedValue(PARAM_comPrmBlk16to09,
+                                    PARAM_comPrmBlk08to01,
+                                    number == REG_WRITE_enLed16to01);
             } break;
-            case REG_WRITE_enLed32to17: {
-                param = PARAM_blkComPrm32to01;
-                tvalue = static_cast<uint16_t> (
-                            ~mParam->getValue(param, mSrc, ok) >> 16);
-                if (ok) {
-                    value = tvalue;
-                }
+
+            case REG_WRITE_enLed32to17: // DOWN
+            case REG_WRITE_dsLed32to17: {
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+                //                    value = getLedValue(PARAM_comPrmBlk32to25,
+                //                                        PARAM_comPrmBlk24to17,
+                //                                        number == REG_WRITE_enLed32to17);
+                value = getLedValue(PARAM_comPrdBlk16to09,
+                                    PARAM_comPrdBlk08to01,
+                                    number == REG_WRITE_enLed32to17);
             } break;
-            case REG_WRITE_enLed48to33: {
+
+            case REG_WRITE_enLed48to33: // DOWN
+            case REG_WRITE_dsLed48to33: {
                 param = PARAM_blkComPrm64to33;
                 tvalue = static_cast<uint16_t> (
-                            ~mParam->getValue(param, mSrc, ok));
+                    mParam->getValue(param, mSrc, ok));
                 if (ok) {
                     value = tvalue;
+                    if (number == REG_WRITE_enLed48to33) {
+                        value = ~value;
+                    }
                 }
             } break;
-            case REG_WRITE_enLed64to49: {
+
+            case REG_WRITE_enLed64to49:
+            case REG_WRITE_dsLed64to49: {
                 param = PARAM_blkComPrm64to33;
                 tvalue = static_cast<uint16_t> (
-                            ~mParam->getValue(param, mSrc, ok)>> 16);
+                    ~mParam->getValue(param, mSrc, ok)>> 16);
                 if (ok) {
                     value = tvalue;
+                    if (number == REG_WRITE_enLed64to49) {
+                        value = ~value;
+                    }
                 }
             } break;
+
             case REG_WRITE_dsSanSbSac: {
                 param = PARAM_blkComPrmAll;
-                tvalue = mParam->getValue(param, mSrc, ok) >
-                                 0 ? VP_BTN_CONTROL_sac1 : 0;
+                tvalue = mParam->getValue(param, mSrc, ok) ==
+                                 DISABLE_PRM_disable ? (uint16_t(1) << VP_BTN_CONTROL_sac1) : 0;
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_dirControl;
                 tvalue |= mParam->getValue(param, mSrc, ok) ==
-                                  DIR_CONTROL_remote ? VP_BTN_CONTROL_sac2 : 0;
+                                  DIR_CONTROL_remote ? (uint16_t(1) << VP_BTN_CONTROL_sac2) : 0;
                 if (ok) {
                     value |= tvalue;
                 }
@@ -505,42 +526,10 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
                     value |= tvalue;
                 }
             } break;
-            case REG_WRITE_dsLed16to01: {
-                param = PARAM_blkComPrm32to01;
-                tvalue = static_cast<uint16_t> (
-                            mParam->getValue(param, mSrc, ok));
-                if (ok) {
-                    value |= tvalue;
-                }
-            } break;
-            case REG_WRITE_dsLed32to17: {
-                param = PARAM_blkComPrm32to01;
-                tvalue = static_cast<uint16_t> (
-                            mParam->getValue(param, mSrc, ok) >> 16);
-                if (ok) {
-                    value |= tvalue;
-                }
-            } break;
-            case REG_WRITE_dsLed48to33: {
-                param = PARAM_blkComPrm64to33;
-                tvalue = static_cast<uint16_t> (
-                            mParam->getValue(param, mSrc, ok));
-                if (ok) {
-                    value |= tvalue;
-                }
-            } break;
-            case REG_WRITE_dsLed64to49: {
-                param = PARAM_blkComPrm64to33;
-                value = static_cast<uint16_t> (
-                            mParam->getValue(param, mSrc, ok)>> 16);
-                if (ok) {
-                    value |= tvalue;
-                }
-            } break;
+
             case REG_WRITE_MAX: break;
         }
 
-        Q_ASSERT(param != PARAM_MAX);
         ok = true;
     }
 
@@ -549,9 +538,9 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const {
 }
 
 //
-uint16_t
-TModbusVp::getReadReg(const uint8_t buf[], uint16_t &len,
-                      uint16_t min, uint16_t max, bool &ok) {
+uint16_t TModbusVp::getReadReg(const uint8_t buf[], uint16_t &len,
+                               uint16_t min, uint16_t max, bool &ok)
+{
     uint16_t nbytes = 0;
     uint8_t quantity = 0;
 
@@ -576,8 +565,9 @@ TModbusVp::getReadReg(const uint8_t buf[], uint16_t &len,
 }
 
 //
-uint16_t
-TModbusVp::getReadRegMsgData(const uint8_t buf[], uint16_t number, bool &ok) {
+uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
+                                      uint16_t number, bool &ok)
+{
     uint16_t nbytes = 0;
 
     if (ok) {
@@ -599,18 +589,22 @@ TModbusVp::getReadRegMsgData(const uint8_t buf[], uint16_t number, bool &ok) {
             case REG_READ_sanSbSac: {
                 param = PARAM_vpBtnSAnSbSac;
                 val32 = static_cast<uint32_t> (value);
-                hdlrButtonSac1(val32 & VP_BTN_CONTROL_sac1);
-                hdlrButtonSac2(val32 & VP_BTN_CONTROL_sac2);
+                hdlrButtonSbSacSan(static_cast<uint32_t> (value));
             } break;
             case REG_READ_sa16to01: {
                 param = PARAM_vpBtnSA32to01;
                 val32 = static_cast<uint32_t> (value);
-                val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
+                hdlrButtonSa(PARAM_comPrmBlk08to01, value, PARAM_vpBtnSA32to01, 1);
+                hdlrButtonSa(PARAM_comPrmBlk16to09, value, PARAM_vpBtnSA32to01, 2);
+//                val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
             } break;
             case REG_READ_sa32to17: {
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
                 param = PARAM_vpBtnSA32to01;
-                val32 = (static_cast<uint32_t> (value)) << 16;
-                val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
+//                hdlrButtonSa(PARAM_comPrmBlk24to17, value, PARAM_vpBtnSA32to01, 3);
+//                hdlrButtonSa(PARAM_comPrmBlk32to25, value, PARAM_vpBtnSA32to01, 4);
+                hdlrButtonSa(PARAM_comPrdBlk08to01, value, PARAM_vpBtnSA32to01, 1);
+                hdlrButtonSa(PARAM_comPrdBlk16to09, value, PARAM_vpBtnSA32to01, 2);
             } break;
             case REG_READ_sa48to33: {
                 param = PARAM_vpBtnSA64to33;
@@ -636,7 +630,9 @@ TModbusVp::getReadRegMsgData(const uint8_t buf[], uint16_t number, bool &ok) {
     return nbytes;
 }
 
-uint16_t TModbusVp::calcCRC(const uint8_t buf[], size_t len, uint16_t crc) {
+//
+uint16_t TModbusVp::calcCRC(const uint8_t buf[], size_t len, uint16_t crc)
+{
     for(size_t i = 0; i < len; i++) {
         uint8_t lut = (crc ^ buf[i]) & 0xFF;
         crc = (crc >> 8) ^ crc_ibm_table[lut];
@@ -645,36 +641,150 @@ uint16_t TModbusVp::calcCRC(const uint8_t buf[], size_t len, uint16_t crc) {
     return crc;
 }
 
-void TModbusVp::hdlrButtonSac1(bool value)
+//
+void TModbusVp::hdlrButtonSbSacSan(uint32_t value)
 {
     bool ok = true;
-    static bool last = false;
-    const param_t param = PARAM_blkComPrmAll;
+    const uint32_t mask = (uint32_t(1) << VP_BTN_CONTROL_MAX) - 1;
+    uint32_t last = mParam->getValue(PARAM_vpBtnSAnSbSac, mSrc, ok);
 
-    uint32_t v = mParam->getValue(PARAM_dirControl, mSrc, ok);
-    if (ok && (v == DIR_CONTROL_local)) {
-        if (!last && value) {
-            uint32_t v = mParam->getValue(param, mSrc, ok);
-            v = ok ? (v + 1) % DISABLE_PRM_MAX : DISABLE_PRM_enable;
-            mParam->setValue(param, mSrc, v);
-        }
-        last = value;
+    if (!ok) {
+        last = 0x00000000;
     }
-}
 
-void TModbusVp::hdlrButtonSac2(bool value)
-{
-    static bool last = false;
-    const param_t param = PARAM_dirControl;
-
-    if (!last && value) {
-        bool ok = true;
-        uint32_t v = mParam->getValue(param, mSrc, ok);
-        v = ok ? (v + 1)  % DIR_CONTROL_MAX : DIR_CONTROL_local;
-        mParam->setValue(param, mSrc, v);
+    if (value > 0) {
+        uint32_t pressed = ((value ^ last) & value) & mask;
+        if (pressed) {
+            for(uint8_t i = 0; i < VP_BTN_CONTROL_MAX; i++) {
+                if (pressed & (uint32_t(1) << i)) {
+                    hdlrButtonSbSacSan(static_cast<vpBtnControl_t> (i));
+                }
+            }
+        }
     }
 
     last = value;
+}
+
+void TModbusVp::hdlrButtonSbSacSan(vpBtnControl_t btn)
+{
+    bool ok = true;
+    param_t param = PARAM_dirControl;
+    uint32_t value = mParam->getValue(PARAM_dirControl, mSrc, ok);
+    bool change = ok && (value == DIR_CONTROL_local);
+
+    switch(btn) {
+        case VP_BTN_CONTROL_sb: {
+            param = PARAM_alarmResetBtn;
+            mParam->setValue(param, mSrc, true);
+        } break;
+        case VP_BTN_CONTROL_sac1: {
+            if (change) {
+                param = PARAM_blkComPrmAll;
+                uint32_t v = mParam->getValue(param, mSrc, ok);
+                v = ok ? (v + 1) % DISABLE_PRM_MAX : DISABLE_PRM_enable;
+                mParam->setValue(param, mSrc, v);
+            }
+        } break;
+        case VP_BTN_CONTROL_sac2: {
+            param = PARAM_dirControl;
+            uint32_t v = mParam->getValue(param, mSrc, ok);
+            v = ok ? (v + 1)  % DIR_CONTROL_MAX : DIR_CONTROL_local;
+            mParam->setValue(param, mSrc, v);
+        } break;
+        case VP_BTN_CONTROL_san1: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san2: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san3: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san4: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san5: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san6: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san7: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_san8: {
+            // TODO
+        } break;
+        case VP_BTN_CONTROL_MAX: {
+            // TODO
+        } break;
+    }
+}
+
+//
+void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
+                             param_t lparam, uint8_t num)
+{
+    bool ok = true;
+
+    // FIXME Еще не сохраненное предыдущее значение не учитывается и может "потеряться"!!!
+    uint32_t lvalue = mParam->getValue(lparam, mSrc, ok);
+    if (!ok) {
+        lvalue = 0x00000000;
+        ok = true;
+    }
+
+    Q_ASSERT((num >= 1) && (num <= 4));
+    if ((num >= 1) && (num <= 4)) {
+        lvalue = (lvalue >> 8*(num - 1)) & 0x00FF;
+        cvalue = (cvalue >> 8*(num - 1)) & 0x00FF;
+
+        // FIXME Убрать этот изврать с модифицированными значениями!
+        // FIXME Сейчас при нажатии на кнопку не сохраненное значение меняет значение, а должно менять текущее!
+        uint32_t value = mParam->isModified(param) ? mParam->getValueW(param) :
+                                                   mParam->getValue(param, mSrc, ok);
+        if (ok) {
+            uint8_t i = 0x01;
+            uint8_t pressed = ((cvalue ^ static_cast<uint8_t> (lvalue)) & cvalue);
+            while(pressed && (i > 0)) {
+                if (pressed & i) {
+                    value ^= i;
+                    pressed &= ~i;
+                }
+                i <<= 1;
+            }
+
+
+            mParam->setValue(param, mSrc, value);
+        }
+    }
+}
+
+//
+uint16_t TModbusVp::getLedValue(param_t hi, param_t low, bool inv) const
+{
+    bool ok = true;
+    uint16_t result = 0;
+    uint16_t value = 0;
+
+    value = static_cast<uint16_t> (mParam->getValue(low, mSrc, ok));
+    if (ok) {
+        if (inv) {
+            value = ~value & 0x00FF;
+        }
+        result += value;
+    }
+
+    value = static_cast<uint16_t> (mParam->getValue(hi, mSrc, ok));
+    if (ok) {
+        if (inv) {
+            value = ~value & 0x00FF;
+        }
+        result += (value << 8);
+    }
+
+    return result;
 }
 
 } // namespace BVP

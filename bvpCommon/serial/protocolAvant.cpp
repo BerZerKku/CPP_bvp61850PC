@@ -127,7 +127,8 @@ TProtocolAvant::pop(uint8_t *data[]) {
 
 //
 void TProtocolAvant::sendFinished() {
-  Q_ASSERT(mState == STATE_waitSendFinished || mState == STATE_disable);
+    // FIXME При работе с виртуальными портаи периодически вылетает ошибка!
+//  Q_ASSERT(mState == STATE_waitSendFinished || mState == STATE_disable);
 
   if (mState != STATE_disable) {
     if (mState == STATE_waitSendFinished) {

@@ -39,13 +39,20 @@ enum param_t {
     PARAM_alarmReset,       ///< Режим сброса сигнализации.
     // Внутренние параметры
     PARAM_extAlarm,         ///< Внешняя сигнализация.
+    PARAM_alarmResetBtn,    ///< Кнопка "Сброс сигнализации".
     // Параметры панели виртуальных ключей
     PARAM_dirControl,       ///< Управление ключами (SAC2).
     PARAM_blkComPrmAll,     ///< Блокировка всех выходов приемника (SAC1).
     PARAM_blkComPrmDir,     ///< Блокировка направлений выхода приемника (SAnn.x)
-    PARAM_blkComPrm32to01,  ///< Блокированные команды приемника с 1 по 32.
+    PARAM_comPrmBlk08to01,  ///< Блокированные команды приемника с 8 по 1.
+    PARAM_comPrmBlk16to09,  ///< Блокированные команды приемника с 16 по 9.
+    PARAM_comPrmBlk24to17,  ///< Блокированные команды приемника с 24 по 17.
+    PARAM_comPrmBlk32to25,  ///< Блокированные команды приемника с 32 по 25.
     PARAM_blkComPrm64to33,  ///< Блокированные команды приемника с 33 по 64.
-    PARAM_blkComPrd32to01,  ///< Блокированные команды передатчика с 1 по 32.
+    PARAM_comPrdBlk08to01,  ///< Блокированные команды передатчика с 8 по 1.
+    PARAM_comPrdBlk16to09,  ///< Блокированные команды передатчика с 16 по 9.
+    PARAM_comPrdBlk24to17,  ///< Блокированные команды передатчика с 24 по 17.
+    PARAM_comPrdBlk32to25,  ///< Блокированные команды передатчика с 32 по 25.
     PARAM_blkComPrd64to33,  ///< Блокированные команды передатчика с 33 по 64.
     // Кнопки панели виртуальных ключей.
     PARAM_vpBtnSAnSbSac,
@@ -72,12 +79,11 @@ enum src_t {
  *  Чтобы перед ней были переданы все остальные.
  */
 enum ctrl_t {
-    CTRL_resetIndication = 0,
-    CTRL_resetErrors,           ///< Сброс неисправностей. Пока == CTRL_reset
-    CTRL_reset,                 ///< Сброс аппарта. Желательно ставить в конец.
+    CTRL_resetComInd = 0,   ///< Сброс индикации команд.
+    CTRL_resetFault,        ///< Сброс неисправностей. Пока == CTRL_reset
+    CTRL_resetSelf,         ///< Сброс аппарта. Желательно ставить в конец.
     //
     CTRL_MAX
-
 };
 
 /// Управление ключами
@@ -114,10 +120,19 @@ enum switchOff_t {
 
 ///
 enum vpBtnControl_t {
-    VP_BTN_CONTROL_sac1 = 0x00000001,
-    VP_BTN_CONTROL_sac2 = 0x00000002,
-    VP_BTN_CONTROL_sb   = 0x00000004,
-    VP_BTN_CONTROL_san  = 0x0000FF00
+    VP_BTN_CONTROL_sac1 = 0,
+    VP_BTN_CONTROL_sac2,
+    VP_BTN_CONTROL_sb,
+    VP_BTN_CONTROL_san1  = 8,
+    VP_BTN_CONTROL_san2,
+    VP_BTN_CONTROL_san3,
+    VP_BTN_CONTROL_san4,
+    VP_BTN_CONTROL_san5,
+    VP_BTN_CONTROL_san6,
+    VP_BTN_CONTROL_san7,
+    VP_BTN_CONTROL_san8,
+    //
+    VP_BTN_CONTROL_MAX
 };
 
 ///
@@ -140,12 +155,12 @@ class TParam {
 
     /// Поля настроек параметра.
     struct paramFields_t {
-        param_t param;              ///< Параметр
-        uint32_t source;            ///< Источник установки данного значения (биты).
+        param_t param;      ///< Параметр
+        uint32_t source;    ///< Источник установки данного значения (биты).
         bool isSet;         ///< Флаг наличия считанного значения.
-        bool isModified;     ///< Флаг наличия нового знаения.
-        uint32_t rValue;            ///< Считанное значение.
-        uint32_t wValue;            ///< Значение для записи.
+        bool isModified;    ///< Флаг наличия нового знаения.
+        uint32_t rValue;    ///< Считанное значение.
+        uint32_t wValue;    ///< Значение для записи.
         ///< Доп. обработка при установке значения параметра.
         bool (*set) (param_t, BVP::src_t, uint32_t&);
         ///< Доп. обработка при чтении значения параметра.
@@ -205,14 +220,14 @@ public:
      *  @param[in] param Параметр.
      *  @return Значение параметра.
      */
-    uint32_t getValueR(param_t param);
+    uint32_t getValueR(param_t param) const;
 
     /** Возвраащет значение параметра для записи.
      *
      *  @param[in] param Параметр.
      *  @return  Значение параметра.
      */
-    uint32_t getValueW(param_t param);
+    uint32_t getValueW(param_t param) const;
 
     /** Устанавливает значение параметра.
      *
@@ -227,14 +242,18 @@ private:
     /// Значения параметров.
     static paramFields_t params[PARAM_MAX];
 
-    friend bool getBlkComPrm(param_t param, src_t src, uint32_t &value);
-
-    friend bool setBlkComPrm(param_t param, src_t src, uint32_t &value);
-    friend bool setBtnSA(param_t param, src_t src, uint32_t &value);
     friend bool setError(param_t param, src_t src, uint32_t &value);
-    friend bool setVpBtnSAnSbSac(param_t param, src_t src, uint32_t &value);
     friend bool setWarning(param_t param, src_t src, uint32_t &value);
 
+    /**
+     * @brief Устанавлиает значение параметра.
+     * Если источник доступа имеется в источниках установки параметра:
+     * - то будет установлено новое значение rValue;
+     * - иначе будет установлено значение для записи wValue.
+     * @param[in] param Параметр.
+     * @param[in] src Источник доступа.
+     * @param[in] value Значение параметра
+     */
     void setLocalValue(param_t param, src_t src, uint32_t value);
 };
 

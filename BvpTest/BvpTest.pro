@@ -23,6 +23,7 @@ SOURCES += \
     main.cpp \
     tst_extAlarm.cpp \
 #    tst_bvpCommon.cpp \
+    tst_modbusVp.cpp
 
 
 

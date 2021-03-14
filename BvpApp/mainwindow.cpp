@@ -246,49 +246,31 @@ void MainWindow::serialProc() {
 //
 void MainWindow::procAlarm()
 {
-    static bool resetbtn = false;
     const BVP::src_t src = BVP::SRC_int;
     bool ok;
     uint32_t uval32;
 
-    uval32 = mParam->getValue(BVP::PARAM_vpBtnSAnSbSac, src, ok);
-    if (ok) {
-        bool tresetbtn = (uval32 & BVP::VP_BTN_CONTROL_sb) > 0;
+    // Обработка нажатия кнопки сброса
 
-        // FIXME Не работает!
-        if (!resetbtn && tresetbtn) {
-            uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
-            if (!ok) {
-                uval32 = 0;
-            }
-            uval32 |= (1 << BVP::CTRL_resetIndication);
+    uval32 = mParam->getValue(BVP::PARAM_alarmResetBtn, src, ok);
+    if ((ok) && (uval32 != false)) {
+        mParam->setValue(BVP::PARAM_alarmResetBtn, src, false);
 
-            if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
-                mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
-                uval32 |= (1 << BVP::CTRL_resetErrors);
+        uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
+        if (!ok) {
+            uval32 = 0;
+        }
+        uval32 |= (1 << BVP::CTRL_resetComInd);
 
-            }
-
-            mParam->setValue(BVP::PARAM_control, src, uval32);
-
-            // FIXME Почему вылетает в ошибку ?!
-            //    Q_ASSERT(ok);
-            if (ok) {
-                // TODO Может отслеживать текущее состояния сигнализаций с МК, а не принятые значения по стандартному протоколу?
-                // И уже здесь принимать решение какие сигналы посылать.
-                if (uval32 & (1 << BVP::CTRL_resetErrors)) {
-                    // TODO Добавить реакцию на сброс ошибок.
-                    // Т.е. несиправности/предупреждения на данный момент есть!
-                }  else if (uval32 & (1 << BVP::CTRL_resetIndication)) {
-                    // TODO Добавить рекцию на сброс индикации! Т.е. неисправностей уже нет!
-                }
-                // TODO добавить в TExtAlarm метод для сброса?!
-            }
+        if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
+            mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
+            uval32 |= (1 << BVP::CTRL_resetFault);
         }
 
-        resetbtn = tresetbtn;
+        mParam->setValue(BVP::PARAM_control, src, uval32);
     }
 
+    // Обработка входных и установка выходных сигналов
 
     uval32 = mParam->getValue(BVP::PARAM_alarmReset, src, ok);
     if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
@@ -336,7 +318,7 @@ void MainWindow::viewReadRegSlot() {
     val32 = params->getValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_blkComPrmAll, BVP::SRC_vkey, ok) ? 1 : 0;
+    val32 = params->getValue(BVP::PARAM_blkComPrmAll, BVP::SRC_vkey, ok) ? 0 : 1;
     val32 |= params->getValue(BVP::PARAM_dirControl, BVP::SRC_vkey, ok) ? 2 : 0;
     val32 |= params->getValue(BVP::PARAM_blkComPrmDir, BVP::SRC_vkey, ok) << 8;
     value = static_cast<quint16> (val32);
@@ -348,17 +330,26 @@ void MainWindow::viewReadRegSlot() {
     val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_vkey, ok);
+    val32 = params->getValue(BVP::PARAM_comPrmBlk16to09, BVP::SRC_vkey, ok);
+    val32 <<= 8;
+    val32 += params->getValue(BVP::PARAM_comPrmBlk08to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
+
 
     group = vpReg::GROUP_com32to17;
     val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_blkComPrm32to01, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32 >> 16);
+    // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+//    val32 = params->getValue(BVP::PARAM_comPrmBlk32to25, BVP::SRC_vkey, ok);
+//    val32 <<= 8;
+//    val32 += params->getValue(BVP::PARAM_comPrmBlk24to17, BVP::SRC_vkey, ok);
+    val32 = params->getValue(BVP::PARAM_comPrdBlk16to09, BVP::SRC_vkey, ok);
+    val32 <<= 8;
+    val32 += params->getValue(BVP::PARAM_comPrdBlk08to01, BVP::SRC_vkey, ok);
+    value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 

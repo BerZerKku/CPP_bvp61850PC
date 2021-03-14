@@ -6,88 +6,6 @@ namespace BVP {
 
 TParam TParam::mParam;
 
-/** ”становка блокированных команд приемника.
- *
- *  - «апись с SRC_pi идет без изменений.
- *  - «апись с SRC_vkey идет переключением текущих состо€ний блокировки дл€
- *  команд по маске, т.е. тех где бит равен 1. ѕри этом состо€ние мен€етс€
- *  только в случае локального управлени€ и отсутствии общей блокировки команд
- *  приемника.
- *
- *  @param[in] param ѕараметр.
- *  @param[in] src »сточник доступа.
- *  @param[in/out] value «начение.
- *  @return true если значение надо записать, иначе false.
- */
-bool setBlkComPrm(param_t param, src_t src, uint32_t &value)
-{
-    bool ok = false;
-    TParam *params = TParam::getInstance();
-
-    Q_ASSERT((param == PARAM_blkComPrm32to01) || (param == PARAM_blkComPrm64to33));
-
-    switch(src) {
-        case SRC_pi: {
-            ok = true;
-        } break;
-
-        case SRC_vkey: {
-            if (value > 0) {
-                uint32_t dir = params->getValue(PARAM_dirControl, src, ok);
-                ok = ok && (dir == DIR_CONTROL_local);
-
-                if (ok) {
-                    uint32_t blkall = params->getValue(PARAM_blkComPrmAll, src, ok);
-                    ok = ok && (blkall == ON_OFF_off);
-                }
-
-                if (ok) {
-                    uint32_t v = params->getValue(param, src, ok);
-                    if (ok) {
-                        value = v ^ value;
-                    }
-                }
-            }
-        } break;
-
-        case SRC_pc: break;
-        case SRC_acs: break;
-        case SRC_MAX: break;
-    }
-
-    return ok;
-}
-
-//
-bool setBtnSA(param_t param, src_t src, uint32_t &value)
-{
-    bool ok = false;
-    TParam *params = TParam::getInstance();
-
-    Q_ASSERT((param == PARAM_vpBtnSA32to01) || (param == PARAM_vpBtnSA64to33));
-
-    if (src == SRC_vkey) {
-        uint32_t tvalue = (params->getValue(param, src, ok) ^ value) & value;
-
-        if (tvalue > 0) {
-            if (param == PARAM_vpBtnSA32to01) {
-                param = PARAM_blkComPrm32to01;
-            } else if (param == PARAM_blkComPrm64to33) {
-                param = PARAM_blkComPrm64to33;
-            } else {
-                param = PARAM_MAX;
-            }
-
-            if (param != PARAM_MAX) {
-                params->setValue(param, src, tvalue);
-            }
-        }
-        ok = true;
-    }
-
-    return ok;
-}
-
 //
 bool setError(param_t param, src_t src, uint32_t &value)
 {
@@ -121,34 +39,6 @@ bool setError(param_t param, src_t src, uint32_t &value)
 }
 
 //
-bool setVpBtnSAnSbSac(param_t param, src_t src, uint32_t &value)
-{
-    bool ok = false;
-    TParam *params = TParam::getInstance();
-
-    UNUSED(param);
-
-    if (src == SRC_vkey) {
-        param_t param = PARAM_vpBtnSAnSbSac;
-        if (params->isSet(param)) {
-            uint32_t tvalue = value ^ params->getValue(param, src, ok);
-
-            if (tvalue > 0) {
-                if (tvalue & VP_BTN_CONTROL_san) {
-                    static_assert(VP_BTN_CONTROL_san == 0x0000FF00,
-                            "Wrong position buttons SAnn.x");
-                    params->setValue(PARAM_blkComPrmDir, src,
-                                     (value & VP_BTN_CONTROL_san) >> 8);
-                }
-            }
-        }
-        ok = true;
-    }
-
-    return ok;
-}
-
-//
 bool setWarning(param_t param, src_t src, uint32_t &value)
 {
     bool ok = true;
@@ -162,7 +52,7 @@ bool setWarning(param_t param, src_t src, uint32_t &value)
     }
 
     if (ok && (param != PARAM_defWarning)) {
-        v|= params->getValue(PARAM_defWarning, src, ok);
+        v |= params->getValue(PARAM_defWarning, src, ok);
     }
 
     if (ok && (param != PARAM_prmWarning)) {
@@ -190,6 +80,8 @@ TParam::TParam()
 
     // TODO ѕодумать над инициализацией параметров которые не надо считывать.
     setLocalValue(PARAM_control, SRC_int, 0);
+    setLocalValue(PARAM_extAlarm, SRC_int, 0);
+    setLocalValue(PARAM_alarmResetBtn, SRC_int, 0);
 }
 
 //
@@ -245,7 +137,7 @@ uint32_t TParam::getValue(param_t param, src_t src, bool &ok)
 }
 
 //
-uint32_t TParam::getValueR(param_t param)
+uint32_t TParam::getValueR(param_t param) const
 {
     Q_ASSERT(param < PARAM_MAX);
 
@@ -253,7 +145,7 @@ uint32_t TParam::getValueR(param_t param)
 }
 
 //
-uint32_t TParam::getValueW(param_t param)
+uint32_t TParam::getValueW(param_t param) const
 {
     Q_ASSERT(param < PARAM_MAX);
 
@@ -278,7 +170,6 @@ bool TParam::setValue(param_t param, src_t src, uint32_t value)
                 setLocalValue(param, src, value);
             }
         }
-
     }
 
     return ok;
@@ -303,9 +194,6 @@ void TParam::setLocalValue(param_t param, src_t src, uint32_t value)
     } else {
         params[param].wValue = value;
         params[param].isModified = true;
-        if (param == PARAM_blkComPrmAll) {
-            qDebug() << "New Prm disable value set to" << value;
-        }
     }
 }
 
