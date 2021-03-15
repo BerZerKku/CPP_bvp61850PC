@@ -154,16 +154,16 @@ class TParam {
 
     /// Поля настроек параметра.
     struct paramFields_t {
-        param_t param;      ///< Параметр
-        uint32_t source;    ///< Источник установки данного значения (биты).
+        const param_t param;      ///< Параметр
+        const uint32_t source;    ///< Источник установки данного значения (биты).
         bool isSet;         ///< Флаг наличия считанного значения.
         bool isModified;    ///< Флаг наличия нового знаения.
         uint32_t rValue;    ///< Считанное значение.
         uint32_t wValue;    ///< Значение для записи.
         ///< Доп. обработка при установке значения параметра.
-        bool (*set) (param_t, BVP::src_t, uint32_t&);
+        bool (* const set) (param_t, BVP::src_t, uint32_t&);
         ///< Доп. обработка при чтении значения параметра.
-        bool (*get) (param_t, BVP::src_t, uint32_t&);
+        bool (* const get) (param_t, BVP::src_t, uint32_t&);
     };
 
 public:
@@ -236,6 +236,11 @@ public:
      *  @return true если установлено новое значение, иначе false.
      */
     bool setValue(param_t param, src_t src, uint32_t value);
+
+    /** Сброс всех параметров в исходное состояние.
+     *  После сброса будут установлены все внутренние параметры.
+     */
+    void reset();
 
 private:
     /// Значения параметров.

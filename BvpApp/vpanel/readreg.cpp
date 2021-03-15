@@ -1,4 +1,4 @@
-#include "readreg.h"
+﻿#include "readreg.h"
 #include <QDebug>
 #include <QGridLayout>
 #include <QLabel>
@@ -6,7 +6,8 @@
 
 
 TReadReg::TReadReg(QWidget *parent) : QWidget(parent) {
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout();
+  this->setLayout(layout);
 
   // FIXME Сейчас порядок жестко привязан к порядку в ENUM
   for(quint8 i = 0; i < rReg.size(); i++) {

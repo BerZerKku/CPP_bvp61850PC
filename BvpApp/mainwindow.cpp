@@ -32,11 +32,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     wAlarm = ui->fAlarm; // const_cast<MainWindow*> (this);
 
+    mModbus = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
+    mParam = BVP::TParam::getInstance();
+
     initVp();
     initAvantPi();
-    initAvantPc();
-
-    mParam = BVP::TParam::getInstance();
+    initAvantPc();    
 
     connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
     timer1ms.start(1);
@@ -120,12 +121,14 @@ void MainWindow::initVp()
     cfg->baudList.append({9600});
     cfg->parityList.append({QSerialPort::EvenParity});
     cfg->stopList.append({QSerialPort::OneStop});
-    cfg->protocol = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
+    cfg->protocol = mModbus;
     cfg->srcId = BVP::SRC_vkey;
     cfg->netAddr = 10;
     cfg->baudrate = 9600;
     cfg->parity = QSerialPort::EvenParity;
     cfg->stopBits = QSerialPort::OneStop;
+
+
 
     initSerial(serial, cfg);
     addSerialToFrame(serial);
@@ -326,48 +329,37 @@ void MainWindow::viewReadRegSlot() {
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
     //
+    // Переключатели с 16 по 1
+    //
     group = vpReg::GROUP_com16to01;
+    BVP::param_t p1 = BVP::PARAM_comPrmBlk08to01;
+    BVP::param_t p2 = BVP::PARAM_comPrmBlk16to09;
+
     val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_comPrmBlk16to09, BVP::SRC_vkey, ok);
-    val32 <<= 8;
-    val32 += params->getValue(BVP::PARAM_comPrmBlk08to01, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
+
+    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_off);
+    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, value);
+
+    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_on);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
-
+    //
+    // Переключатели с 32 по 17
+    //
     group = vpReg::GROUP_com32to17;
+    // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+    p1 = BVP::PARAM_comPrdBlk08to01; // BVP::PARAM_comPrmBlk24to17;
+    p2 = BVP::PARAM_comPrdBlk16to09; // BVP::PARAM_comPrmBlk32to25;
+
     val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-//    val32 = params->getValue(BVP::PARAM_comPrmBlk32to25, BVP::SRC_vkey, ok);
-//    val32 <<= 8;
-//    val32 += params->getValue(BVP::PARAM_comPrmBlk24to17, BVP::SRC_vkey, ok);
-    val32 = params->getValue(BVP::PARAM_comPrdBlk16to09, BVP::SRC_vkey, ok);
-    val32 <<= 8;
-    val32 += params->getValue(BVP::PARAM_comPrdBlk08to01, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
-    group = vpReg::GROUP_com48to33;
-    val32 = params->getValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
+    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_off);
+    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, value);
 
-    group = vpReg::GROUP_com64to49;
-    val32 = params->getValue(BVP::PARAM_vpBtnSA64to33, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32 >> 16);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_blkComPrm64to33, BVP::SRC_vkey, ok);
-    value = static_cast<quint16> (val32 >> 16);
-    ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
+    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_on);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 }

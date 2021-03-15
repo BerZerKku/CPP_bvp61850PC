@@ -276,6 +276,21 @@ bool TModbusVp::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits)
 }
 
 //
+void TModbusVp::setID(uint32_t id)
+{
+    Q_ASSERT(id < SRC_MAX);
+
+    *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
+}
+
+//
+uint32_t TModbusVp::getID() const
+{
+    return static_cast<uint32_t> (mSrc);
+}
+
+
+//
 void TModbusVp::vTick()
 {
     if (mState == STATE_disable) {
@@ -313,17 +328,14 @@ bool TModbusVp::isConnection() const
 }
 
 //
-void TModbusVp::setID(uint32_t id)
+uint16_t TModbusVp::getSwitchLed(param_t hi, param_t low, switchOff_t sw) const
 {
-    Q_ASSERT(id < SRC_MAX);
+    uint16_t result = 0;
 
-    *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
-}
+    result = getSwitchLed(hi, sw);
+    result = static_cast<uint16_t> (result << 8) + getSwitchLed(low, sw);
 
-//
-uint32_t TModbusVp::getID() const
-{
-    return static_cast<uint32_t> (mSrc);
+    return result;
 }
 
 //
@@ -463,22 +475,30 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
                 }
             } break;
 
-            case REG_WRITE_enLed16to01: // DOWN
-            case REG_WRITE_dsLed16to01: {
-                value = getLedValue(PARAM_comPrmBlk16to09,
-                                        PARAM_comPrmBlk08to01,
-                                        number == REG_WRITE_enLed16to01);
+            case REG_WRITE_enLed16to01: {
+                value = getSwitchLed(PARAM_comPrmBlk16to09,
+                                     PARAM_comPrmBlk08to01, ON_OFF_off);
             } break;
 
-            case REG_WRITE_enLed32to17: // DOWN
-            case REG_WRITE_dsLed32to17: {
+            case REG_WRITE_dsLed16to01: {
+                value = getSwitchLed(PARAM_comPrmBlk16to09,
+                                    PARAM_comPrmBlk08to01, ON_OFF_on);
+            } break;
+
+            case REG_WRITE_enLed32to17: {// DOWN}
+//                value = getSwitchLed(PARAM_comPrmBlk32to25,
+//                                     PARAM_comPrmBlk24to17, ON_OFF_off);
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-//                value = getLedValue(PARAM_comPrmBlk32to25,
-//                                    PARAM_comPrmBlk24to17,
-//                                    number == REG_WRITE_enLed32to17);
-                value = getLedValue(PARAM_comPrdBlk16to09,
-                                    PARAM_comPrdBlk08to01,
-                                    number == REG_WRITE_enLed32to17);
+                value = getSwitchLed(PARAM_comPrdBlk16to09,
+                                     PARAM_comPrdBlk08to01, ON_OFF_off);
+            } break;
+
+            case REG_WRITE_dsLed32to17: {
+//                value = getSwitchLed(PARAM_comPrmBlk32to25,
+//                                     PARAM_comPrmBlk24to17, ON_OFF_on);
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+                value = getSwitchLed(PARAM_comPrdBlk16to09,
+                            PARAM_comPrdBlk08to01, ON_OFF_on);
             } break;
 
             case REG_WRITE_enLed48to33: // DOWN
@@ -757,41 +777,22 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
 }
 
 //
-uint16_t TModbusVp::getLedValue(param_t hi, param_t low, bool inv) const
+uint8_t TModbusVp::getSwitchLed(param_t param, switchOff_t sw) const
 {
-    bool ok;
-    uint16_t result = 0;
-    uint16_t value = 0;
+    bool ok = false;
+    uint8_t result = 0x00;
 
-    ok = true;
-    if (isParamComPrmBlk(low) && isBlockPrm()) {
-        value = 0x00FF;
-    } else {
-        value = static_cast<uint16_t> (mParam->getValue(low, mSrc, ok));
-    }
-
-    if (ok) {
-        if (inv) {
-            value = ~value & 0x00FF;
+    // ограничение на список параметров, чтобы небыло доступа к остальным
+    if ((param >= PARAM_comPrmBlk08to01) && (param <= PARAM_blkComPrd64to33)) {
+        if (isParamComPrmBlk(param) && isBlockPrm()) {
+            result = 0xFF;
+            ok = true;
+        } else {
+            result = static_cast<uint8_t> (mParam->getValue(param, mSrc, ok));
         }
-        result += value;
     }
 
-    ok = true;
-    if (isParamComPrmBlk(hi) && isBlockPrm()) {
-        value = 0x00FF;
-    } else {
-        value = static_cast<uint16_t> (mParam->getValue(hi, mSrc, ok));
-    }
-
-    if (ok) {
-        if (inv) {
-            value = ~value & 0x00FF;
-        }
-        result += (value << 8);
-    }
-
-    return result;
+    return !ok ? 0x00 : ((sw == ON_OFF_off) ? ~result : result);
 }
 
 //

@@ -11,9 +11,8 @@
     FRIEND_TEST(TModbusVp_Test, isBlockPrm); \
     FRIEND_TEST(TModbusVp_Test, isParamComPrmBlk); \
     FRIEND_TEST(TModbusVp_Test, hdlrButtonSa); \
-
-
-
+    FRIEND_TEST(TModbusVp_Test, getSwitchLed_One); \
+    FRIEND_TEST(TModbusVp_Test, getSwitchLed_Two);
 
 #include "bvpCommon/serial/modbusVp.h"
 
@@ -355,6 +354,168 @@ TEST_F(TModbusVp_Test, hdlrButtonSa)
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
     ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+}
+
+//
+TEST_F(TModbusVp_Test, getSwitchLed_One)
+{
+    // Сброс параметров
+    mParam->reset();
+
+    // Светодиоды не установленных параметров не горят
+    uint8_t result8 = 0x00;
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t param = static_cast<param_t> (i);
+        ASSERT_EQ(result8, mModbus->getSwitchLed(param, ON_OFF_off));
+        ASSERT_EQ(result8, mModbus->getSwitchLed(param_t(i), ON_OFF_on));
+    }
+
+    //
+    // Проверка светодиодов при некорректном состоянии блокировки приемника SAC1
+    //
+
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t param = static_cast<param_t> (i);
+        ASSERT_TRUE(setValue(param, SRC_pi, i));
+        ASSERT_TRUE(checkValue(param, SRC_vkey, i));
+
+        uint8_t valueEn = ~i & 0xFF;
+        ASSERT_EQ(valueEn , mModbus->getSwitchLed(param, ON_OFF_off))
+                << " params is " << param;
+
+        uint8_t valueDs = i & 0xFF;
+        ASSERT_EQ(valueDs, mModbus->getSwitchLed(param, ON_OFF_on))
+                << " params is " << param;
+    }
+
+    //
+    // Проверка светодиодов при блокировке приемника SAC1
+    //
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_disable));
+
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t param = static_cast<param_t> (i);
+
+        uint8_t valueEn = mModbus->isParamComPrmBlk(param) ? 0x00 : ~i & 0xFF;
+        ASSERT_EQ(valueEn, mModbus->getSwitchLed(param, ON_OFF_off))
+                << " params is " << param;
+
+        uint8_t valueDs = mModbus->isParamComPrmBlk(param) ? 0xFF : i & 0xFF;
+        ASSERT_EQ(valueDs, mModbus->getSwitchLed(param, ON_OFF_on))
+                << " params is " << param;
+    }
+
+    //
+    // Проверка светодиодов без блокировки приемника SAC1
+    //
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_enable));
+
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t param = static_cast<param_t> (i);
+
+        uint8_t valueEn = ~i & 0xFF;
+        ASSERT_EQ(valueEn , mModbus->getSwitchLed(param, ON_OFF_off))
+                << " params is " << param;
+
+        uint8_t valueDs = i & 0xFF;
+        ASSERT_EQ(valueDs, mModbus->getSwitchLed(param, ON_OFF_on))
+                << " params is " << param;
+    }
+}
+
+//
+TEST_F(TModbusVp_Test, getSwitchLed_Two)
+{
+    // Сброс параметров
+    mParam->reset();
+
+    // Светодиоды не установленных параметров не горят
+    uint16_t result16 = 0x0000;
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t p1 = static_cast<param_t> (i);
+
+        for(uint16_t j = i; j <= PARAM_comPrdBlk24to17; j++) {
+            param_t p2 = static_cast<param_t> (j);
+
+            ASSERT_EQ(result16, mModbus->getSwitchLed(p2, p1, ON_OFF_off));
+            ASSERT_EQ(result16, mModbus->getSwitchLed(p2, p1, ON_OFF_on));
+        }
+    }
+
+    // установка параметров
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t param = static_cast<param_t> (i);
+        ASSERT_TRUE(setValue(param, SRC_pi, i));
+        ASSERT_TRUE(checkValue(param, SRC_vkey, i));
+    }
+
+    //
+    // Проверка светодиодов при некорректном состоянии блокировки приемника SAC1
+    //
+
+    // Две группы светодиодов
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t p1 = static_cast<param_t> (i);
+
+        for(uint16_t j = i; j <= PARAM_comPrdBlk24to17; j++) {
+            param_t p2 = static_cast<param_t> (j);
+
+
+            uint16_t valueDs = static_cast<uint16_t> (j << 8) + (i & 0xFF);
+            ASSERT_EQ(valueDs, mModbus->getSwitchLed(p2, p1, ON_OFF_on))
+                    << " param 1 is " << p1 << ", param 2 is " << p2;
+
+            uint16_t valueEn = ~valueDs;
+            ASSERT_EQ(valueEn , mModbus->getSwitchLed(p2, p1, ON_OFF_off))
+                    << " param 1 is " << p1 << ", param 2 is " << p2;
+        }
+    }
+
+    //
+    // Проверка светодиодов при блокировке приемника SAC1
+    //
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_disable));
+
+    // Две группы светодиодов
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t p1 = static_cast<param_t> (i);
+
+        for(uint16_t j = i; j <= PARAM_comPrdBlk24to17; j++) {
+            param_t p2 = static_cast<param_t> (j);
+
+            uint16_t valueDs = mModbus->isParamComPrmBlk(p2) ? 0xFF : (j & 0xFF);
+            valueDs = static_cast<uint16_t> (valueDs << 8);
+            valueDs += mModbus->isParamComPrmBlk(p1) ? 0xFF : (i & 0xFF);
+            ASSERT_EQ(valueDs, mModbus->getSwitchLed(p2, p1, ON_OFF_on))
+                    << " param 1 is " << p1 << ", param 2 is " << p2;
+
+            uint16_t valueEn = ~valueDs;
+            ASSERT_EQ(valueEn , mModbus->getSwitchLed(p2, p1, ON_OFF_off))
+                    << " param 1 is " << p1 << ", param 2 is " << p2;
+        }
+    }
+
+    //
+    // Проверка светодиодов без блокировки приемника SAC1
+    //
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_enable));
+
+    // Две группы светодиодов
+    for(uint16_t i = PARAM_comPrmBlk08to01; i <= PARAM_comPrdBlk24to17; i++) {
+        param_t p1 = static_cast<param_t> (i);
+
+        for(uint16_t j = i; j <= PARAM_comPrdBlk24to17; j++) {
+            param_t p2 = static_cast<param_t> (j);
+
+            uint16_t valueDs = static_cast<uint16_t> (j << 8) + (i & 0xFF);
+            ASSERT_EQ(valueDs, mModbus->getSwitchLed(p2, p1, ON_OFF_on))
+                    << " param 1 is " << p1 << ", param 2 is " << p2;
+
+            uint16_t valueEn = ~valueDs;
+            ASSERT_EQ(valueEn , mModbus->getSwitchLed(p2, p1, ON_OFF_off))
+                    << " param 1 is " << p1 << ", param 2 is " << p2;
+        }
+    }
 }
 
 } // namespace BVP

@@ -78,10 +78,7 @@ TParam::TParam()
         Q_ASSERT(params[i].param == static_cast<param_t> (i));
     }
 
-    // TODO Подумать над инициализацией параметров которые не надо считывать.
-    setLocalValue(PARAM_control, SRC_int, 0);
-    setLocalValue(PARAM_extAlarm, SRC_int, 0);
-    setLocalValue(PARAM_alarmResetBtn, SRC_int, 0);
+    reset();
 }
 
 //
@@ -175,7 +172,25 @@ bool TParam::setValue(param_t param, src_t src, uint32_t value)
     return ok;
 }
 
+//
+void TParam::reset()
+{
+    paramFields_t *p;
 
+    for(uint16_t i = 0; i < PARAM_MAX; i++) {
+        p = &params[i];
+
+        p->rValue = 0;
+        p->isSet = false;
+        p->wValue = 0;
+        p->isModified = false;
+    }
+
+    // TODO Подумать над инициализацией параметров которые не надо считывать.
+    setLocalValue(PARAM_control, SRC_int, 0);
+    setLocalValue(PARAM_extAlarm, SRC_int, 0);
+    setLocalValue(PARAM_alarmResetBtn, SRC_int, 0);
+}
 
 //
 void TParam::setLocalValue(param_t param, src_t src, uint32_t value)

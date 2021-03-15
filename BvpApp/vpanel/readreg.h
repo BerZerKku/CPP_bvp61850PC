@@ -1,4 +1,4 @@
-#ifndef TREADREG_H
+﻿#ifndef TREADREG_H
 #define TREADREG_H
 
 #include <QLineEdit>

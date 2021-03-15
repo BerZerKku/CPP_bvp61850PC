@@ -53,6 +53,7 @@ private:
 
   BVP::TParam *mParam;
   BVP::TExtAlarm mAlarm;
+  BVP::TModbusVp *mModbus;
 
   QMap<TSerial*, serialCfg_t*> sPort;
 
