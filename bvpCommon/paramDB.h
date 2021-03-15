@@ -12,11 +12,6 @@ bool setWarning(param_t param, src_t src, uint32_t &value);
 //
 TParam::paramFields_t TParam::params[PARAM_MAX] = {
     //
-    {.param = PARAM_control, .source = (1 << SRC_int) | (1 << SRC_pi),
-     .isSet = false, .isModified = false,
-     .rValue = 0, .wValue = 0,
-     .set = nullptr, .get = nullptr},
-    //
     // Текущее состояние
     //
     {.param =  PARAM_error,  .source = (1 << SRC_int),
@@ -129,6 +124,10 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     {.param = PARAM_alarmResetBtn, .source = (1 << SRC_int) | (1 << SRC_vkey),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    {.param = PARAM_control, .source = (1 << SRC_int) | (1 << SRC_pi),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},

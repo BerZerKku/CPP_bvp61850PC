@@ -11,10 +11,11 @@ CONFIG -= debug_and_release
 CONFIG += cmdline
 
 DEFINES += \
-    NDEBUG
+    NDEBUG \
+    QT_NO_DEBUG
 
 INCLUDEPATH += \
-    googletest \
+    googletest
 
 HEADERS += \
 

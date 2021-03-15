@@ -192,8 +192,8 @@ void TParam::setLocalValue(param_t param, src_t src, uint32_t value)
             p->isModified = (value != p->wValue);
         }
     } else {
-        params[param].wValue = value;
-        params[param].isModified = true;
+        p->wValue = value;
+        p->isModified = true;
     }
 }
 

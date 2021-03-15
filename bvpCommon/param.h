@@ -8,10 +8,8 @@
 namespace BVP {
 
 enum param_t {
-    //
-    PARAM_control = 0,      ///< Сигналы управления.
     // Текущее состояние
-    PARAM_error,            ///< Флаг наличия неисправности.
+    PARAM_error = 0,        ///< Флаг наличия неисправности.
     PARAM_warning,          ///< Флаг наличия предупреждения.
     PARAM_defError,         ///< Неисправности Защиты.
     PARAM_defWarning,       ///< Предупреждения Защиты.
@@ -39,7 +37,8 @@ enum param_t {
     PARAM_alarmReset,       ///< Режим сброса сигнализации.
     // Внутренние параметры
     PARAM_extAlarm,         ///< Внешняя сигнализация.
-    PARAM_alarmResetBtn,    ///< Кнопка "Сброс сигнализации".
+    PARAM_alarmResetBtn,    ///< Переключатель "Сброс сигнализации".
+    PARAM_control,          ///< Сигналы управления.
     // Параметры панели виртуальных ключей
     PARAM_dirControl,       ///< Управление ключами (SAC2).
     PARAM_blkComPrmAll,     ///< Блокировка всех выходов приемника (SAC1).

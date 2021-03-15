@@ -5,8 +5,14 @@
 #include <iostream>
 
 #define TEST_FRIENDS \
-    friend class TModbusVp_Test; \
+    FRIEND_TEST(TModbusVp_Test, init); \
+    FRIEND_TEST(TModbusVp_Test, netAddress); \
+    FRIEND_TEST(TModbusVp_Test, setup); \
+    FRIEND_TEST(TModbusVp_Test, isBlockPrm); \
+    FRIEND_TEST(TModbusVp_Test, isParamComPrmBlk); \
     FRIEND_TEST(TModbusVp_Test, hdlrButtonSa); \
+
+
 
 
 #include "bvpCommon/serial/modbusVp.h"
@@ -25,6 +31,10 @@ public:
     TModbusVp_Test() {
         mParam = TParam::getInstance();
     }
+
+protected:
+
+    uint8_t mBuf[256];
 
     //
     bool setValue(param_t param, src_t src, uint32_t value) {
@@ -78,10 +88,11 @@ public:
         return value == mParam->getValueW(param);
     }
 
-protected:
-
     void SetUp() override {
         mModbus = new BVP::TModbusVp(TSerialProtocol::REGIME_master);
+
+        mModbus->setBuffer(mBuf, sizeof(mBuf) / sizeof(mBuf[0]));
+        mModbus->setID(SRC_vkey);
     }
 
     void TearDown()override {
@@ -90,14 +101,122 @@ protected:
 };
 
 //
+TEST_F(TModbusVp_Test, init)
+{
+    ASSERT_EQ(mBuf, mModbus->mBuf);
+    ASSERT_EQ(sizeof(mBuf) / sizeof(mBuf[0]), mModbus->mSize);
+}
+
+//
+TEST_F(TModbusVp_Test, id) {
+    ASSERT_EQ(SRC_vkey, mModbus->getID());
+
+    for(uint16_t i = 0; i <= (SRC_MAX + 1); i++) {
+        mModbus->setID(i);
+        ASSERT_EQ(i, mModbus->getID());
+    }
+}
+
+//
+TEST_F(TModbusVp_Test, enable)
+{
+    ASSERT_FALSE(mModbus->isEnable());
+
+    ASSERT_TRUE(mModbus->setEnable(true));
+    ASSERT_TRUE(mModbus->isEnable());
+
+    ASSERT_FALSE(mModbus->setEnable(false));
+    ASSERT_FALSE(mModbus->isEnable());
+}
+
+//
+TEST_F(TModbusVp_Test, netAddress)
+{
+    uint16_t last = 255;
+    ASSERT_EQ(last, mModbus->mNetAddress);
+
+    for(uint16_t address = 0; address <= 1000; address++) {
+        bool check = (address > 0) && (address <= 247);
+        ASSERT_EQ(check, mModbus->setNetAddress(address))
+                << " wrong address is " << address;
+
+        if (check) {
+            ASSERT_EQ(address, mModbus->mNetAddress)
+                    << " wrong address is " << address;
+            last = address;
+        } else {
+            ASSERT_EQ(last, mModbus->mNetAddress)
+                    << " wrong address is " << address;
+        }
+    }
+}
+
+//
+TEST_F(TModbusVp_Test, setup)
+{
+    ASSERT_FALSE(mModbus->setup(0, true, 1));
+
+    // FIXME Сейчас на ПК значения в 10 раз больше, как проверить для железа?!
+    // mModbus->mTimeToCompleteUs
+    // mModbus->mTimeToErrorUs
+
+    ASSERT_TRUE(mModbus->setup(1000000, false, 1));
+    ASSERT_EQ(10, mModbus->mTimeOneByteUs);
+    ASSERT_EQ(350, mModbus->mTimeToCompleteUs);
+    ASSERT_EQ(150, mModbus->mTimeToErrorUs);
+
+    ASSERT_TRUE(mModbus->setup(9600, true, 2));
+    ASSERT_EQ(1248, mModbus->mTimeOneByteUs);
+    ASSERT_EQ(43680, mModbus->mTimeToCompleteUs);
+    ASSERT_EQ(18720, mModbus->mTimeToErrorUs);
+
+}
+
+//
+TEST_F(TModbusVp_Test, isBlockPrm)
+{
+    // Чтобы добавить/убрать тесты в случае измнения диапазона значений
+    ASSERT_EQ(2, DISABLE_PRM_MAX);
+
+    for(uint16_t i = 0; i <= (DISABLE_PRM_MAX + 1); i++) {
+        ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, i));
+        ASSERT_EQ(i == DISABLE_PRM_disable, mModbus->isBlockPrm())
+                << " wrong value is " << i;
+    }
+}
+
+//
+TEST_F(TModbusVp_Test, isParamComPrmBlk)
+{
+    QVector<param_t> list = {
+        PARAM_comPrmBlk08to01,
+        PARAM_comPrmBlk16to09,
+        PARAM_comPrmBlk24to17,
+        PARAM_comPrmBlk32to25,
+        PARAM_blkComPrm64to33
+    };
+
+    for(uint16_t i = 0; i <= (PARAM_MAX + 1); i++) {
+        param_t param = static_cast<param_t> (i);
+
+        ASSERT_EQ(mModbus->isParamComPrmBlk(param), list.contains(param))
+                << " wrong param is " << param;
+    }
+}
+
+//
 TEST_F(TModbusVp_Test, hdlrButtonSa)
 {
+    // Инициализация.
     ASSERT_TRUE(setValue(PARAM_comPrmBlk08to01, SRC_pi, 0));
     ASSERT_TRUE(setValue(PARAM_comPrmBlk16to09, SRC_pi, 0));
     ASSERT_TRUE(setValue(PARAM_comPrmBlk24to17, SRC_pi, 0));
     ASSERT_TRUE(setValue(PARAM_comPrmBlk32to25, SRC_pi, 0));
     ASSERT_TRUE(setValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+    ASSERT_TRUE(setValue(PARAM_dirControl, SRC_pi, DIR_CONTROL_local));
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_enable));
 
+    // Отсутствие реакции на не нажатые переключатели
     mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x00, PARAM_vpBtnSA32to01, 1);
 
     ASSERT_TRUE(checkValue(PARAM_comPrmBlk08to01, SRC_pi, 0));
@@ -106,6 +225,7 @@ TEST_F(TModbusVp_Test, hdlrButtonSa)
     ASSERT_TRUE(checkValue(PARAM_comPrmBlk32to25, SRC_pi, 0));
     ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
 
+    // Переключение в первых восьми переключателях
     mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x01, PARAM_vpBtnSA32to01, 1);
 
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x01));
@@ -114,25 +234,28 @@ TEST_F(TModbusVp_Test, hdlrButtonSa)
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0));
     ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
 
+    // Переключение в первых восьми переключателях
     mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x02, PARAM_vpBtnSA32to01, 1);
 
-    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x3));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x2));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0));
     ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
 
+    // Переключение во вторых восьми переключателях
     mModbus->hdlrButtonSa(PARAM_comPrmBlk16to09, 0x1300, PARAM_vpBtnSA32to01, 2);
 
-    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x03));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x02));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0));
     ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
 
+    // Переключение в последних восьми переключателях
     mModbus->hdlrButtonSa(PARAM_comPrmBlk32to25, 0x88000000, PARAM_vpBtnSA32to01, 4);
 
-    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x03));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x02));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
@@ -141,7 +264,7 @@ TEST_F(TModbusVp_Test, hdlrButtonSa)
     // Отсутвие изменения при не нажатых переключателях
     mModbus->hdlrButtonSa(PARAM_comPrmBlk32to25, 0x00000000, PARAM_vpBtnSA32to01, 4);
 
-    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x03));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x02));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
@@ -150,7 +273,7 @@ TEST_F(TModbusVp_Test, hdlrButtonSa)
     // Отсутствие изменения при установленных битах в ненужной позиции
     mModbus->hdlrButtonSa(PARAM_comPrmBlk24to17, 0x77000000, PARAM_vpBtnSA32to01, 3);
 
-    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x03));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x02));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
@@ -160,11 +283,78 @@ TEST_F(TModbusVp_Test, hdlrButtonSa)
     ASSERT_TRUE(setValue(PARAM_vpBtnSA32to01, SRC_vkey, 0xFFFFFFFF));
     mModbus->hdlrButtonSa(PARAM_comPrmBlk32to25, 0xFF000000, PARAM_vpBtnSA32to01, 4);
 
-    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x03));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x02));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
     ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
     ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0xFFFFFFFF));
+
+    // При корректных значениях все работает
+    ASSERT_TRUE(setValue(PARAM_vpBtnSA32to01, SRC_vkey, 0x00));
+    mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0xF1, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0xF1));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+
+    // Отсутствие изменения при удаленном управлении
+    ASSERT_TRUE(setValue(PARAM_dirControl, SRC_pi, DIR_CONTROL_remote));
+    mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x08, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0xF1));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+
+    // Отсутствие изменения при не корректном значении управления
+    ASSERT_TRUE(setValue(PARAM_dirControl, SRC_pi, DIR_CONTROL_MAX));
+    mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x08, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0xF1));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+
+    // При корректных значениях все работает
+    ASSERT_TRUE(setValue(PARAM_dirControl, SRC_pi, DIR_CONTROL_local));
+    mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x08, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x08));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+
+    // Отсутствие изменения при блокировке приемника SAC1
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_disable));
+    mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x01, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x08));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+
+    // Наличие изменения команд передатчика при блокировке приемника SAC1
+    ASSERT_TRUE(setValue(PARAM_comPrdBlk08to01, SRC_pi, 0));
+    mModbus->hdlrButtonSa(PARAM_comPrdBlk08to01, 0x01, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrdBlk08to01, 0x01));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
+
+    // Изменение при не корректном значении приемника SAC1
+    ASSERT_TRUE(setValue(PARAM_blkComPrmAll, SRC_pi, DISABLE_PRM_MAX));
+    mModbus->hdlrButtonSa(PARAM_comPrmBlk08to01, 0x01, PARAM_vpBtnSA32to01, 1);
+
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk08to01, 0x01));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk16to09, 0x13));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk24to17, 0));
+    ASSERT_TRUE(checkValueW(PARAM_comPrmBlk32to25, 0x88));
+    ASSERT_TRUE(checkValue(PARAM_vpBtnSA32to01, SRC_vkey, 0));
 }
 
 } // namespace BVP

@@ -466,16 +466,16 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
             case REG_WRITE_enLed16to01: // DOWN
             case REG_WRITE_dsLed16to01: {
                 value = getLedValue(PARAM_comPrmBlk16to09,
-                                    PARAM_comPrmBlk08to01,
-                                    number == REG_WRITE_enLed16to01);
+                                        PARAM_comPrmBlk08to01,
+                                        number == REG_WRITE_enLed16to01);
             } break;
 
             case REG_WRITE_enLed32to17: // DOWN
             case REG_WRITE_dsLed32to17: {
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-                //                    value = getLedValue(PARAM_comPrmBlk32to25,
-                //                                        PARAM_comPrmBlk24to17,
-                //                                        number == REG_WRITE_enLed32to17);
+//                value = getLedValue(PARAM_comPrmBlk32to25,
+//                                    PARAM_comPrmBlk24to17,
+//                                    number == REG_WRITE_enLed32to17);
                 value = getLedValue(PARAM_comPrdBlk16to09,
                                     PARAM_comPrdBlk08to01,
                                     number == REG_WRITE_enLed32to17);
@@ -592,11 +592,11 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
                 hdlrButtonSbSacSan(static_cast<uint32_t> (value));
             } break;
             case REG_READ_sa16to01: {
-                param = PARAM_vpBtnSA32to01;
-                val32 = static_cast<uint32_t> (value);
+                param = PARAM_vpBtnSA32to01;                
                 hdlrButtonSa(PARAM_comPrmBlk08to01, value, PARAM_vpBtnSA32to01, 1);
                 hdlrButtonSa(PARAM_comPrmBlk16to09, value, PARAM_vpBtnSA32to01, 2);
-//                val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
+                val32 = static_cast<uint32_t> (value);
+                val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
             } break;
             case REG_READ_sa32to17: {
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
@@ -605,6 +605,8 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
 //                hdlrButtonSa(PARAM_comPrmBlk32to25, value, PARAM_vpBtnSA32to01, 4);
                 hdlrButtonSa(PARAM_comPrdBlk08to01, value, PARAM_vpBtnSA32to01, 1);
                 hdlrButtonSa(PARAM_comPrdBlk16to09, value, PARAM_vpBtnSA32to01, 2);
+                val32 = (static_cast<uint32_t> (value)) << 16;
+                val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
             } break;
             case REG_READ_sa48to33: {
                 param = PARAM_vpBtnSA64to33;
@@ -662,15 +664,13 @@ void TModbusVp::hdlrButtonSbSacSan(uint32_t value)
             }
         }
     }
-
-    last = value;
 }
 
 void TModbusVp::hdlrButtonSbSacSan(vpBtnControl_t btn)
 {
     bool ok = true;
     param_t param = PARAM_dirControl;
-    uint32_t value = mParam->getValue(PARAM_dirControl, mSrc, ok);
+    uint32_t value = mParam->getValue(param, mSrc, ok);
     bool change = ok && (value == DIR_CONTROL_local);
 
     switch(btn) {
@@ -727,36 +727,31 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
                              param_t lparam, uint8_t num)
 {
     bool ok = true;
+    const uint32_t mask = 0x00FF;
+    uint32_t value = mParam->getValue(PARAM_dirControl, mSrc, ok);
+    bool change = ok && (value == DIR_CONTROL_local);
 
-    // FIXME Еще не сохраненное предыдущее значение не учитывается и может "потеряться"!!!
-    uint32_t lvalue = mParam->getValue(lparam, mSrc, ok);
-    if (!ok) {
-        lvalue = 0x00000000;
-        ok = true;
+    if (change && isParamComPrmBlk(param)) {
+        change = !isBlockPrm();
     }
 
-    Q_ASSERT((num >= 1) && (num <= 4));
-    if ((num >= 1) && (num <= 4)) {
-        lvalue = (lvalue >> 8*(num - 1)) & 0x00FF;
-        cvalue = (cvalue >> 8*(num - 1)) & 0x00FF;
-
-        // FIXME Убрать этот изврать с модифицированными значениями!
-        // FIXME Сейчас при нажатии на кнопку не сохраненное значение меняет значение, а должно менять текущее!
-        uint32_t value = mParam->isModified(param) ? mParam->getValueW(param) :
-                                                   mParam->getValue(param, mSrc, ok);
+    if (change) {
+        // NOTE Еще не сохраненное предыдущее значение потеряется
+        uint32_t lvalue = mParam->getValue(lparam, mSrc, ok);
         if (ok) {
-            uint8_t i = 0x01;
-            uint8_t pressed = ((cvalue ^ static_cast<uint8_t> (lvalue)) & cvalue);
-            while(pressed && (i > 0)) {
-                if (pressed & i) {
-                    value ^= i;
-                    pressed &= ~i;
+            Q_ASSERT((num >= 1) && (num <= 4));
+            if ((num >= 1) && (num <= 4)) {
+                uint32_t value = mParam->getValue(param, mSrc, ok) & mask;
+
+                if (ok) {
+                    // определение нажатия на переключатель
+                    uint32_t pressed = ((cvalue ^ lvalue) & cvalue);
+                    pressed = (pressed >> 8*(num - 1)) & mask;
+                    if (pressed) {
+                        mParam->setValue(param, mSrc, value ^ pressed);
+                    }
                 }
-                i <<= 1;
             }
-
-
-            mParam->setValue(param, mSrc, value);
         }
     }
 }
@@ -764,11 +759,17 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
 //
 uint16_t TModbusVp::getLedValue(param_t hi, param_t low, bool inv) const
 {
-    bool ok = true;
+    bool ok;
     uint16_t result = 0;
     uint16_t value = 0;
 
-    value = static_cast<uint16_t> (mParam->getValue(low, mSrc, ok));
+    ok = true;
+    if (isParamComPrmBlk(low) && isBlockPrm()) {
+        value = 0x00FF;
+    } else {
+        value = static_cast<uint16_t> (mParam->getValue(low, mSrc, ok));
+    }
+
     if (ok) {
         if (inv) {
             value = ~value & 0x00FF;
@@ -776,7 +777,13 @@ uint16_t TModbusVp::getLedValue(param_t hi, param_t low, bool inv) const
         result += value;
     }
 
-    value = static_cast<uint16_t> (mParam->getValue(hi, mSrc, ok));
+    ok = true;
+    if (isParamComPrmBlk(hi) && isBlockPrm()) {
+        value = 0x00FF;
+    } else {
+        value = static_cast<uint16_t> (mParam->getValue(hi, mSrc, ok));
+    }
+
     if (ok) {
         if (inv) {
             value = ~value & 0x00FF;
@@ -785,6 +792,20 @@ uint16_t TModbusVp::getLedValue(param_t hi, param_t low, bool inv) const
     }
 
     return result;
+}
+
+//
+bool TModbusVp::isBlockPrm() const
+{
+    bool ok = true;
+    uint32_t value = mParam->getValue(PARAM_blkComPrmAll, mSrc, ok);
+
+    return ok && (value == DISABLE_PRM_disable);
+}
+
+bool TModbusVp::isParamComPrmBlk(param_t param) const
+{
+    return (param >= PARAM_comPrmBlk08to01) && (param <= PARAM_blkComPrm64to33);
 }
 
 } // namespace BVP
