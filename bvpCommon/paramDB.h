@@ -201,7 +201,7 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
     //
     //  нопки панели виртуальных ключей.
     //
-    {.param = PARAM_vpBtnSAnSbSac, .source = (1 << SRC_vkey) | (1 << SRC_int),
+    {.param = PARAM_vpBtnSAnSbSac, .source = (1 << SRC_vkey),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},

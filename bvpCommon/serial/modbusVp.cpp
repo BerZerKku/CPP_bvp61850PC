@@ -612,21 +612,22 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
                 hdlrButtonSbSacSan(static_cast<uint32_t> (value));
             } break;
             case REG_READ_sa16to01: {
-                param = PARAM_vpBtnSA32to01;                
-                hdlrButtonSa(PARAM_comPrmBlk08to01, value, PARAM_vpBtnSA32to01, 1);
-                hdlrButtonSa(PARAM_comPrmBlk16to09, value, PARAM_vpBtnSA32to01, 2);
+                param = PARAM_vpBtnSA32to01;
                 val32 = static_cast<uint32_t> (value);
                 val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
+                hdlrButtonSa(PARAM_comPrmBlk08to01, val32, PARAM_vpBtnSA32to01, 1);
+                hdlrButtonSa(PARAM_comPrmBlk16to09, val32, PARAM_vpBtnSA32to01, 2);
             } break;
             case REG_READ_sa32to17: {
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
                 param = PARAM_vpBtnSA32to01;
-//                hdlrButtonSa(PARAM_comPrmBlk24to17, value, PARAM_vpBtnSA32to01, 3);
-//                hdlrButtonSa(PARAM_comPrmBlk32to25, value, PARAM_vpBtnSA32to01, 4);
-                hdlrButtonSa(PARAM_comPrdBlk08to01, value, PARAM_vpBtnSA32to01, 1);
-                hdlrButtonSa(PARAM_comPrdBlk16to09, value, PARAM_vpBtnSA32to01, 2);
                 val32 = (static_cast<uint32_t> (value)) << 16;
                 val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
+//                hdlrButtonSa(PARAM_comPrmBlk24to17, value, PARAM_vpBtnSA32to01, 3);
+//                hdlrButtonSa(PARAM_comPrmBlk32to25, value, PARAM_vpBtnSA32to01, 4);
+                hdlrButtonSa(PARAM_comPrdBlk08to01, val32, PARAM_vpBtnSA32to01, 3);
+                hdlrButtonSa(PARAM_comPrdBlk16to09, val32, PARAM_vpBtnSA32to01, 4);
+
             } break;
             case REG_READ_sa48to33: {
                 param = PARAM_vpBtnSA64to33;

@@ -1,7 +1,7 @@
 #ifndef RINGARRAY_HPP
 #define RINGARRAY_HPP
 
-#include "bvpCommon/debug.hpp"
+#include "debug.hpp"
 
 //
 template<typename T, int size, T defvalue>

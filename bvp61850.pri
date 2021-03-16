@@ -5,6 +5,7 @@ INCLUDEPATH += \
     $${BVP_PATH}
 
 HEADERS += \
+    $$PWD/bvpCommon/bvpBase.hpp \
     $${BVP_PATH}/bvpCommon.hpp \
     $${BVP_PATH}/debug.hpp \
     $${BVP_PATH}/extAlarm.hpp \
@@ -20,6 +21,7 @@ HEADERS += \
     $${BVP_PATH}/serial/ringArray.hpp
 
 SOURCES += \
+    $$PWD/bvpCommon/bvpBase.cpp \
     $${BVP_PATH}/bvpCommon.cpp \
     $${BVP_PATH}/debug.cpp \
     $${BVP_PATH}/param.cpp \
