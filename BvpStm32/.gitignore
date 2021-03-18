@@ -5,4 +5,6 @@
 *.mk
 *.o
 /Debug/
+/Release/*
+!/Release/BVP_61850.hex
 /Release/
