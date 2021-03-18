@@ -4,106 +4,71 @@ namespace BVP {
 
 
 TAvantPc::TAvantPc(regime_t regime) :
-  TProtocolAvant(regime),
-  comRx(COM_AVANT_getTime) {
+    TProtocolAvant(regime),
+    mComRx(COM_AVANT_getTime) {
 
-  Q_ASSERT(regime == REGIME_slave);
+    Q_ASSERT(regime == REGIME_slave);
 }
 
 //
 bool
 BVP::TAvantPc::vWriteAvant() {
-  bool ok = false;
-  uint32_t value = 0;
+    bool ok = false;
+    bool iscommand = false;
+    uint32_t value = 0;
 
-  if (isComRx == true) {    
-    if (comRx == COM_AVANT_getError) {
-      setCom(comRx);
+    if (mIsComRx == true) {
+        if (mComRx == 0x01) {
+            setCom(mComRx);
+            value = mParam->getValue(PARAM_debug1, mSrc, ok);
+            addByte(static_cast<uint8_t> (value));
+//            addByte(static_cast<uint8_t> (value >> 8));
+//            addByte(static_cast<uint8_t> (value >> 16));
+//            addByte(static_cast<uint8_t> (value >> 24));
+            value = mParam->getValue(PARAM_debug2, mSrc, ok);
+            addByte(static_cast<uint8_t> (value));
+            addByte(static_cast<uint8_t> (value >> 8)); // addByte(0);
+            addByte(0); // addByte(static_cast<uint8_t> (value >> 16));
+            addByte(0); // addByte(static_cast<uint8_t> (value >> 24));
+            // добивка до 16 байт в посылке, для удобного вывода в CuteCom
+            addByte(0);
+            addByte(0);
+            addByte(0);
+            addByte(0);
+            addByte(0);
+            addByte(0);
+            iscommand = true;
+        } else if (mComRx == 0x02) {
+            setCom(mComRx);
+            iscommand = true;
+        }
 
-      value = mParam->getValue(PARAM_defError, mSrc, ok);
-      addByte(value >> 8);
-      addByte(value);
-
-      if (ok) {
-        value = mParam->getValue(PARAM_defWarning, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      if (ok) {
-        value = mParam->getValue(PARAM_prmError, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      if (ok) {
-        value = mParam->getValue(PARAM_prmWarning, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      if (ok) {
-        value = mParam->getValue(PARAM_prdError, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      if (ok) {
-        value = mParam->getValue(PARAM_prdWarning, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      if (ok) {
-        value = mParam->getValue(PARAM_glbError, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      if (ok) {
-        value = mParam->getValue(PARAM_glbWarning, mSrc, ok);
-        addByte(value >> 8);
-        addByte(value);
-      }
-
-      // TODO РќРµРёСЃРїСЂР°РІРЅРѕСЃС‚Рё СѓРґР°Р»РµРЅРЅРѕРіРѕ РґР»СЏ Р Р—РЎРљ
-      //      bool tok;
-      //      value = mParam->getValue(PARAM_defRemoteError, mSrc, tok);
-      //      if (tok) {
-      //        mBuf[pos++] = value >> 8;
-      //        mBuf[pos++] = value;
-      //        value = mParam->getValue(PARAM_prmRemoteError, mSrc, tok);
-      //        mBuf[pos++] = value >> 8;
-      //        mBuf[pos++] = value;
-      //        value = mParam->getValue(PARAM_prdRemoteError, mSrc, tok);
-      //        mBuf[pos++] = value >> 8;
-      //        mBuf[pos++] = value;
-      //        value = mParam->getValue(PARAM_glbRemoteError, mSrc, tok);
-      //        mBuf[pos++] = value >> 8;
-      //        mBuf[pos++] = value;
-      //      }
-
-
-
-      if (ok) {
-        uint8_t pos = mBuf[POS_DATA_LEN];
-        Q_ASSERT((pos == 16) || (pos == 24));
-      }
+        mIsComRx = false;
     }
 
-    isComRx = false;
-  }
-
-  return ok;
+    return iscommand;
 }
 
 //
 bool
 TAvantPc::vReadAvant() {
-  comRx = static_cast<comAvant_t> (mBuf[POS_COM]);
-  isComRx = true;
+    mComRx = static_cast<comAvant_t> (mBuf[POS_COM]);
+    mIsComRx = true;
+    uint32_t value = 0;
 
-  return isComRx;
+    if (mComRx == 0x02) {
+        Q_ASSERT(mBuf[POS_DATA_LEN] == 4);
+        value = mBuf[POS_DATA];
+        value <<= 8;
+        value += mBuf[POS_DATA + 1];
+        value <<= 8;
+        value += mBuf[POS_DATA + 2];
+        value <<= 8;
+        value += mBuf[POS_DATA + 3];
+        mParam->setValue(PARAM_debug2, mSrc, value);
+    }
+
+    return mIsComRx;
 }
 
 } // namespace BVP

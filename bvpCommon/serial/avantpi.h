@@ -35,7 +35,38 @@ class TAvantPi : public TProtocolAvant {
         COM_PRD_BLOCK_BYTES_com32to25,
         //
         COM_PRD_BLOCK_BYTES_MAX
+    }; 
+
+    /// Значение байта данных для команды COM_AVANT_getPrdKeep
+    enum comPrdKeepBytes_t {
+        COM_PRD_KEEP_BYTES_prdKeep = 1,     // Удержание реле команд ПРД, uint8_t
+        COM_PRD_KEEP_BYTES_compatible,      // Совместимость, uint8_t
+        COM_PRD_KEEP_BYTES_tm,              // Телемеханика, uint8_t
+        COM_PRD_KEEP_BYTES_warnThdD,        // Уровень срабатывания предупредительной сигнализации по D, uint8_t
+        COM_PRD_KEEP_BYTES_alarmThdD,       // Уровень срабатывания аварийной сигнализации по D, uint8_t
+        COM_PRD_KEEP_BYTES_tempControl,     // Контроль температуры, uint8_t
+        COM_PRD_KEEP_BYTES_tempThdHi,       // Верхнее значение температуры, uint8_t
+        COM_PRD_KEEP_BYTES_tempThdLow,      // Нижнее значение температуры, uint8_t
+        COM_PRD_KEEP_BYTES_tmSpeed,         // Скорость ТМ, uint8_t
+        COM_PRD_KEEP_BYTES_ringTimeWait,    // Время ожидания команд (кольцо), uint8_t
+        COM_PRD_KEEP_BYTES_ringTr08to01,    // Транзитные команды 8-1 (кольцо), uint8_t, bits
+        COM_PRD_KEEP_BYTES_ringTr16to09,    // Транзитные команды 16-9 (кольцо), uint8_t, bits
+        COM_PRD_KEEP_BYTES_ringTr24to17,
+        COM_PRD_KEEP_BYTES_ringTr32to31,
+        COM_PRD_KEEP_BYTES_ringTr40to33,
+        COM_PRD_KEEP_BYTES_ringTr48to41,
+        COM_PRD_KEEP_BYTES_ringTr56to49,
+        COM_PRD_KEEP_BYTES_ringTr64to57,
+        COM_PRD_KEEP_BYTES_ringTr72to65,
+        COM_PRD_KEEP_BYTES_ringTr80to73,
+        COM_PRD_KEEP_BYTES_ringTr88to81,
+        COM_PRD_KEEP_BYTES_ringTr96to89,    // Транзитные команды 96-89 (кольцо), uint8_t, bits
+        COM_PRD_KEEP_BYTES_alarmRstMode,    // Режим сброса сигнализации, uint8_t
+        //
+        COM_PRD_KEEP_BYTES_MAX
     };
+    Q_STATIC_ASSERT(COM_PRD_KEEP_BYTES_alarmRstMode == 23);
+
 
     /// Значение байта данных для команды COM_AVANT_getPrmBlock
     enum comPrmBlockBytes_t {
@@ -58,7 +89,7 @@ public:
     TAvantPi(regime_t regime);
 
 private:
-    TRingArray<comAvant_t, 4, COM_AVANT_getError> ringComArray;
+    TRingArray<comAvant_t, 5, COM_AVANT_getError> ringComArray;
 
     /**
      * @brief Формирование команды управления.
@@ -112,6 +143,23 @@ private:
      * @return
      */
     uint16_t comGetMisc(comMiscBytes_t pos, const uint8_t *buf, uint16_t len);
+
+    /**
+     * @brief Обработчик команды "Удержание реле команд ПРД"
+     * @param[in] group Группа команды.
+     * @return true если в команде нет ошибок, инчаче false
+     */
+    bool comGetPrdKeep(comAvantMaskGroup_t group);
+
+    /**
+     * @brief comGetPrdKeep
+     * @param[in] pos Номер параметра (номер байта в буфере).
+     * @param[in] buf Указатель на буфер (первый не обработанный байт).
+     * @param[in] len Количество не обработанных данных в буфере.
+     * @return
+     */
+    uint16_t comGetPrdKeep(comPrdKeepBytes_t pos, const uint8_t *buf,
+                              uint16_t len);
 
     /**
      * @brief Обработчик команды "Вывод ПРМ (SAC1)"

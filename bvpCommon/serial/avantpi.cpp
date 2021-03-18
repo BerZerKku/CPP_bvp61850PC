@@ -2,7 +2,6 @@
 
 namespace BVP {
 
-
 TAvantPi::TAvantPi(regime_t regime) :
                                       TProtocolAvant(regime)
 {
@@ -12,6 +11,7 @@ TAvantPi::TAvantPi(regime_t regime) :
     ringComArray.add(COM_AVANT_getPrmDisable);
     ringComArray.add(COM_AVANT_getPrmBlock);
     ringComArray.add(COM_AVANT_getPrdBlock);
+    ringComArray.add(COM_AVANT_getPrdKeep);
     //    ringComArray.add(COM_AVANT_getTime);
 
     Q_ASSERT(!ringComArray.isEmpty());
@@ -58,7 +58,7 @@ bool TAvantPi::writeComControl()
         }
     }
 
-    return iscommand ;
+    return iscommand;
 }
 
 //
@@ -308,6 +308,75 @@ uint16_t TAvantPi::comGetMisc(TAvantPi::comMiscBytes_t pos,
             mParam->setValue(PARAM_dirControl, mSrc, uint32_t(buf[0]));
         } break;
         case COM_MISC_BYTES_MAX: break;
+    }
+
+    return numbytes;
+}
+
+bool TAvantPi::comGetPrdKeep(comAvantMaskGroup_t group)
+{
+    bool ok = false;
+    uint16_t nbytes = 0;
+
+    uint16_t len = mBuf[POS_DATA_LEN];
+
+    if (group == COM_AVANT_MASK_GROUP_read) {
+        if (len >= (COM_PRM_DISABLE_BYTES_MAX - 1)) {
+            ok = true;
+            while(nbytes < len) {
+                nbytes += comGetPrdKeep(comPrdKeepBytes_t(nbytes + 1),
+                                              &mBuf[POS_DATA + nbytes], len - nbytes);
+            }
+        }
+    } else if (group == COM_AVANT_MASK_GROUP_writeParam) {
+        if (mBuf[POS_DATA_LEN] >= 2) {
+            if (mBuf[POS_DATA + 1] < COM_PRM_DISABLE_BYTES_MAX) {
+                ok = true;
+                comGetPrdKeep(comPrdKeepBytes_t(mBuf[POS_DATA + 1]),
+                                    &mBuf[POS_DATA], len - 1);
+            }
+        }
+    }
+
+    return ok;
+}
+
+uint16_t TAvantPi::comGetPrdKeep(TAvantPi::comPrdKeepBytes_t pos, const uint8_t *buf, uint16_t len)
+{
+    uint16_t numbytes = len;
+
+    switch(pos) {
+        case COM_PRD_KEEP_BYTES_prdKeep:
+        case COM_PRD_KEEP_BYTES_compatible:
+        case COM_PRD_KEEP_BYTES_tm:
+        case COM_PRD_KEEP_BYTES_warnThdD:
+        case COM_PRD_KEEP_BYTES_alarmThdD:
+        case COM_PRD_KEEP_BYTES_tempControl:
+        case COM_PRD_KEEP_BYTES_tempThdHi:
+        case COM_PRD_KEEP_BYTES_tempThdLow:
+        case COM_PRD_KEEP_BYTES_tmSpeed:
+        case COM_PRD_KEEP_BYTES_ringTimeWait:
+        case COM_PRD_KEEP_BYTES_ringTr08to01:
+        case COM_PRD_KEEP_BYTES_ringTr16to09:
+        case COM_PRD_KEEP_BYTES_ringTr24to17:
+        case COM_PRD_KEEP_BYTES_ringTr32to31:
+        case COM_PRD_KEEP_BYTES_ringTr40to33:
+        case COM_PRD_KEEP_BYTES_ringTr48to41:
+        case COM_PRD_KEEP_BYTES_ringTr56to49:
+        case COM_PRD_KEEP_BYTES_ringTr64to57:
+        case COM_PRD_KEEP_BYTES_ringTr72to65:
+        case COM_PRD_KEEP_BYTES_ringTr80to73:
+        case COM_PRD_KEEP_BYTES_ringTr88to81:
+        case COM_PRD_KEEP_BYTES_ringTr96to89: {
+            Q_ASSERT(pos < COM_PRD_KEEP_BYTES_alarmRstMode);
+            numbytes = COM_PRD_KEEP_BYTES_alarmRstMode - pos;
+        } break;
+        case COM_PRD_KEEP_BYTES_alarmRstMode: {
+            numbytes = 1;
+            mParam->setValue(PARAM_alarmResetMode, mSrc, uint32_t(buf[0]));
+        } break;
+
+        case COM_PRD_KEEP_BYTES_MAX: break;
     }
 
     return numbytes;
@@ -565,6 +634,9 @@ bool TAvantPi::vReadAvant()
         } break;
         case COM_AVANT_getMisc: {
             ok = comGetMisc(group);
+        } break;
+        case COM_AVANT_getPrdKeep: {
+            ok = comGetPrdKeep(group);
         } break;
         case COM_AVANT_getPrmDisable: {
             ok = comGetPrmDisable(group);

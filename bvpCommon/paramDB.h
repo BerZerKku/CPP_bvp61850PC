@@ -112,7 +112,7 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
     //
     // Общие параметры
     //
-    {.param = PARAM_alarmReset, .source = (1 << SRC_pi),
+    {.param = PARAM_alarmResetMode, .source = (1 << SRC_pi),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
@@ -128,6 +128,14 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
     {.param = PARAM_control, .source = (1 << SRC_int) | (1 << SRC_pi),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    {.param = PARAM_debug1, .source = (1 << SRC_MAX) - 1,
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
+    {.param = PARAM_debug2, .source = (1 << SRC_MAX) - 1,
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},

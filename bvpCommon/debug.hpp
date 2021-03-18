@@ -20,6 +20,7 @@
 #include <assert.h>
 #define Q_ASSERT(x) (assert(x))
 #define QDEBUG(x) void (0)
+#define Q_STATIC_ASSERT(x) static_assert(x, "Error")
 
 #endif
 

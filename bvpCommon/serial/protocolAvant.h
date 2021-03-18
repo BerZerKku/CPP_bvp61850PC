@@ -27,6 +27,7 @@ enum comAvant_t {
     COM_AVANT_getPrdBlock       = 0x24, ///< Блокированные команды ПРД
     COM_AVANT_getError          = 0x31, ///< Неисправности и предупреждения
     COM_AVANT_getTime           = 0x32, ///< Дата/время/журнал
+    COM_AVANT_getPrdKeep        = 0x37, ///< Удержание реле команд ПРД
     COM_AVANT_getMisc           = 0x38, ///< Параметры другие
     COM_AVANT_setControl        = 0x72, ///< Управление
     COM_AVANT_setPrmResetInd    = 0x9A  ///< Выключение индикации Приемника

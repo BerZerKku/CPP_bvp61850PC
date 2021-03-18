@@ -65,8 +65,6 @@ private:
 
   uint16_t getUInt16(QVector<uint8_t> &pkg);
 
-
-
  private slots:
 
   void serialStart(TSerial *serial);

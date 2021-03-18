@@ -379,9 +379,9 @@ void wrapperMainInit() {
   port[index].huart = &huart1;
   port[index].protocol = &avantPi;
   port[index].protocol->setNetAddress(0x01);
-    port[index].protocol->setID(SRC_pi);
+  port[index].protocol->setID(SRC_pi);
   port[index].protocol->setBuffer(port[index].buf,
-        sizeof(port[index].buf) / sizeof(port[index].buf[0]));
+      sizeof(port[index].buf) / sizeof(port[index].buf[0]));
   port[index].protocol->setTimeTick(100);
   port[index].protocol->setup(port[index].huart->Init.BaudRate,
       (port[index].huart->Init.Parity != UART_PARITY_NONE),
@@ -445,7 +445,7 @@ void wrapperMainLoop() {
 
   i2cProcessing();
 
-//  avantPiPoll();
+  //  avantPiPoll();
   protocolPoll();
   alarmLoop();
 }
@@ -455,37 +455,37 @@ TParam *mParam = TParam::getInstance();
 
 //
 bool getExtAlarmSignals(extAlarm_t signal) {
-    bool state = false;
-    const GPIO_PinState defval = GPIO_PIN_SET;
+  bool state = false;
+  const GPIO_PinState defval = GPIO_PIN_SET;
 
-    switch(signal) {
-      case EXT_ALARM_channelFault: {
-        state = HAL_GPIO_ReadPin(Sout5_GPIO_Port, Sout5_Pin) != defval;
-      } break;
+  switch(signal) {
+    case EXT_ALARM_channelFault: {
+      state = HAL_GPIO_ReadPin(Sout5_GPIO_Port, Sout5_Pin) != defval;
+    } break;
 
-      case EXT_ALARM_warning: {
-        state = HAL_GPIO_ReadPin(Sout6_GPIO_Port, Sout6_Pin) != defval;
-      } break;
+    case EXT_ALARM_warning: {
+      state = HAL_GPIO_ReadPin(Sout6_GPIO_Port, Sout6_Pin) != defval;
+    } break;
 
-      case EXT_ALARM_fault: {
-        state = HAL_GPIO_ReadPin(Sout7_GPIO_Port, Sout7_Pin) != defval;
-      } break;
+    case EXT_ALARM_fault: {
+      state = HAL_GPIO_ReadPin(Sout7_GPIO_Port, Sout7_Pin) == defval;
+    } break;
 
-      case EXT_ALARM_comPrd: {
-        state = HAL_GPIO_ReadPin(Sout2_GPIO_Port, Sout2_Pin) != defval;
-      } break;
+    case EXT_ALARM_comPrd: {
+      state = HAL_GPIO_ReadPin(Sout2_GPIO_Port, Sout2_Pin) != defval;
+    } break;
 
-      case EXT_ALARM_comPrm: {
-        state = HAL_GPIO_ReadPin(Sout1_GPIO_Port, Sout1_Pin) == defval;
-      } break;
+    case EXT_ALARM_comPrm: {
+      state = HAL_GPIO_ReadPin(Sout1_GPIO_Port, Sout1_Pin) != defval;
+    } break;
 
-      case EXT_ALARM_disablePrm: break;
-      case EXT_ALARM_model61850: break;
-      case EXT_ALARM_test61850: break;
-      case EXT_ALARM_MAX: break;
-    }
+    case EXT_ALARM_disablePrm: break;
+    case EXT_ALARM_model61850: break;
+    case EXT_ALARM_test61850: break;
+    case EXT_ALARM_MAX: break;
+  }
 
-    return state;
+  return state;
 }
 
 //
@@ -518,7 +518,8 @@ void setExtAlarmSignal(extAlarm_t signal, bool value) {
     } break;
 
     case EXT_ALARM_disablePrm: {
-      HAL_GPIO_WritePin(RX_DISABLE_GPIO_Port, RX_DISABLE_Pin, state);
+//      HAL_GPIO_WritePin(RX_DISABLE_GPIO_Port, RX_DISABLE_Pin, state);
+      HAL_GPIO_WritePin(OUT1_GPIO_Port, OUT1_Pin, state);
     } break;
 
     case EXT_ALARM_model61850: {
@@ -536,63 +537,78 @@ void setExtAlarmSignal(extAlarm_t signal, bool value) {
 //
 void alarmLoop()
 {
-    const BVP::src_t src = BVP::SRC_int;
-    bool ok;
-    uint32_t uval32;
+  const BVP::src_t src = BVP::SRC_int;
+  bool ok;
+  uint32_t uval32;
 
-    // Обработка нажатия кнопки сброса
+  // Обработка нажатия кнопки сброса
 
-    uval32 = mParam->getValue(BVP::PARAM_alarmResetBtn, src, ok);
-    if ((ok) && (uval32 != false)) {
-        mParam->setValue(BVP::PARAM_alarmResetBtn, src, false);
+  uval32 = mParam->getValue(BVP::PARAM_alarmResetBtn, src, ok);
+  if ((ok) && (uval32 != false)) {
+    mParam->setValue(BVP::PARAM_alarmResetBtn, src, false);
 
-        uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
-        if (!ok) {
-            uval32 = 0;
-        }
-        uval32 |= (1 << BVP::CTRL_resetComInd);
+    uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
+    if (!ok) {
+      uval32 = 0;
+    }
+    uval32 |= (1 << BVP::CTRL_resetComInd);
 
-        if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
-            mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
-            uval32 |= (1 << BVP::CTRL_resetFault);
-        }
-
-        mParam->setValue(BVP::PARAM_control, src, uval32);
+    if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
+        mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
+      uval32 |= (1 << BVP::CTRL_resetFault);
     }
 
-    // Обработка входных и установка выходных сигналов
+    mParam->setValue(BVP::PARAM_control, src, uval32);
+  }
 
-    uval32 = mParam->getValue(BVP::PARAM_alarmReset, src, ok);
-    if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
-        uval32 = mAlarm.kAlarmResetDefault;
+  // Обработка входных и установка выходных сигналов
+
+  uval32 = mParam->getValue(BVP::PARAM_alarmResetMode, src, ok);
+  if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
+    uval32 = mAlarm.kAlarmResetModeDefault;
+  }
+  mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
+
+  uint32_t debug1 = 0;
+  for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
+    bool value;
+    BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+
+    if (signal == BVP::EXT_ALARM_disablePrm) {
+      uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll,
+          BVP::SRC_int, ok);
+      if (!ok) {
+        uval32 = mAlarm.kDisablePrmDefault;
+      }
+
+      value = (uval32 == BVP::DISABLE_PRM_disable);
+    } else {
+      value = getExtAlarmSignals(signal);
     }
-    mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
 
-    for(BVP::extAlarm_t signal = BVP::extAlarm_t(0);
-        signal < BVP::EXT_ALARM_MAX; signal = BVP::extAlarm_t(signal + 1)) {
-        bool value;
-
-        if (signal == BVP::EXT_ALARM_disablePrm) {
-            uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll,
-                                      BVP::SRC_int, ok);
-            if (!ok) {
-                uval32 = mAlarm.kDisablePrmDefault;
-            }
-
-            value = (uval32 == BVP::DISABLE_PRM_disable);
-        } else {
-            value = getExtAlarmSignals(signal);
-        }
-
-        mAlarm.setAlarmInputSignal(signal, value);
+    if (value) {
+      debug1 |= 1 << i;
     }
 
-    for(BVP::extAlarm_t signal = BVP::extAlarm_t(0);
-        signal < BVP::EXT_ALARM_MAX; signal = BVP::extAlarm_t(signal + 1)) {
-        bool value = mAlarm.getAlarmOutputSignal(signal);
+    mAlarm.setAlarmInputSignal(signal, value);
+  }
 
-        setExtAlarmSignal(signal, value);
+  uint32_t debug2 = 0;
+  for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
+    BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+
+    bool value = mAlarm.getAlarmOutputSignal(signal);
+
+    if (value) {
+      debug2 |= 1 << i;
     }
+
+    setExtAlarmSignal(signal, value);
+  }
+  debug2 += static_cast<uint32_t> (mAlarm.getAlarmReset()) << 8;
+
+  mParam->setValue(BVP::PARAM_debug1, BVP::SRC_int, debug1);
+  mParam->setValue(BVP::PARAM_debug2, BVP::SRC_int, debug2);
 }
 
 // Сброс интерфейса I2Cю
@@ -764,7 +780,7 @@ void protocolPoll() {
 
             case PORT_TYPE_usb: {
               uint8_t state = CDC_Transmit_FS(data, len);
-//              printf("send data to usb: %d\n", state);
+              //              printf("send data to usb: %d\n", state);
             } break;
 
             case PORT_TYPE_i2c: {

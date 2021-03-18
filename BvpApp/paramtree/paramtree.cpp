@@ -12,8 +12,10 @@ TParamTree::TParamTree(QWidget *parent) :
     crtGroupVp();
     crtGroupTime();
     crtGroupInternal();
+    crtGroupParamGlobal();
     crtGroupError();
     crtGroupErrorRemote();
+
 
     header()->resizeSections(QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(0, QHeaderView::Fixed);
@@ -22,8 +24,6 @@ TParamTree::TParamTree(QWidget *parent) :
 
     setSelectionMode(QAbstractItemView::NoSelection);
     setFocusPolicy(Qt::NoFocus);
-
-
 }
 
 //
@@ -41,6 +41,19 @@ void TParamTree::crtGroupInternal()
 
     crtItem(top, BVP::PARAM_alarmResetBtn, "Сброс сигнализации");
     crtItem(top, BVP::PARAM_control, "Сигналы управления");
+    crtItem(top, BVP::PARAM_debug1, "Параметр для отладки ПО 1");
+    crtItem(top, BVP::PARAM_debug2, "Параметр для отладки ПО 2");
+
+    insertTopLevelItem(topLevelItemCount(), top);
+    expandItem(top);
+}
+
+void TParamTree::crtGroupParamGlobal()
+{
+    QTreeWidgetItem *top = new QTreeWidgetItem();
+    top->setText(0, "Общие параметры");
+
+    crtItem(top, BVP::PARAM_alarmResetMode, "Режим сброса сигнализации");
 
     insertTopLevelItem(topLevelItemCount(), top);
     expandItem(top);

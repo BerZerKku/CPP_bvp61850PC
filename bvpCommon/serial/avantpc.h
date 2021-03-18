@@ -14,8 +14,8 @@ public:
   bool vReadAvant() override;
 
 private:
-  bool isComRx = false;
-  comAvant_t comRx;
+  bool mIsComRx = false;
+  comAvant_t mComRx;
 };
 
 } // namespace BVP

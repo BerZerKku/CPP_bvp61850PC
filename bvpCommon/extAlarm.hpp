@@ -33,7 +33,7 @@ class TExtAlarm {
 public:
 
     /// Режим сброса сигналов по умолчанию
-    const alarmReset_t kAlarmResetDefault = ALARM_RESET_manual;
+    const alarmReset_t kAlarmResetModeDefault = ALARM_RESET_manual;
 
     /// Состояние режима сброса по умолчанию
     const disablePrm_t kDisablePrmDefault = DISABLE_PRM_enable;
@@ -54,7 +54,7 @@ public:
      */
     void setAlarmReset(alarmReset_t reset) {
         if (reset >= ALARM_RESET_MAX) {
-            reset = kAlarmResetDefault;
+            reset = kAlarmResetModeDefault;
         }
 
         mAlarmReset = reset;
@@ -115,7 +115,7 @@ public:
 private:
 
     /// Режим сброса сигнализации
-    alarmReset_t mAlarmReset = kAlarmResetDefault;
+    alarmReset_t mAlarmReset = kAlarmResetModeDefault;
     /// Сигналы сигнализации
     uint16_t mAlarm = kAlarmDefault;
 

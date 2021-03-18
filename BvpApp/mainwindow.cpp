@@ -89,7 +89,8 @@ void MainWindow::initAvantPi()
     serialCfg_t *cfg = new serialCfg_t;
 
     cfg->label = "BSP-PI";
-    cfg->defaultPorts.append("COM6"); // COM20, COM6
+    cfg->defaultPorts.append("COM6"); // COM20, COM6,
+    cfg->defaultPorts.append("COM3"); //
     cfg->defaultPorts.append("tnt3");
     cfg->baudList.append({4800, 19200});
     cfg->parityList.append({QSerialPort::NoParity});
@@ -127,8 +128,6 @@ void MainWindow::initVp()
     cfg->baudrate = 9600;
     cfg->parity = QSerialPort::EvenParity;
     cfg->stopBits = QSerialPort::OneStop;
-
-
 
     initSerial(serial, cfg);
     addSerialToFrame(serial);
@@ -275,15 +274,16 @@ void MainWindow::procAlarm()
 
     // Обработка входных и установка выходных сигналов
 
-    uval32 = mParam->getValue(BVP::PARAM_alarmReset, src, ok);
+    uval32 = mParam->getValue(BVP::PARAM_alarmResetMode, src, ok);
     if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
-        uval32 = mAlarm.kAlarmResetDefault;
+        uval32 = mAlarm.kAlarmResetModeDefault;
     }
     mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
 
-    for(BVP::extAlarm_t signal = BVP::extAlarm_t(0);
-        signal < BVP::EXT_ALARM_MAX; signal = BVP::extAlarm_t(signal + 1)) {
+    uint32_t debug1 = 0;
+    for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
         bool value;
+        BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
 
         if (signal == BVP::EXT_ALARM_disablePrm) {
             uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll,
@@ -297,15 +297,28 @@ void MainWindow::procAlarm()
             value = getExtAlarmSignals(signal);
         }
 
+        if (value) {
+            debug1 |= 1 << i;
+        }
+
         mAlarm.setAlarmInputSignal(signal, value);
     }
 
-    for(BVP::extAlarm_t signal = BVP::extAlarm_t(0);
-        signal < BVP::EXT_ALARM_MAX; signal = BVP::extAlarm_t(signal + 1)) {
+    uint32_t debug2 = 0;
+    for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
+        BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+
         bool value = mAlarm.getAlarmOutputSignal(signal);
+
+        if (value) {
+            debug2 |= 1 << i;
+        }
 
         setExtAlarmSignal(signal, value);
     }
+
+    mParam->setValue(BVP::PARAM_debug1, BVP::SRC_int, debug1);
+    mParam->setValue(BVP::PARAM_debug2, BVP::SRC_int, debug2);
 }
 
 //
