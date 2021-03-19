@@ -39,6 +39,7 @@ void TParamTree::crtGroupInternal()
     QTreeWidgetItem *top = new QTreeWidgetItem();
     top->setText(0, "Внутренние параметры");
 
+    crtItem(top, BVP::PARAM_version, "Версия БВП МК");
     crtItem(top, BVP::PARAM_alarmResetBtn, "Сброс сигнализации");
     crtItem(top, BVP::PARAM_control, "Сигналы управления");
     crtItem(top, BVP::PARAM_debug1, "Параметр для отладки ПО 1");
@@ -118,6 +119,7 @@ void TParamTree::crtGroupVp()
     QTreeWidgetItem *top = new QTreeWidgetItem();
     top->setText(0, "Панель виртуальных ключей");
 
+    crtItem(top, BVP::PARAM_versionVp, "Версия ПО панели ВК");
     crtItem(top, BVP::PARAM_dirControl, "Управление SAC2");
     crtItem(top, BVP::PARAM_blkComPrmAll, "Приемник SAC1");
     crtItem(top, BVP::PARAM_blkComPrmDir, "Блк. направлений SAnn.x");
@@ -131,7 +133,7 @@ void TParamTree::crtGroupVp()
     crtItem(top, BVP::PARAM_comPrdBlk24to17, "Блк. команд передатчика 24..17");
     crtItem(top, BVP::PARAM_comPrdBlk32to25, "Блк. команд передатчика 32..25");
     crtItem(top, BVP::PARAM_blkComPrd64to33, "Блк. команд передатчика 64..33");
-    crtItem(top, BVP::PARAM_vpBtnSAnSbSac, "Кнопки виртуальной панели");
+    crtItem(top, BVP::PARAM_vpBtnSAnSbSac, "Переключатели SA.m, SB, SA2, SA1");
 
     insertTopLevelItem(topLevelItemCount(), top);
     expandItem(top);

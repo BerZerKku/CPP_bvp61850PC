@@ -7,9 +7,16 @@
 
 namespace BVP {
 
+// FIXME Эта версия должна быть в ПО для БВП!!!
+// NOTE Версия ПО состоит из двух байт (major << 8) + (minor)
+static const uint8_t versionMajor = 153;    ///< Версия ПО (major)
+static const uint8_t versionMinor = 1;      ///< Версия ПО (minor)
+
+
 enum param_t {
+    PARAM_version = 0,      ///< Версия текущего устройства
     // Текущее состояние
-    PARAM_error = 0,        ///< Флаг наличия неисправности.
+    PARAM_error,            ///< Флаг наличия неисправности.
     PARAM_warning,          ///< Флаг наличия предупреждения.
     PARAM_defError,         ///< Неисправности Защиты.
     PARAM_defWarning,       ///< Предупреждения Защиты.
@@ -42,6 +49,7 @@ enum param_t {
     PARAM_debug1,           ///< Параметр для отладки ПО 1
     PARAM_debug2,           ///< Параметр для отладки ПО 2
     // Параметры панели виртуальных ключей
+    PARAM_versionVp,        ///< Версия ПО панели ВК
     PARAM_dirControl,       ///< Управление ключами (SAC2).
     PARAM_blkComPrmAll,     ///< Блокировка всех выходов приемника (SAC1).
     PARAM_blkComPrmDir,     ///< Блокировка направлений выхода приемника (SAnn.x)
@@ -247,6 +255,7 @@ public:
 private:
     /// Значения параметров.
     static paramFields_t params[PARAM_MAX];
+    const src_t mSrc = SRC_int;
 
     friend bool setError(param_t param, src_t src, uint32_t &value);
     friend bool setWarning(param_t param, src_t src, uint32_t &value);

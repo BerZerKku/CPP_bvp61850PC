@@ -476,29 +476,35 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
             } break;
 
             case REG_WRITE_enLed16to01: {
-                value = getSwitchLed(PARAM_comPrmBlk16to09,
-                                     PARAM_comPrmBlk08to01, ON_OFF_off);
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+                value = getSwitchLed(PARAM_comPrdBlk16to09,
+                                     PARAM_comPrdBlk08to01, ON_OFF_off);
+                // value = getSwitchLed(PARAM_comPrmBlk16to09,
+                //                     PARAM_comPrmBlk08to01, ON_OFF_off);
             } break;
 
             case REG_WRITE_dsLed16to01: {
-                value = getSwitchLed(PARAM_comPrmBlk16to09,
-                                    PARAM_comPrmBlk08to01, ON_OFF_on);
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+                value = getSwitchLed(PARAM_comPrdBlk16to09,
+                                     PARAM_comPrdBlk08to01, ON_OFF_on);
+                // value = getSwitchLed(PARAM_comPrmBlk16to09,
+                //                      PARAM_comPrmBlk08to01, ON_OFF_on);
             } break;
 
             case REG_WRITE_enLed32to17: {// DOWN}
 //                value = getSwitchLed(PARAM_comPrmBlk32to25,
 //                                     PARAM_comPrmBlk24to17, ON_OFF_off);
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-                value = getSwitchLed(PARAM_comPrdBlk16to09,
-                                     PARAM_comPrdBlk08to01, ON_OFF_off);
+                value = getSwitchLed(PARAM_comPrmBlk16to09,
+                                     PARAM_comPrmBlk08to01, ON_OFF_off);
             } break;
 
             case REG_WRITE_dsLed32to17: {
 //                value = getSwitchLed(PARAM_comPrmBlk32to25,
 //                                     PARAM_comPrmBlk24to17, ON_OFF_on);
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-                value = getSwitchLed(PARAM_comPrdBlk16to09,
-                            PARAM_comPrdBlk08to01, ON_OFF_on);
+                value = getSwitchLed(PARAM_comPrmBlk16to09,
+                                     PARAM_comPrmBlk08to01, ON_OFF_on);
             } break;
 
             case REG_WRITE_enLed48to33: // DOWN
@@ -599,35 +605,35 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
     if (ok) {
         uint32_t val32 = 0;
         uint16_t value = static_cast<uint16_t> (buf[nbytes++]);
-        value = static_cast<uint16_t> ((value << 8) + buf[nbytes++]);
-
-        Q_ASSERT((number >= REG_READ_MIN) && (number < REG_READ_MAX));
+        value = static_cast<uint16_t> ((value << 8) + buf[nbytes++]);    
 
         param_t param = PARAM_MAX;
-
         switch(static_cast<regRead_t> (number)) {
             case REG_READ_sanSbSac: {
                 param = PARAM_vpBtnSAnSbSac;
                 val32 = static_cast<uint32_t> (value);
                 hdlrButtonSbSacSan(static_cast<uint32_t> (value));
+
             } break;
             case REG_READ_sa16to01: {
                 param = PARAM_vpBtnSA32to01;
                 val32 = static_cast<uint32_t> (value);
                 val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
-                hdlrButtonSa(PARAM_comPrmBlk08to01, val32, PARAM_vpBtnSA32to01, 1);
-                hdlrButtonSa(PARAM_comPrmBlk16to09, val32, PARAM_vpBtnSA32to01, 2);
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+                // hdlrButtonSa(PARAM_comPrmBlk08to01, val32, PARAM_vpBtnSA32to01, 1);
+                // hdlrButtonSa(PARAM_comPrmBlk16to09, val32, PARAM_vpBtnSA32to01, 2);
+                hdlrButtonSa(PARAM_comPrdBlk08to01, val32, PARAM_vpBtnSA32to01, 1);
+                hdlrButtonSa(PARAM_comPrdBlk16to09, val32, PARAM_vpBtnSA32to01, 2);
             } break;
             case REG_READ_sa32to17: {
-                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
                 param = PARAM_vpBtnSA32to01;
                 val32 = (static_cast<uint32_t> (value)) << 16;
                 val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
-//                hdlrButtonSa(PARAM_comPrmBlk24to17, value, PARAM_vpBtnSA32to01, 3);
-//                hdlrButtonSa(PARAM_comPrmBlk32to25, value, PARAM_vpBtnSA32to01, 4);
-                hdlrButtonSa(PARAM_comPrdBlk08to01, val32, PARAM_vpBtnSA32to01, 3);
-                hdlrButtonSa(PARAM_comPrdBlk16to09, val32, PARAM_vpBtnSA32to01, 4);
-
+                // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+                // hdlrButtonSa(PARAM_comPrmBlk24to17, val32, PARAM_vpBtnSA32to01, 3);
+                // hdlrButtonSa(PARAM_comPrmBlk32to25, val32, PARAM_vpBtnSA32to01, 4);
+                hdlrButtonSa(PARAM_comPrmBlk08to01, val32, PARAM_vpBtnSA32to01, 3);
+                hdlrButtonSa(PARAM_comPrmBlk16to09, val32, PARAM_vpBtnSA32to01, 4);
             } break;
             case REG_READ_sa48to33: {
                 param = PARAM_vpBtnSA64to33;
@@ -639,6 +645,10 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
                 val32 = (static_cast<uint32_t> (value)) << 16;
                 val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
             } break;
+            case REG_READ_version: {
+                param = PARAM_versionVp;
+                val32 = static_cast<uint32_t> (value);
+            } break;
             case REG_READ_MAX: break;
         }
 
@@ -646,8 +656,7 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
             mParam->setValue(param, mSrc, val32);
         }
 
-        Q_ASSERT(param != PARAM_MAX);
-        ok = (param != PARAM_MAX);
+        ok = true;
     }
 
     return nbytes;

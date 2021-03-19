@@ -13,14 +13,15 @@
 #if defined(QT_CORE_LIB)
 
 #include <QDebug>
-#define QDEBUG(x) (qDebug() << x)
+#  define QDEBUG(x) (qDebug() << x)
 
 #else
 
-#include <assert.h>
-#define Q_ASSERT(x) (assert(x))
-#define QDEBUG(x) void (0)
-#define Q_STATIC_ASSERT(x) static_assert(x, "Error")
+#  include <assert.h>
+#  define Q_ASSERT(x) (assert(x))
+#  define QDEBUG(x) void (0)
+#  define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
+#  define Q_ASSERT_X(cond, where, what) ((cond) ? static_cast<void>(0) : assert(where))
 
 #endif
 

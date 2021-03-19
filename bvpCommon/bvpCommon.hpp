@@ -11,10 +11,6 @@
 #include "debug.hpp"
 #include <cstdint>
 
-#ifndef TEST_FRIENDS
-#define TEST_FRIENDS
-#endif
-
 namespace BVP {
 
 static const uint8_t BVP_STM32_i2c_address  = 0x3D; ///< Адрес I2C для STM32
@@ -30,8 +26,6 @@ static const uint8_t DATA_LEN = 32;  ///< Количество байт данных в пакете.
  *  Похоже STM32 не получает ACK при передаче байт. Но откуда берется D5?
  */
 class BvpPkg {
-  TEST_FRIENDS;
-
   static const uint8_t c_sop;           ///< Значение байта "Начало пакета".
 
   /** Структура пакета.
@@ -188,6 +182,10 @@ private:
    *  @return Номер последовательности.
    */
   uint16_t sequenceTxGet() const;
+
+#ifdef TEST_FRIENDS
+  TEST_FRIENDS;
+#endif
 };
 
 } /* namespace BVP */

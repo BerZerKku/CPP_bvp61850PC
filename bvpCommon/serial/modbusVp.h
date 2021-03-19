@@ -17,6 +17,7 @@ class TModbusVp : public TSerialProtocol {
         REG_READ_sa32to17,
         REG_READ_sa48to33,
         REG_READ_sa64to49,
+        REG_READ_version = 10,
         //
         REG_READ_MAX
     };
@@ -73,13 +74,13 @@ class TModbusVp : public TSerialProtocol {
     bool isConnection() const override;
 
     /**
-     * @brief Возвращает текущее состояние светодиодов для двух переключателей.
+     * @brief Возвращает текущее состояние светодиодов для двух групп переключателей.
      * Если бит установлен в 0, то светодиод потушен.
      * Если значение параметра еще не установлено то светодиоды этого
      * параметра потушены.
      * @param[in] hi Параметр со значением для страших восьми бит.
      * @param[in] low Параметр со значением для младших восьми бит.
-     * @param[in] sw Задает необходимое положение светодиодов.
+     * @param[in] sw Выбор необходимых светодиодов.
      * @return Состояние светодиодов.
      */
     uint16_t getSwitchLed(param_t hi, param_t low, switchOff_t sw) const;

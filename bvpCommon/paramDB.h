@@ -11,10 +11,14 @@ bool setWarning(param_t param, src_t src, uint32_t &value);
 
 //
 TParam::paramFields_t TParam::params[PARAM_MAX] = {
+    {.param =  PARAM_version,  .source = (1 << SRC_int),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
     //
     // Текущее состояние
     //
-    {.param =  PARAM_error,  .source = (1 << SRC_int),
+    {.param =  PARAM_error, .source = (1 << SRC_int),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,
      .set = nullptr, .get = nullptr},
@@ -142,6 +146,10 @@ TParam::paramFields_t TParam::params[PARAM_MAX] = {
     //
     // Параметры панели виртуальных ключей
     //
+    {.param =  PARAM_versionVp,  .source = (1 << SRC_vkey),
+     .isSet = false, .isModified = false,
+     .rValue = 0, .wValue = 0,
+     .set = nullptr, .get = nullptr},
     {.param = PARAM_dirControl, .source = (1 << SRC_pi),
      .isSet = false, .isModified = false,
      .rValue = 0, .wValue = 0,

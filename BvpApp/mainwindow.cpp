@@ -345,8 +345,9 @@ void MainWindow::viewReadRegSlot() {
     // Переключатели с 16 по 1
     //
     group = vpReg::GROUP_com16to01;
-    BVP::param_t p1 = BVP::PARAM_comPrmBlk08to01;
-    BVP::param_t p2 = BVP::PARAM_comPrmBlk16to09;
+    // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
+    BVP::param_t p1 = BVP::PARAM_comPrdBlk08to01; // BVP::PARAM_comPrdBlk08to01;
+    BVP::param_t p2 = BVP::PARAM_comPrdBlk16to09; // BVP::PARAM_comPrmBlk16to09;
 
     val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32);
@@ -363,8 +364,8 @@ void MainWindow::viewReadRegSlot() {
     //
     group = vpReg::GROUP_com32to17;
     // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-    p1 = BVP::PARAM_comPrdBlk08to01; // BVP::PARAM_comPrmBlk24to17;
-    p2 = BVP::PARAM_comPrdBlk16to09; // BVP::PARAM_comPrmBlk32to25;
+    p1 = BVP::PARAM_comPrmBlk08to01; // BVP::PARAM_comPrmBlk24to17;
+    p2 = BVP::PARAM_comPrmBlk16to09; // BVP::PARAM_comPrmBlk32to25;
 
     val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
     value = static_cast<quint16> (val32 >> 16);
