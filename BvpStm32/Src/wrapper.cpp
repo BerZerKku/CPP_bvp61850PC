@@ -421,31 +421,8 @@ void wrapperMainInit() {
 void wrapperMainLoop() {
   HAL_IWDG_Refresh(&hiwdg);
 
-  GPIO_PinState pinstate = GPIO_PIN_RESET;
-
-  pinstate = HAL_GPIO_ReadPin(Sout7_GPIO_Port, Sout7_Pin);
-  pinstate = rpiConnection ? pinstate : GPIO_PIN_SET;
-
-  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, pinstate);
-
-  pinstate = HAL_GPIO_ReadPin(Sout6_GPIO_Port, Sout6_Pin);
-  HAL_GPIO_WritePin(WARNING_GPIO_Port, WARNING_Pin, pinstate);
-
-  pinstate = HAL_GPIO_ReadPin(Sout5_GPIO_Port, Sout5_Pin);
-  HAL_GPIO_WritePin(HF_FAULT_GPIO_Port, HF_FAULT_Pin, pinstate);
-
-  pinstate = HAL_GPIO_ReadPin(Sout4_GPIO_Port, Sout4_Pin);
-  HAL_GPIO_WritePin(TEST_GOOSE_GPIO_Port, TEST_GOOSE_Pin, pinstate);
-
-  pinstate = HAL_GPIO_ReadPin(Sout2_GPIO_Port, Sout2_Pin);
-  HAL_GPIO_WritePin(COM_TR_GPIO_Port, COM_TR_Pin, pinstate);
-
-  pinstate = HAL_GPIO_ReadPin(Sout1_GPIO_Port, Sout1_Pin);
-  HAL_GPIO_WritePin(COM_RC_GPIO_Port, COM_RC_Pin, pinstate);
-
   i2cProcessing();
 
-  //  avantPiPoll();
   protocolPoll();
   alarmLoop();
 }
@@ -569,46 +546,29 @@ void alarmLoop()
   }
   mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
 
-  uint32_t debug1 = 0;
   for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
     bool value;
     BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
 
     if (signal == BVP::EXT_ALARM_disablePrm) {
-      uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll,
-          BVP::SRC_int, ok);
+      uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll, BVP::SRC_int, ok);
       if (!ok) {
         uval32 = mAlarm.kDisablePrmDefault;
       }
-
       value = (uval32 == BVP::DISABLE_PRM_disable);
     } else {
       value = getExtAlarmSignals(signal);
     }
 
-    if (value) {
-      debug1 |= 1 << i;
-    }
-
     mAlarm.setAlarmInputSignal(signal, value);
   }
 
-  uint32_t debug2 = 0;
   for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
     BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
 
     bool value = mAlarm.getAlarmOutputSignal(signal);
-
-    if (value) {
-      debug2 |= 1 << i;
-    }
-
     setExtAlarmSignal(signal, value);
   }
-  debug2 += static_cast<uint32_t> (mAlarm.getAlarmReset()) << 8;
-
-  mParam->setValue(BVP::PARAM_debug1, BVP::SRC_int, debug1);
-  mParam->setValue(BVP::PARAM_debug2, BVP::SRC_int, debug2);
 }
 
 // —брос интерфейса I2Cю
