@@ -5,7 +5,7 @@ namespace BVP {
 
 TAvantPc::TAvantPc(regime_t regime) :
     TProtocolAvant(regime),
-    mComRx(COM_AVANT_getTime) {
+    mComRx(COM_getTime) {
 
     Q_ASSERT(regime == REGIME_slave);
 }
@@ -52,7 +52,7 @@ BVP::TAvantPc::vWriteAvant() {
 //
 bool
 TAvantPc::vReadAvant() {
-    mComRx = static_cast<comAvant_t> (mBuf[POS_COM]);
+    mComRx = static_cast<com_t> (mBuf[POS_COM]);
     mIsComRx = true;
     uint32_t value = 0;
 

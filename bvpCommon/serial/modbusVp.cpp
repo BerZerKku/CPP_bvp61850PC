@@ -613,7 +613,7 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
                 param = PARAM_vpBtnSAnSbSac;
                 val32 = static_cast<uint32_t> (value);
                 hdlrButtonSbSacSan(static_cast<uint32_t> (value));
-
+                hdlrButtonSa(PARAM_blkComPrmDir, val32, PARAM_vpBtnSAnSbSac, 2);
             } break;
             case REG_READ_sa16to01: {
                 param = PARAM_vpBtnSA32to01;

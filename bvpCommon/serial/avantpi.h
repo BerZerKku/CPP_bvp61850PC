@@ -8,6 +8,12 @@ namespace BVP {
 
 class TAvantPi : public TProtocolAvant {
 
+    /// Структура данных команды.
+    struct comData_t {
+        param_t param;      ///< Параметр.
+        uint8_t position;   ///< Позиция.
+    };
+
     /// Значение байта данных для команды COM_AVANT_control "Управление"
     enum comControlBytes_t {
         COM_CONTROL_BYTES_selfReset = 1 //<
@@ -23,6 +29,7 @@ class TAvantPi : public TProtocolAvant {
         COM_MISC_BYTES_stopBits,
         COM_MISC_BYTES_password,
         COM_MISC_BYTES_vpSac2 = COM_MISC_BYTES_password + 2,
+        COM_MISC_BYTES_vpSam,
         //
         COM_MISC_BYTES_MAX
     };
@@ -89,7 +96,7 @@ public:
     TAvantPi(regime_t regime);
 
 private:
-    TRingArray<comAvant_t, 5, COM_AVANT_getError> ringComArray;
+    TRingArray<com_t, 5, COM_getError> ringComArray;
 
     /**
      * @brief Формирование команды управления.
@@ -133,7 +140,7 @@ private:
      * @param[in] group Группа команды.
      * @return true если в команде нет ошибок, инчаче false
      */
-    bool comGetMisc(comAvantMaskGroup_t group);
+    bool comGetMisc(group_t group);
 
     /**
      * @brief comGetMiscGet
@@ -149,7 +156,7 @@ private:
      * @param[in] group Группа команды.
      * @return true если в команде нет ошибок, инчаче false
      */
-    bool comGetPrdKeep(comAvantMaskGroup_t group);
+    bool comGetPrdKeep(group_t group);
 
     /**
      * @brief comGetPrdKeep
@@ -166,7 +173,7 @@ private:
      * @param[in] group Группа команды.
      * @return true если в команде нет ошибок, инчаче false
      */
-    bool comGetPrmDisable(comAvantMaskGroup_t group);
+    bool comGetPrmDisable(group_t group);
 
     /**
      * @brief comGetPrmDisable
@@ -183,7 +190,7 @@ private:
      * @param[in] group Группа команды.
      * @return true если в команде нет ошибок, инчаче false
      */
-    bool comGetPrdBlock(comAvantMaskGroup_t group);
+    bool comGetPrdBlock(group_t group);
 
     /**
      * @brief comGetPrdBlock
@@ -200,7 +207,7 @@ private:
      * @param[in] group Группа команды.
      * @return true если в команде нет ошибок, инчаче false
      */
-    bool comGetPrmBlock(comAvantMaskGroup_t group);
+    bool comGetPrmBlock(group_t group);
 
     /**
      * @brief comGetPrmBlock
@@ -219,8 +226,16 @@ private:
      */
     bool comGetTime();
 
+    /**
+     * @brief Формирование новой команды для передачи.
+     * @return true если есть команда для передачи, иначе false.
+     */
     bool vWriteAvant() override;
 
+    /**
+     * @brief Обработка принятой команды.
+     * @return true если комада обработана, иначе false.
+     */
     bool vReadAvant() override;
 };
 

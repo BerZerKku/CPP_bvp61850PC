@@ -20,29 +20,14 @@ static uint8_t int2bcd(uint8_t value) {
     return static_cast<uint8_t> (((value/10) << 4) + (value%10));
 }
 
-// Команды для протокола АВАНТ
-enum comAvant_t {
-    COM_AVANT_getPrmBlock       = 0x14, ///< Блокированные команды ПРМ
-    COM_AVANT_getPrmDisable     = 0x1E, ///< Вывод ПРМ (SAC1)
-    COM_AVANT_getPrdBlock       = 0x24, ///< Блокированные команды ПРД
-    COM_AVANT_getError          = 0x31, ///< Неисправности и предупреждения
-    COM_AVANT_getTime           = 0x32, ///< Дата/время/журнал
-    COM_AVANT_getPrdKeep        = 0x37, ///< Удержание реле команд ПРД
-    COM_AVANT_getMisc           = 0x38, ///< Параметры другие
-    COM_AVANT_setControl        = 0x72, ///< Управление
-    COM_AVANT_setPrmResetInd    = 0x9A  ///< Выключение индикации Приемника
-};
-
-
-// Маска группы для команд протокола АВАНТ
-enum comAvantMaskGroup_t {
-    COM_AVANT_MASK_GROUP_mask       = 0xC0, ///< Маска бит для значения группы
-    //
-    COM_AVANT_MASK_GROUP_read       = 0x00, ///< Группа чтение
-    COM_AVANT_MASK_GROUP_writeRegime= 0x40, ///< Группа запись режима
-    COM_AVANT_MASK_GROUP_writeParam = 0x80, ///< Группа запись параметра
-    COM_AVANT_MASK_GROUP_readJournal= 0xC0  ///< Грпппа чтение журнала
-};
+//enum comAvantMaskGroup_t : uint8_t {
+//    COM_AVANT_MASK_GROUP_mask       = 0xC0,
+//    //
+//    COM_AVANT_MASK_GROUP_read       = 0x00,
+//    COM_AVANT_MASK_GROUP_writeRegime= 0x40,
+//    COM_AVANT_MASK_GROUP_writeParam = 0x80,
+//    COM_AVANT_MASK_GROUP_readJournal= 0xC0
+//};
 
 class TProtocolAvant : public TSerialProtocol {
     /// Максимальное время для получения ответа (в данной реализации), мкс.
@@ -52,7 +37,34 @@ class TProtocolAvant : public TSerialProtocol {
     /// Минимальная длина кадра.
     const uint16_t kMinLenFrame = 5;  // pmbl1 + pmbl2 + cm + data_len + check_sum
 
-   public:
+protected:
+    // Маска группы для команд протокола АВАНТ
+    enum group_t {
+        GROUP_mask = 0xC0,          ///< Маска бит для значения группы
+        //
+        GROUP_read          = 0x00, ///< Группа чтение
+        GROUP_writeRegime   = 0x40, ///< Группа запись режима
+        GROUP_writeParam    = 0x80, ///< Группа запись параметра
+        GROUP_readJournal   = 0xC0  ///< Грпппа чтение журнала
+    };
+
+    // Команды для протокола АВАНТ
+    enum com_t {
+        COM_getPrmBlock     = 0x14, ///< Блокированные команды ПРМ
+        COM_getPrmDisable   = 0x1E, ///< Вывод ПРМ (SAC1)
+        COM_getPrdBlock     = 0x24, ///< Блокированные команды ПРД
+        COM_getError        = 0x31, ///< Неисправности и предупреждения
+        COM_getTime         = 0x32, ///< Дата/время/журнал
+        COM_getPrdKeep      = 0x37, ///< Удержание реле команд ПРД
+        COM_getMisc         = 0x38, ///< Параметры другие
+        COM_setControl      = 0x72, ///< Управление
+        COM_setPrmResetInd  = 0x9A  ///< Выключение индикации Приемника
+    };
+
+public:
+
+
+
     TProtocolAvant(regime_t regime);
     ~TProtocolAvant() override;
 
@@ -72,7 +84,7 @@ class TProtocolAvant : public TSerialProtocol {
     void vTick() override;
     bool isConnection() const override;
 
-   protected:
+protected:
     /// Структура посылки
     enum pos_t {
         POS_PMBL_55 = 0,    ///< Первый байт преамбулы 0x55
@@ -86,54 +98,55 @@ class TProtocolAvant : public TSerialProtocol {
     state_t mState;         ///< Текущее состояние.
     uint8_t cntLostMessage; ///< Количество сообщений без ответа.
 
-    /// Увеличивает счетчик ошибок без ответа.
+    /**
+     * @brief Увеличивает счетчик ошибок без ответа.
+     */
     void incLostMessageCounter();
 
-    /** Устанавливает команду для передачи.
-   *
-   *  Сбрасывает количество байт данных для передачи.
-   *
-   *  @param[in] com Команда.
-   */
+    /**
+     * @brief Устанавливает команду для передачи.
+     * Сбрасывает количество байт данных для передачи.
+     * @param[in] com Команда.
+     */
     void setCom(uint8_t com);
 
-    /** Добавляет байт данных в указанную позицию сообщения.
-   *
-   *  @param[in] byte Байт данных.
-   *  @param[in] nbyte Номер байта данных начиная с 1. Если 0 то в конец сообщения.
-   */
+    /**
+     * @brief Добавляет байт данных в указанную позицию сообщения.
+     * @param[in] byte Байт данных.
+     * @param[in] nbyte Номер байта данных начиная с 1. Если 0 то в конец сообщения.
+     */
     void addByte(uint8_t byte, uint16_t nbyte=0);
 
-    /** Вычисляет контрольную сумму для массива данных.
-   *
-   *  Преамбула в подсчете контрольной суммы не участвует, поэтому передавать
-   *  сюда не надо.
-   *
-   *  @param[in] buffer Массив данных.
-   *  @param[in] len Количество данных в массиве.
-   *  @param[in] crc Текущее значение контрольной суммы.
-   *  @return Значение контрольной суммы.
-   */
+    /**
+     * @brief Вычисляет контрольную сумму для массива данных.
+     * Преамбула в подсчете контрольной суммы не участвует, поэтому передавать
+     *  сюда не надо.
+     * @param[in] buffer Массив данных.
+     * @param[in] len Количество данных в массиве.
+     * @param[in] crc Текущее значение контрольной суммы.
+     * @return Значение контрольной суммы.
+     */
     uint8_t calcCRC(const uint8_t buf[], size_t len, uint8_t crc=0x00);
 
-    /** Подготавливает сообщение для передачи.
-   *
-   *  Подготовка для протокола.
-   *
-   *  @return true если есть сообщение для передачи, иначе false.
-   */
+    /**
+     * @brief Подготавливает сообщение для передачи.
+     * Подготовка для протокола.
+     * @return true если есть сообщение для передачи, иначе false.
+     */
     virtual bool vWriteAvant() = 0;
 
-    /** Обрабатывает принятые сообщения.
-   *
-   *  Обработка для протокола.
-   *
-   *  @return true если было принято и обработано сообщение, иначе false.
-   */
+    /**
+     * @brief Обрабатывает принятые сообщения.
+     * Обработка для протокола.
+     * @return true если было принято и обработано сообщение, иначе false.
+     */
     virtual bool vReadAvant() = 0;
 
-   private:
-    /// Устанавливает состояние по умолчанию.
+private:
+
+    /**
+     * @brief Устанавливает состояние по умолчанию.
+     */
     void setDefaultState();
 };
 

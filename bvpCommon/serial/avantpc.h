@@ -15,7 +15,7 @@ public:
 
 private:
   bool mIsComRx = false;
-  comAvant_t mComRx;
+  com_t mComRx;
 };
 
 } // namespace BVP
