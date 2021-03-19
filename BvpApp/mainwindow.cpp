@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&timer100ms, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
     connect(&timer100ms, &QTimer::timeout,
             ui->paramTree, &TParamTree::updateParameters);
-    connect(&timer100ms, &QTimer::timeout, this, &MainWindow::procAlarm);
+    connect(&timer100ms, &QTimer::timeout, this, &MainWindow::alarmLoop);
 
     timer100ms.start(100);
 
@@ -246,31 +246,13 @@ void MainWindow::serialProc() {
 }
 
 //
-void MainWindow::procAlarm()
+void MainWindow::alarmLoop()
 {
     const BVP::src_t src = BVP::SRC_int;
     bool ok;
     uint32_t uval32;
 
-    // Обработка нажатия кнопки сброса
-
-    uval32 = mParam->getValue(BVP::PARAM_alarmResetBtn, src, ok);
-    if ((ok) && (uval32 != false)) {
-        mParam->setValue(BVP::PARAM_alarmResetBtn, src, false);
-
-        uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
-        if (!ok) {
-            uval32 = 0;
-        }
-        uval32 |= (1 << BVP::CTRL_resetComInd);
-
-        if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
-            mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
-            uval32 |= (1 << BVP::CTRL_resetFault);
-        }
-
-        mParam->setValue(BVP::PARAM_control, src, uval32);
-    }
+    alarmResetLoop();
 
     // Обработка входных и установка выходных сигналов
 
@@ -280,7 +262,6 @@ void MainWindow::procAlarm()
     }
     mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
 
-    uint32_t debug1 = 0;
     for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
         bool value;
         BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
@@ -297,28 +278,77 @@ void MainWindow::procAlarm()
             value = getExtAlarmSignals(signal);
         }
 
-        if (value) {
-            debug1 |= 1 << i;
-        }
-
         mAlarm.setAlarmInputSignal(signal, value);
     }
 
-    uint32_t debug2 = 0;
     for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
         BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
 
         bool value = mAlarm.getAlarmOutputSignal(signal);
 
-        if (value) {
-            debug2 |= 1 << i;
-        }
-
         setExtAlarmSignal(signal, value);
     }
+}
 
-    mParam->setValue(BVP::PARAM_debug1, BVP::SRC_int, debug1);
-    mParam->setValue(BVP::PARAM_debug2, BVP::SRC_int, debug2);
+void MainWindow::alarmResetLoop()
+{
+    const BVP::src_t src = BVP::SRC_int;
+    bool ok;
+    uint32_t uval32;
+
+    // Обработка нажатия кнопки сброса
+
+    uval32 = mParam->getValue(BVP::PARAM_alarmRstCtrl, src, ok);
+    uval32 &= (1 << BVP::ALARM_RST_CTRL_MAX) - 1;
+    if (ok) {
+        BVP::alarmRstCtrl_t i = static_cast<BVP::alarmRstCtrl_t> (0);
+        uint32_t tval = uval32;
+        while((uval32 > 0) && (i < BVP::ALARM_RST_CTRL_MAX)) {
+            if (uval32 & (1 << i)) {
+                switch(i) {
+                    case BVP::ALARM_RST_CTRL_resetIndWait: break;
+
+                    case BVP::ALARM_RST_CTRL_pressed: {
+                        mParam->setValue(BVP::PARAM_alarmRstCtrl, src, false);
+
+                        uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
+                        if (!ok) {
+                            uval32 = 0;
+                        }
+                        uval32 |= (1 << BVP::CTRL_resetComInd);
+                        tval |= (1 << BVP::ALARM_RST_CTRL_resetIndWait);
+
+                        if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
+                            mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
+                            uval32 |= (1 << BVP::CTRL_resetFault);
+                        }
+
+                        mParam->setValue(BVP::PARAM_control, src, uval32);
+                    } break;
+                    case BVP::ALARM_RST_CTRL_resetInd: {
+                        if (tval & (1 << BVP::ALARM_RST_CTRL_resetIndWait)) {
+                            mAlarm.resetSignal(BVP::EXT_ALARM_comPrd);
+                            mAlarm.resetSignal(BVP::EXT_ALARM_comPrm);
+                            tval &= ~(1 << BVP::ALARM_RST_CTRL_resetIndWait);
+                        }
+                        tval &= ~(1 << i);
+                    } break;
+                    case BVP::ALARM_RST_CTRL_device: {
+                        // TODO
+                    } break;
+
+                    case BVP::ALARM_RST_CTRL_MAX: break;
+                }
+                uval32 &= ~(1 << BVP::ALARM_RST_CTRL_resetInd);
+            }
+        }
+        uval32 = tval;
+    }
+    mParam->setValue(BVP::PARAM_alarmRstCtrl, src, uval32);
+
+    if ((ok) && (uval32 != false)) {
+
+    }
 }
 
 //

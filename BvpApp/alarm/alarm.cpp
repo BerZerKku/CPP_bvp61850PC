@@ -13,10 +13,10 @@ TAlarm::TAlarm(QWidget *parent) :
     setLedYellow(ui->ledWarning);
     setLedRed(ui->ledFaultChannel);
 
-    setButtonRed(ui->pbComPrd);
-    setButtonRed(ui->pbComPrm);
     setButtonRed(ui->pbFault);
-    setButtonRed(ui->pbPrmOut);
+    setButtonYellow(ui->pbComPrd);
+    setButtonYellow(ui->pbComPrm);
+    setButtonYellow(ui->pbPrmOut);
     setButtonYellow(ui->pbWarning);
 }
 

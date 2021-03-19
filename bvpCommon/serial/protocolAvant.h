@@ -64,7 +64,6 @@ protected:
 public:
 
 
-
     TProtocolAvant(regime_t regime);
     ~TProtocolAvant() override;
 

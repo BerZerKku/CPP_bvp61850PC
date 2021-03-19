@@ -40,7 +40,7 @@ void TParamTree::crtGroupInternal()
     top->setText(0, "Внутренние параметры");
 
     crtItem(top, BVP::PARAM_version, "Версия БВП МК");
-    crtItem(top, BVP::PARAM_alarmResetBtn, "Сброс сигнализации");
+    crtItem(top, BVP::PARAM_alarmRstCtrl, "Сброс сигнализации");
     crtItem(top, BVP::PARAM_control, "Сигналы управления");
     crtItem(top, BVP::PARAM_debug1, "Параметр для отладки ПО 1");
     crtItem(top, BVP::PARAM_debug2, "Параметр для отладки ПО 2");

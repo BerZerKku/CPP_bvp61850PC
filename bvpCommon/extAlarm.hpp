@@ -112,6 +112,18 @@ public:
 
     }
 
+    void resetSignal(extAlarm_t signal) {
+        Q_ASSERT(signal <= EXT_ALARM_MAX);
+
+        if (signal < EXT_ALARM_MAX) {
+            mAlarm &= ~(1 << signal);
+        }
+    }
+
+    void resetSignalAll() {
+        mAlarm = kAlarmDefault;
+    }
+
 private:
 
     /// Режим сброса сигнализации
@@ -147,7 +159,7 @@ private:
      * @return Значение всех сигналов побитно согласно \a extAlarm_t.
      */
     uint16_t setSignal(extAlarm_t signal, bool value, alarmReset_t reset) {
-        assert(signal <= EXT_ALARM_MAX);
+        Q_ASSERT(signal <= EXT_ALARM_MAX);
 
         if (signal < EXT_ALARM_MAX) {
             if (value) {

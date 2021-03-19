@@ -548,6 +548,25 @@ uint16_t TAvantPi::comGetPrmBlock(TAvantPi::comPrmBlockBytes_t pos,
     return numbytes;
 }
 
+bool TAvantPi::comResetInd(TProtocolAvant::group_t group)
+{
+    bool ok = false;
+
+    if (group == GROUP_writeParam) {
+        const param_t param = PARAM_alarmRstCtrl;
+        uint32_t value = mParam->getValue(param, mSrc, ok);
+
+        if (ok) {
+            value |= (1 << ALARM_RST_CTRL_resetInd);
+            mParam->setValue(param, mSrc, value);
+        }
+
+        ok = true;
+    }
+
+    return ok;
+}
+
 //
 bool TAvantPi::comGetTime()
 {
@@ -655,6 +674,9 @@ bool TAvantPi::vReadAvant()
         } break;
         case COM_getPrdBlock: {
             ok = comGetPrdBlock(group);
+        } break;
+        case COM_setPrmResetInd: {
+            ok = comResetInd(group);
         } break;
     }
 

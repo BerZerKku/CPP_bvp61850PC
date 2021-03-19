@@ -72,7 +72,8 @@ private:
 
   void serialProc();
 
-  void procAlarm();
+  void alarmLoop();
+  void alarmResetLoop();
   void viewReadRegSlot();
 
   friend bool getExtAlarmSignal(BVP::extAlarm_t signal);

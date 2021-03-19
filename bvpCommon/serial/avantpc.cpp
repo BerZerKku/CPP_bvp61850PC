@@ -22,18 +22,15 @@ BVP::TAvantPc::vWriteAvant() {
             setCom(mComRx);
             value = mParam->getValue(PARAM_debug1, mSrc, ok);
             addByte(static_cast<uint8_t> (value));
-//            addByte(static_cast<uint8_t> (value >> 8));
-//            addByte(static_cast<uint8_t> (value >> 16));
-//            addByte(static_cast<uint8_t> (value >> 24));
+            addByte(static_cast<uint8_t> (value >> 8));
+            addByte(static_cast<uint8_t> (value >> 16));
+            addByte(static_cast<uint8_t> (value >> 24));
             value = mParam->getValue(PARAM_debug2, mSrc, ok);
             addByte(static_cast<uint8_t> (value));
-            addByte(static_cast<uint8_t> (value >> 8)); // addByte(0);
-            addByte(0); // addByte(static_cast<uint8_t> (value >> 16));
-            addByte(0); // addByte(static_cast<uint8_t> (value >> 24));
+            addByte(static_cast<uint8_t> (value >> 8));
+            addByte(static_cast<uint8_t> (value >> 16));
+            addByte(static_cast<uint8_t> (value >> 24));
             // добивка до 16 байт в посылке, для удобного вывода в CuteCom
-            addByte(0);
-            addByte(0);
-            addByte(0);
             addByte(0);
             addByte(0);
             addByte(0);
@@ -58,13 +55,13 @@ TAvantPc::vReadAvant() {
 
     if (mComRx == 0x02) {
         Q_ASSERT(mBuf[POS_DATA_LEN] == 4);
-        value = mBuf[POS_DATA];
-        value <<= 8;
-        value += mBuf[POS_DATA + 1];
+        value = mBuf[POS_DATA + 3];
         value <<= 8;
         value += mBuf[POS_DATA + 2];
         value <<= 8;
-        value += mBuf[POS_DATA + 3];
+        value += mBuf[POS_DATA + 1];
+        value <<= 8;
+        value += mBuf[POS_DATA];
         mParam->setValue(PARAM_debug2, mSrc, value);
     }
 

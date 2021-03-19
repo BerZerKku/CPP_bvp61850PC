@@ -705,7 +705,7 @@ void TModbusVp::hdlrButtonSbSacSan(vpBtnControl_t btn)
 
     switch(btn) {
         case VP_BTN_CONTROL_sb: {
-            param = PARAM_alarmResetBtn;
+            param = PARAM_alarmRstCtrl;
             mParam->setValue(param, mSrc, true);
         } break;
         case VP_BTN_CONTROL_sac1: {
@@ -759,8 +759,11 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
     bool ok = true;
     const uint32_t mask = 0x00FF;
     uint32_t value = mParam->getValue(PARAM_dirControl, mSrc, ok);
+
+    // Обработка переключателя вдетеся только при локальном управлении
     bool change = ok && (value == DIR_CONTROL_local);
 
+    // Переключатели приемника обрабатываются, если нет общей блокировки
     if (change && isParamComPrmBlk(param)) {
         change = !isBlockPrm();
     }
@@ -774,7 +777,7 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
                 uint32_t value = mParam->getValue(param, mSrc, ok) & mask;
 
                 if (ok) {
-                    // определение нажатия на переключатель
+                    // определение нового нажатия на переключатель
                     uint32_t pressed = ((cvalue ^ lvalue) & cvalue);
                     pressed = (pressed >> 8*(num - 1)) & mask;
                     if (pressed) {
@@ -814,6 +817,7 @@ bool TModbusVp::isBlockPrm() const
     return ok && (value == DISABLE_PRM_disable);
 }
 
+//
 bool TModbusVp::isParamComPrmBlk(param_t param) const
 {
     return (param >= PARAM_comPrmBlk08to01) && (param <= PARAM_blkComPrm64to33);

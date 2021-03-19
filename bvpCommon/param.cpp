@@ -189,7 +189,7 @@ void TParam::reset()
     // TODO Подумать над инициализацией параметров которые не надо считывать.
     setLocalValue(PARAM_control, mSrc, 0);
     setLocalValue(PARAM_extAlarm, mSrc, 0);
-    setLocalValue(PARAM_alarmResetBtn, mSrc, 0);
+    setLocalValue(PARAM_alarmRstCtrl, mSrc, 0);
 
     // FIXME Установка параметра должна быть в ПО для БВП!!!
     uint32_t version = (static_cast<uint32_t>(versionMajor) << 8) + versionMinor;

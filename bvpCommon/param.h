@@ -16,57 +16,57 @@ static const uint8_t versionMinor = 1;      ///< Версия ПО (minor)
 enum param_t {
     PARAM_version = 0,      ///< Версия текущего устройства
     // Текущее состояние
-    PARAM_error,            ///< Флаг наличия неисправности.
-    PARAM_warning,          ///< Флаг наличия предупреждения.
-    PARAM_defError,         ///< Неисправности Защиты.
-    PARAM_defWarning,       ///< Предупреждения Защиты.
-    PARAM_prmError,         ///< Неисправности Приемника.
-    PARAM_prmWarning,       ///< Педупреждения Приемника.
-    PARAM_prm2Error,        ///< Неисправности Приемника 2.
-    PARAM_prm2Warning,      ///> Педупреждения Приемника 2.
-    PARAM_prdError,         ///< Неисправности Передатчика.
-    PARAM_prdWarning,       ///< Педупреждения Передатчика.
-    PARAM_glbError,         ///< Неисправности Общие.
-    PARAM_glbWarning,       ///< Педупреждения Общие.
-    PARAM_defRemoteError,   ///< Неисправности Защиты удаленного аппарата.
-    PARAM_prmRemoteError,   ///< Неисправности Приемника удаленного аппарата.
-    PARAM_prdRemoteError,   ///< Неисправности Передатчика удаленного аппарата.
-    PARAM_glbRemoteError,   ///< Неисправности Общие удаленного аппарата.
+    PARAM_error,            ///< Флаг наличия неисправности
+    PARAM_warning,          ///< Флаг наличия предупреждения
+    PARAM_defError,         ///< Неисправности Защиты
+    PARAM_defWarning,       ///< Предупреждения Защиты
+    PARAM_prmError,         ///< Неисправности Приемника
+    PARAM_prmWarning,       ///< Педупреждения Приемника
+    PARAM_prm2Error,        ///< Неисправности Приемника 2
+    PARAM_prm2Warning,      ///> Педупреждения Приемника 2
+    PARAM_prdError,         ///< Неисправности Передатчика
+    PARAM_prdWarning,       ///< Педупреждения Передатчика
+    PARAM_glbError,         ///< Неисправности Общие
+    PARAM_glbWarning,       ///< Педупреждения Общие
+    PARAM_defRemoteError,   ///< Неисправности Защиты удаленного аппарата
+    PARAM_prmRemoteError,   ///< Неисправности Приемника удаленного аппарата
+    PARAM_prdRemoteError,   ///< Неисправности Передатчика удаленного аппарата
+    PARAM_glbRemoteError,   ///< Неисправности Общие удаленного аппарата
     // Дата и время
-    PARAM_dateYear,         ///< Год.
-    PARAM_dateMonth,        ///< Месяц.
-    PARAM_dateDay,          ///< День.
-    PARAM_timeHour,         ///< Часы.
-    PARAM_timeMin,          ///< Минуты.
-    PARAM_timeSec,          ///< Секунды.
-    PARAM_timeMSec,         ///< Миллисекунды.
+    PARAM_dateYear,         ///< Год
+    PARAM_dateMonth,        ///< Месяц
+    PARAM_dateDay,          ///< День
+    PARAM_timeHour,         ///< Часы
+    PARAM_timeMin,          ///< Минуты
+    PARAM_timeSec,          ///< Секунды
+    PARAM_timeMSec,         ///< Миллисекунды
     // Общие параметры
-    PARAM_alarmResetMode,   ///< Режим сброса сигнализации.
+    PARAM_alarmResetMode,   ///< Режим сброса сигнализации
     // Внутренние параметры
-    PARAM_extAlarm,         ///< Внешняя сигнализация.
-    PARAM_alarmResetBtn,    ///< Переключатель "Сброс сигнализации".
-    PARAM_control,          ///< Сигналы управления.
+    PARAM_extAlarm,         ///< Внешняя сигнализация
+    PARAM_alarmRstCtrl,     ///< Управление "Сброс сигнализации"
+    PARAM_control,          ///< Сигналы управления
     PARAM_debug1,           ///< Параметр для отладки ПО 1
     PARAM_debug2,           ///< Параметр для отладки ПО 2
     // Параметры панели виртуальных ключей
     PARAM_versionVp,        ///< Версия ПО панели ВК
-    PARAM_dirControl,       ///< Управление ключами (SAC2).
-    PARAM_blkComPrmAll,     ///< Блокировка всех выходов приемника (SAC1).
+    PARAM_dirControl,       ///< Управление ключами (SAC2)
+    PARAM_blkComPrmAll,     ///< Блокировка всех выходов приемника (SAC1)
     PARAM_blkComPrmDir,     ///< Блокировка направлений выхода приемника (SAnn.x)
-    PARAM_comPrmBlk08to01,  ///< Блокированные команды приемника с 8 по 1.
-    PARAM_comPrmBlk16to09,  ///< Блокированные команды приемника с 16 по 9.
-    PARAM_comPrmBlk24to17,  ///< Блокированные команды приемника с 24 по 17.
-    PARAM_comPrmBlk32to25,  ///< Блокированные команды приемника с 32 по 25.
-    PARAM_blkComPrm64to33,  ///< Блокированные команды приемника с 33 по 64.
-    PARAM_comPrdBlk08to01,  ///< Блокированные команды передатчика с 8 по 1.
-    PARAM_comPrdBlk16to09,  ///< Блокированные команды передатчика с 16 по 9.
-    PARAM_comPrdBlk24to17,  ///< Блокированные команды передатчика с 24 по 17.
-    PARAM_comPrdBlk32to25,  ///< Блокированные команды передатчика с 32 по 25.
-    PARAM_blkComPrd64to33,  ///< Блокированные команды передатчика с 33 по 64.
+    PARAM_comPrmBlk08to01,  ///< Блокированные команды приемника с 8 по 1
+    PARAM_comPrmBlk16to09,  ///< Блокированные команды приемника с 16 по 9
+    PARAM_comPrmBlk24to17,  ///< Блокированные команды приемника с 24 по 17
+    PARAM_comPrmBlk32to25,  ///< Блокированные команды приемника с 32 по 25
+    PARAM_blkComPrm64to33,  ///< Блокированные команды приемника с 33 по 64
+    PARAM_comPrdBlk08to01,  ///< Блокированные команды передатчика с 8 по 1
+    PARAM_comPrdBlk16to09,  ///< Блокированные команды передатчика с 16 по 9
+    PARAM_comPrdBlk24to17,  ///< Блокированные команды передатчика с 24 по 17
+    PARAM_comPrdBlk32to25,  ///< Блокированные команды передатчика с 32 по 25
+    PARAM_blkComPrd64to33,  ///< Блокированные команды передатчика с 33 по 64
     // Кнопки панели виртуальных ключей.
-    PARAM_vpBtnSAnSbSac,
-    PARAM_vpBtnSA32to01,
-    PARAM_vpBtnSA64to33,
+    PARAM_vpBtnSAnSbSac,    ///< Текущее положение кнопок SA.m, SB, SAC
+    PARAM_vpBtnSA32to01,    ///< Текущее положение кнопок c SA32  по SA1
+    PARAM_vpBtnSA64to33,    ///< Текущее положение кнопок c SA64  по SA33
     //
     PARAM_MAX
 };
@@ -97,32 +97,42 @@ enum ctrl_t {
 
 /// Управление ключами
 enum dirControl_t {
-    DIR_CONTROL_local = 0,
-    DIR_CONTROL_remote,
+    DIR_CONTROL_local = 0,  ///< Местное
+    DIR_CONTROL_remote,     ///< Дистанционное
     //
     DIR_CONTROL_MAX
 };
 
 /// Сброс сигнализации
 enum alarmReset_t {
-    ALARM_RESET_auto = 0,
-    ALARM_RESET_manual,
+    ALARM_RESET_auto = 0,   ///< Автоматический
+    ALARM_RESET_manual,     ///< Ручной
     //
     ALARM_RESET_MAX
 };
 
+/// Управление сбросом сигнализации
+enum alarmRstCtrl_t {
+    ALARM_RST_CTRL_pressed = 0, ///< Нажат переключатель "Сброс сигнализации".
+    ALARM_RST_CTRL_resetInd,    ///< Пришел сигнал о сбросе индикации.
+    ALARM_RST_CTRL_resetIndWait,///< Ожидание сигнала о сбросе индикации.
+    ALARM_RST_CTRL_device,      ///< Пришел сигнал о сбросе устройства.
+    //
+    ALARM_RST_CTRL_MAX
+};
+
 /// Состояния параметра "Вывод ПРМ (SAC1)"
 enum disablePrm_t {
-    DISABLE_PRM_disable = 0,
-    DISABLE_PRM_enable,
+    DISABLE_PRM_disable = 0,    ///< ПРМ выведен
+    DISABLE_PRM_enable,         ///< ПРМ введен
     //
     DISABLE_PRM_MAX
 };
 
 ///
 enum switchOff_t {
-    ON_OFF_off = 0, ///<
-    ON_OFF_on,
+    ON_OFF_off = 0, ///< Переключатель выключен
+    ON_OFF_on,      ///< Переключатель включен
     //
     ON_OFF_MAX
 };
