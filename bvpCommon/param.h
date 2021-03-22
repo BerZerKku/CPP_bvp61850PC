@@ -113,10 +113,8 @@ enum alarmReset_t {
 
 /// Управление сбросом сигнализации
 enum alarmRstCtrl_t {
-    ALARM_RST_CTRL_pressed = 0, ///< Нажат переключатель "Сброс сигнализации".
-    ALARM_RST_CTRL_resetInd,    ///< Пришел сигнал о сбросе индикации.
-    ALARM_RST_CTRL_resetIndWait,///< Ожидание сигнала о сбросе индикации.
-    ALARM_RST_CTRL_device,      ///< Пришел сигнал о сбросе устройства.
+    ALARM_RST_CTRL_no = 0,  ///< Нет.
+    ALARM_RST_CTRL_pressed, ///< Нажат переключатель "Сброс сигнализации".
     //
     ALARM_RST_CTRL_MAX
 };

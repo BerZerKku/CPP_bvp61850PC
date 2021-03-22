@@ -108,10 +108,19 @@ public:
      * @return Возвращает true если сигнал активен, иначе false.
      */
     bool getAlarmOutputSignal(extAlarm_t signal) const {
-        return signal < EXT_ALARM_MAX ? (mAlarm & (1 << signal)) : false;
+        bool value = false;
 
+        if (mAlarmOut && (signal < EXT_ALARM_MAX)) {
+            value = (mAlarm & (1 << signal));
+        }
+
+        return value;
     }
 
+    /**
+     * @brief Сбрасывает значение для указанного сигнала.
+     * @param[in] signal Сигнал.
+     */
     void resetSignal(extAlarm_t signal) {
         Q_ASSERT(signal <= EXT_ALARM_MAX);
 
@@ -120,11 +129,34 @@ public:
         }
     }
 
+    /**
+     * @brief Сбрасывает значение для всех сигналов.
+     */
     void resetSignalAll() {
         mAlarm = kAlarmDefault;
     }
 
+    /**
+     * @brief Включает режим повторителя сигналов.
+     * Т.е. работа сигнализации без запоминания.
+     * @param enable
+     */
+    void setAlarmOut(bool enable) {
+        mAlarmOut = enable;
+    }
+
+    /**
+     * @brief Возвращает текущий режим повторителя сигналов.
+     * @return true если сигнализация в режиме повторителя, иначе false.
+     */
+    bool isAlarmOutEnable() const {
+        return mAlarmOut;
+    }
+
 private:
+
+    /// Режим работы сигнализации без запоминания (true).
+    bool mAlarmOut = true;
 
     /// Режим сброса сигнализации
     alarmReset_t mAlarmReset = kAlarmResetModeDefault;
@@ -165,7 +197,7 @@ private:
             if (value) {
                 mAlarm |= (1 << signal);
             } else {
-                if (reset == ALARM_RESET_auto) {
+                if (!mAlarmOut || (reset == ALARM_RESET_auto)) {
                     mAlarm &= ~(1 << signal);
                 }
             }

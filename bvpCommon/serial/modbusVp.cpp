@@ -706,7 +706,7 @@ void TModbusVp::hdlrButtonSbSacSan(vpBtnControl_t btn)
     switch(btn) {
         case VP_BTN_CONTROL_sb: {
             param = PARAM_alarmRstCtrl;
-            mParam->setValue(param, mSrc, true);
+            mParam->setValue(param, mSrc, ALARM_RST_CTRL_pressed);
         } break;
         case VP_BTN_CONTROL_sac1: {
             if (change) {

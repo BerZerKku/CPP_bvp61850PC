@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "bvpCommon/clock.hpp"
 #include "bvpCommon/param.h"
 
 const uint8_t MainWindow::comReadHoldingRegisters = 0x03;
@@ -8,13 +9,15 @@ const uint8_t MainWindow::comReadWriteMultipleRegisters = 0x17;
 
 static TAlarm *wAlarm = nullptr;
 
-bool getExtAlarmSignals(BVP::extAlarm_t signal) {
+using namespace BVP;
+
+bool getExtAlarmSignals(extAlarm_t signal) {
     Q_ASSERT(wAlarm != nullptr);
 
     return wAlarm->getSignal(signal);
 }
 
-void setExtAlarmSignal(BVP::extAlarm_t signal, bool value) {
+void setExtAlarmSignal(extAlarm_t signal, bool value) {
     Q_ASSERT(wAlarm != nullptr);
 
     wAlarm->setSignal(signal, value);
@@ -32,14 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     wAlarm = ui->fAlarm; // const_cast<MainWindow*> (this);
 
-    mModbus = new BVP::TModbusVp(BVP::TModbusVp::REGIME_master);
-    mParam = BVP::TParam::getInstance();
+    mModbus = new TModbusVp(TModbusVp::REGIME_master);
+    mParam = TParam::getInstance();
 
     initVp();
     initAvantPi();
     initAvantPc();    
 
+    TClock::setTickInMs(1);
     connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
+    connect(&timer1ms, &QTimer::timeout, []() {TClock::tick();});
     timer1ms.start(1);
 
     connect(&timer100ms, &QTimer::timeout, this, &MainWindow::viewReadRegSlot);
@@ -70,8 +75,8 @@ void MainWindow::initAvantPc()
     cfg->baudList.append({19200});
     cfg->parityList.append({QSerialPort::NoParity});
     cfg->stopList.append({QSerialPort::TwoStop});
-    cfg->protocol = new BVP::TAvantPc(BVP::TSerialProtocol::REGIME_slave);
-    cfg->srcId = BVP::SRC_pc;
+    cfg->protocol = new TAvantPc(TSerialProtocol::REGIME_slave);
+    cfg->srcId = SRC_pc;
     cfg->netAddr = 1;
     cfg->baudrate = 19200;
     cfg->parity = QSerialPort::NoParity;
@@ -95,8 +100,8 @@ void MainWindow::initAvantPi()
     cfg->baudList.append({4800, 19200});
     cfg->parityList.append({QSerialPort::NoParity});
     cfg->stopList.append({QSerialPort::TwoStop});
-    cfg->protocol = new BVP::TAvantPi(BVP::TSerialProtocol::REGIME_master);
-    cfg->srcId = BVP::SRC_pi;
+    cfg->protocol = new TAvantPi(TSerialProtocol::REGIME_master);
+    cfg->srcId = SRC_pi;
     cfg->netAddr = 1;
     cfg->baudrate = 19200;
     cfg->parity = QSerialPort::NoParity;
@@ -123,7 +128,7 @@ void MainWindow::initVp()
     cfg->parityList.append({QSerialPort::EvenParity});
     cfg->stopList.append({QSerialPort::OneStop});
     cfg->protocol = mModbus;
-    cfg->srcId = BVP::SRC_vkey;
+    cfg->srcId = SRC_vkey;
     cfg->netAddr = 10;
     cfg->baudrate = 9600;
     cfg->parity = QSerialPort::EvenParity;
@@ -230,7 +235,7 @@ void MainWindow::serialProc() {
                         pkg.append(data[i]);
                     }
 
-//                    if (cfg->protocol->getID() == BVP::SRC_pi) {
+//                    if (cfg->protocol->getID() == SRC_pi) {
 //                        qDebug() << "Tx to PI: " << Qt::hex << pkg << Qt::endl;
 //                    }
 
@@ -248,7 +253,7 @@ void MainWindow::serialProc() {
 //
 void MainWindow::alarmLoop()
 {
-    const BVP::src_t src = BVP::SRC_int;
+    const src_t src = SRC_int;
     bool ok;
     uint32_t uval32;
 
@@ -256,24 +261,24 @@ void MainWindow::alarmLoop()
 
     // Обработка входных и установка выходных сигналов
 
-    uval32 = mParam->getValue(BVP::PARAM_alarmResetMode, src, ok);
-    if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
+    uval32 = mParam->getValue(PARAM_alarmResetMode, src, ok);
+    if (!ok || (uval32 >= ALARM_RESET_MAX)) {
         uval32 = mAlarm.kAlarmResetModeDefault;
     }
-    mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
+    mAlarm.setAlarmReset(alarmReset_t(uval32));
 
-    for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
         bool value;
-        BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+        extAlarm_t signal = static_cast<extAlarm_t> (i);
 
-        if (signal == BVP::EXT_ALARM_disablePrm) {
-            uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll,
-                                      BVP::SRC_int, ok);
+        if (signal == EXT_ALARM_disablePrm) {
+            uval32 = mParam->getValue(PARAM_blkComPrmAll,
+                                      SRC_int, ok);
             if (!ok) {
                 uval32 = mAlarm.kDisablePrmDefault;
             }
 
-            value = (uval32 == BVP::DISABLE_PRM_disable);
+            value = (uval32 == DISABLE_PRM_disable);
         } else {
             value = getExtAlarmSignals(signal);
         }
@@ -281,8 +286,8 @@ void MainWindow::alarmLoop()
         mAlarm.setAlarmInputSignal(signal, value);
     }
 
-    for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
-        BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        extAlarm_t signal = static_cast<extAlarm_t> (i);
 
         bool value = mAlarm.getAlarmOutputSignal(signal);
 
@@ -292,63 +297,39 @@ void MainWindow::alarmLoop()
 
 void MainWindow::alarmResetLoop()
 {
-    const BVP::src_t src = BVP::SRC_int;
-    bool ok;
+    static bool reset = false;
+    static clockPoint_t last = TClock::getClockPoint();
+    const src_t src = SRC_int;
+    bool ok = true;
     uint32_t uval32;
 
     // Обработка нажатия кнопки сброса
 
-    uval32 = mParam->getValue(BVP::PARAM_alarmRstCtrl, src, ok);
-    uval32 &= (1 << BVP::ALARM_RST_CTRL_MAX) - 1;
-    if (ok) {
-        BVP::alarmRstCtrl_t i = static_cast<BVP::alarmRstCtrl_t> (0);
-        uint32_t tval = uval32;
-        while((uval32 > 0) && (i < BVP::ALARM_RST_CTRL_MAX)) {
-            if (uval32 & (1 << i)) {
-                switch(i) {
-                    case BVP::ALARM_RST_CTRL_resetIndWait: break;
+    uval32 = mParam->getValue(PARAM_alarmRstCtrl, src, ok);
+    if ((ok) && (uval32 != ALARM_RST_CTRL_no)) {
+        if (uval32 == ALARM_RST_CTRL_pressed) {
+            reset = true;
+            last = TClock::getClockPoint();
 
-                    case BVP::ALARM_RST_CTRL_pressed: {
-                        mParam->setValue(BVP::PARAM_alarmRstCtrl, src, false);
-
-                        uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
-                        if (!ok) {
-                            uval32 = 0;
-                        }
-                        uval32 |= (1 << BVP::CTRL_resetComInd);
-                        tval |= (1 << BVP::ALARM_RST_CTRL_resetIndWait);
-
-                        if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
-                            mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
-                            uval32 |= (1 << BVP::CTRL_resetFault);
-                        }
-
-                        mParam->setValue(BVP::PARAM_control, src, uval32);
-                    } break;
-                    case BVP::ALARM_RST_CTRL_resetInd: {
-                        if (tval & (1 << BVP::ALARM_RST_CTRL_resetIndWait)) {
-                            mAlarm.resetSignal(BVP::EXT_ALARM_comPrd);
-                            mAlarm.resetSignal(BVP::EXT_ALARM_comPrm);
-                            tval &= ~(1 << BVP::ALARM_RST_CTRL_resetIndWait);
-                        }
-                        tval &= ~(1 << i);
-                    } break;
-                    case BVP::ALARM_RST_CTRL_device: {
-                        // TODO
-                    } break;
-
-                    case BVP::ALARM_RST_CTRL_MAX: break;
-                }
-                uval32 &= ~(1 << BVP::ALARM_RST_CTRL_resetInd);
+            uval32 = mParam->getValue(PARAM_control, src, ok);
+            if (!ok) {
+                uval32 = 0;
             }
+            uval32 |= (1 << CTRL_resetComInd);
+
+            if (mAlarm.getAlarmOutputSignal(EXT_ALARM_fault) ||
+                mAlarm.getAlarmOutputSignal(EXT_ALARM_warning)) {
+                uval32 |= (1 << CTRL_resetFault);
+            }
+
+            mParam->setValue(PARAM_control, src, uval32);
         }
-        uval32 = tval;
+        uval32 = ALARM_RST_CTRL_no;
     }
-    mParam->setValue(BVP::PARAM_alarmRstCtrl, src, uval32);
+    mParam->setValue(PARAM_alarmRstCtrl, src, uval32);
 
-    if ((ok) && (uval32 != false)) {
-
-    }
+    reset = reset && (TClock::getDurationS(last) < 2);
+    mAlarm.setAlarmOut(!reset);
 }
 
 //
@@ -357,16 +338,16 @@ void MainWindow::viewReadRegSlot() {
     bool ok = true;
     quint32 val32;
     quint16 value;
-    BVP::TParam *params = BVP::TParam::getInstance();
+    TParam *params = TParam::getInstance();
 
     //
     group = vpReg::GROUP_control;
-    val32 = params->getValue(BVP::PARAM_vpBtnSAnSbSac, BVP::SRC_vkey, ok);
+    val32 = params->getValue(PARAM_vpBtnSAnSbSac, SRC_vkey, ok);
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
-    val32 = params->getValue(BVP::PARAM_blkComPrmAll, BVP::SRC_vkey, ok) ? 0 : 1;
-    val32 |= params->getValue(BVP::PARAM_dirControl, BVP::SRC_vkey, ok) ? 2 : 0;
-    val32 |= params->getValue(BVP::PARAM_blkComPrmDir, BVP::SRC_vkey, ok) << 8;
+    val32 = params->getValue(PARAM_blkComPrmAll, SRC_vkey, ok) ? 0 : 1;
+    val32 |= params->getValue(PARAM_dirControl, SRC_vkey, ok) ? 2 : 0;
+    val32 |= params->getValue(PARAM_blkComPrmDir, SRC_vkey, ok) << 8;
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, ~value);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
@@ -376,17 +357,17 @@ void MainWindow::viewReadRegSlot() {
     //
     group = vpReg::GROUP_com16to01;
     // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-    BVP::param_t p1 = BVP::PARAM_comPrdBlk08to01; // BVP::PARAM_comPrdBlk08to01;
-    BVP::param_t p2 = BVP::PARAM_comPrdBlk16to09; // BVP::PARAM_comPrmBlk16to09;
+    param_t p1 = PARAM_comPrdBlk08to01; // PARAM_comPrdBlk08to01;
+    param_t p2 = PARAM_comPrdBlk16to09; // PARAM_comPrmBlk16to09;
 
-    val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
+    val32 = params->getValue(PARAM_vpBtnSA32to01, SRC_vkey, ok);
     value = static_cast<quint16> (val32);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
 
-    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_off);
+    value = mModbus->getSwitchLed(p2, p1, ON_OFF_off);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, value);
 
-    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_on);
+    value = mModbus->getSwitchLed(p2, p1, ON_OFF_on);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 
     //
@@ -394,16 +375,16 @@ void MainWindow::viewReadRegSlot() {
     //
     group = vpReg::GROUP_com32to17;
     // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
-    p1 = BVP::PARAM_comPrmBlk08to01; // BVP::PARAM_comPrmBlk24to17;
-    p2 = BVP::PARAM_comPrmBlk16to09; // BVP::PARAM_comPrmBlk32to25;
+    p1 = PARAM_comPrmBlk08to01; // PARAM_comPrmBlk24to17;
+    p2 = PARAM_comPrmBlk16to09; // PARAM_comPrmBlk32to25;
 
-    val32 = params->getValue(BVP::PARAM_vpBtnSA32to01, BVP::SRC_vkey, ok);
+    val32 = params->getValue(PARAM_vpBtnSA32to01, SRC_vkey, ok);
     value = static_cast<quint16> (val32 >> 16);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_BUTTON, value);
 
-    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_off);
+    value = mModbus->getSwitchLed(p2, p1, ON_OFF_off);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_ENABLE, value);
 
-    value = mModbus->getSwitchLed(p2, p1, BVP::ON_OFF_on);
+    value = mModbus->getSwitchLed(p2, p1, ON_OFF_on);
     ui->readReg->setReg(group, TReadReg::REG_FUNC_LED_DISABLE, value);
 }

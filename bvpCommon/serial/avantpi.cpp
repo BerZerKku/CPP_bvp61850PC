@@ -553,14 +553,7 @@ bool TAvantPi::comResetInd(TProtocolAvant::group_t group)
     bool ok = false;
 
     if (group == GROUP_writeParam) {
-        const param_t param = PARAM_alarmRstCtrl;
-        uint32_t value = mParam->getValue(param, mSrc, ok);
-
-        if (ok) {
-            value |= (1 << ALARM_RST_CTRL_resetInd);
-            mParam->setValue(param, mSrc, value);
-        }
-
+        // TODO Сделать обработку ответа на команду сброса индикации
         ok = true;
     }
 

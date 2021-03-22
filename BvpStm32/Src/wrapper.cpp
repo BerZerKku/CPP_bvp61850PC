@@ -20,6 +20,7 @@
 #include "bvpCommon/serial/avantpi.h"
 #include "bvpCommon/serial/avantpc.h"
 #include "bvpCommon/extAlarm.hpp"
+#include "bvpCommon/clock.hpp"
 
 using namespace BVP;
 
@@ -238,6 +239,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   static uint16_t cnt = 0;
 
   if (htim == &htim6) {
+    // 1 мс
+    TClock::tick();
+
     HAL_GPIO_WritePin(LED2_VD8_GPIO_Port, LED2_VD8_Pin,
         rpiConnection ? GPIO_PIN_RESET : GPIO_PIN_SET);
 
@@ -278,6 +282,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
     Debug::send();
   } else if (htim == &htim7) {
+    // 0,1мс
+
     for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
       TSerialProtocol *p = port[i].protocol;
       if ((p!= nullptr) && p->isEnable()) {
@@ -373,6 +379,8 @@ void wrapperMainInit() {
   i2cWatchDogReset();
   HAL_Delay(10);
   printf("Hello STM32\n");
+
+  TClock::setTickInMs(1);
 
   ePort_t index = PORT_PI;
   port[index].type = PORT_TYPE_uart;
@@ -511,51 +519,73 @@ void setExtAlarmSignal(extAlarm_t signal, bool value) {
   }
 }
 
-//
-void alarmLoop()
+void alarmResetLoop()
 {
-  const BVP::src_t src = BVP::SRC_int;
-  bool ok;
+  static bool reset = false;
+  static clockPoint_t last = TClock::getClockPoint();
+  const src_t src = SRC_int;
+  bool ok = true;
   uint32_t uval32;
 
   // Обработка нажатия кнопки сброса
 
-  uval32 = mParam->getValue(BVP::PARAM_alarmResetBtn, src, ok);
-  if ((ok) && (uval32 != false)) {
-    mParam->setValue(BVP::PARAM_alarmResetBtn, src, false);
+  uval32 = mParam->getValue(PARAM_alarmRstCtrl, src, ok);
+  if ((ok) && (uval32 != ALARM_RST_CTRL_no)) {
+    if (uval32 == ALARM_RST_CTRL_pressed) {
 
-    uval32 = mParam->getValue(BVP::PARAM_control, src, ok);
-    if (!ok) {
-      uval32 = 0;
+
+      uval32 = mParam->getValue(PARAM_control, src, ok);
+      if (!ok) {
+        uval32 = 0;
+      }
+      uval32 |= (1 << CTRL_resetComInd);
+
+      if (mAlarm.getAlarmOutputSignal(EXT_ALARM_fault) ||
+          mAlarm.getAlarmOutputSignal(EXT_ALARM_warning)) {
+        reset = true;
+        last = TClock::getClockPoint();
+        uval32 |= (1 << CTRL_resetFault);
+      }
+
+      mParam->setValue(PARAM_control, src, uval32);
     }
-    uval32 |= (1 << BVP::CTRL_resetComInd);
-
-    if (mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_fault) ||
-        mAlarm.getAlarmOutputSignal(BVP::EXT_ALARM_warning)) {
-      uval32 |= (1 << BVP::CTRL_resetFault);
-    }
-
-    mParam->setValue(BVP::PARAM_control, src, uval32);
+    uval32 = ALARM_RST_CTRL_no;
   }
+  mParam->setValue(PARAM_alarmRstCtrl, src, uval32);
+
+  reset = reset && (TClock::getDurationS(last) < 2);
+  mAlarm.setAlarmOut(!reset);
+}
+
+//
+void alarmLoop()
+{
+  const src_t src = SRC_int;
+  bool ok;
+  uint32_t uval32;
+
+  alarmResetLoop();
 
   // Обработка входных и установка выходных сигналов
 
-  uval32 = mParam->getValue(BVP::PARAM_alarmResetMode, src, ok);
-  if (!ok || (uval32 >= BVP::ALARM_RESET_MAX)) {
+  uval32 = mParam->getValue(PARAM_alarmResetMode, src, ok);
+  if (!ok || (uval32 >= ALARM_RESET_MAX)) {
     uval32 = mAlarm.kAlarmResetModeDefault;
   }
-  mAlarm.setAlarmReset(BVP::alarmReset_t(uval32));
+  mAlarm.setAlarmReset(alarmReset_t(uval32));
 
-  for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
+  for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
     bool value;
-    BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+    extAlarm_t signal = static_cast<extAlarm_t> (i);
 
-    if (signal == BVP::EXT_ALARM_disablePrm) {
-      uval32 = mParam->getValue(BVP::PARAM_blkComPrmAll, BVP::SRC_int, ok);
+    if (signal == EXT_ALARM_disablePrm) {
+      uval32 = mParam->getValue(PARAM_blkComPrmAll,
+          SRC_int, ok);
       if (!ok) {
         uval32 = mAlarm.kDisablePrmDefault;
       }
-      value = (uval32 == BVP::DISABLE_PRM_disable);
+
+      value = (uval32 == DISABLE_PRM_disable);
     } else {
       value = getExtAlarmSignals(signal);
     }
@@ -563,10 +593,11 @@ void alarmLoop()
     mAlarm.setAlarmInputSignal(signal, value);
   }
 
-  for(uint8_t i = 0; i < BVP::EXT_ALARM_MAX; i++) {
-    BVP::extAlarm_t signal = static_cast<BVP::extAlarm_t> (i);
+  for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+    extAlarm_t signal = static_cast<extAlarm_t> (i);
 
     bool value = mAlarm.getAlarmOutputSignal(signal);
+
     setExtAlarmSignal(signal, value);
   }
 }
