@@ -521,7 +521,6 @@ void setExtAlarmSignal(extAlarm_t signal, bool value) {
 
 void alarmResetLoop()
 {
-  static bool reset = false;
   static clockPoint_t last = TClock::getClockPoint();
   const src_t src = SRC_int;
   bool ok = true;
@@ -532,29 +531,30 @@ void alarmResetLoop()
   uval32 = mParam->getValue(PARAM_alarmRstCtrl, src, ok);
   if ((ok) && (uval32 != ALARM_RST_CTRL_no)) {
     if (uval32 == ALARM_RST_CTRL_pressed) {
-
-
       uval32 = mParam->getValue(PARAM_control, src, ok);
       if (!ok) {
         uval32 = 0;
       }
-      uval32 |= (1 << CTRL_resetComInd);
 
-      if (mAlarm.getAlarmOutputSignal(EXT_ALARM_fault) ||
-          mAlarm.getAlarmOutputSignal(EXT_ALARM_warning)) {
-        reset = true;
-        last = TClock::getClockPoint();
+      uval32 |= (1 << CTRL_resetComInd);
+      if (mAlarm.isSignalForDeviceReset()) {
         uval32 |= (1 << CTRL_resetFault);
       }
 
       mParam->setValue(PARAM_control, src, uval32);
+
+      // Сброс сигнализации и начало отсчета времени
+      mAlarm.reset(true);
+      last = TClock::getClockPoint();
     }
     uval32 = ALARM_RST_CTRL_no;
   }
   mParam->setValue(PARAM_alarmRstCtrl, src, uval32);
 
-  reset = reset && (TClock::getDurationS(last) < 2);
-  mAlarm.setAlarmOut(!reset);
+  // Отключение сброса сигнализации, если прошло заданное время.
+  if (mAlarm.isReset() && (TClock::getDurationS(last) >= 2)) {
+    mAlarm.reset(false);
+  }
 }
 
 //
@@ -569,10 +569,9 @@ void alarmLoop()
   // Обработка входных и установка выходных сигналов
 
   uval32 = mParam->getValue(PARAM_alarmResetMode, src, ok);
-  if (!ok || (uval32 >= ALARM_RESET_MAX)) {
-    uval32 = mAlarm.kAlarmResetModeDefault;
+  if (ok) {
+    mAlarm.setAlarmReset(alarmReset_t(uval32));
   }
-  mAlarm.setAlarmReset(alarmReset_t(uval32));
 
   for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
     bool value;

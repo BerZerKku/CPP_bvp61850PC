@@ -22,6 +22,7 @@ HEADERS += \
     $${BVP_PATH}/serial/ringArray.hpp
 
 SOURCES += \
+    $${BVP_PATH}/extAlarm.cpp \
     $${BVP_PATH}/bvpBase.cpp \
     $${BVP_PATH}/bvpCommon.cpp \
     $${BVP_PATH}/clock.cpp \

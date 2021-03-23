@@ -24,22 +24,41 @@ enum extAlarm_t {
 
 class TExtAlarm {
 
+    /// Режим сигнала во время сброса
+    enum resetMode_t {
+        RESET_MODE_off = 0, ///< Всегда сброшен.
+        RESET_MODE_direct,  ///< Выход сигнала повторяет вход
+        ///
+        RESET_MODE_MAX
+    };
+
+    /// Режим работы сигнала
+    enum mode_t {
+        MODE_reset = 0,    /// Сброс
+        MODE_work          /// Работа
+    };
+
+    /// Свойства сигнала
+    struct signal_t {
+        const extAlarm_t signal;
+        const resetMode_t resetMode;
+        const alarmReset_t alarmReset;
+        mode_t mode;
+        bool input;
+        bool output;
+        const bool valDef;
+    };
+
     /// Состояние сигналов по умолчанию
     const uint16_t kAlarmDefault = 0;
 
-    /// Маска для всех задействованных сигналов
-    const uint16_t kAlarmMask = (1 << EXT_ALARM_MAX) - 1;
-
 public:
-
-    /// Режим сброса сигналов по умолчанию
-    const alarmReset_t kAlarmResetModeDefault = ALARM_RESET_manual;
 
     /// Состояние режима сброса по умолчанию
     const disablePrm_t kDisablePrmDefault = DISABLE_PRM_enable;
 
     ///
-    TExtAlarm() {}
+    TExtAlarm();
 
     ///
     ~TExtAlarm() {}
@@ -53,39 +72,11 @@ public:
      * @param[in] reset Режим сброса сигнализации.
      */
     void setAlarmReset(alarmReset_t reset) {
-        if (reset >= ALARM_RESET_MAX) {
-            reset = kAlarmResetModeDefault;
+        if (reset > ALARM_RESET_MAX) {
+            reset = ALARM_RESET_MAX;
         }
 
         mAlarmReset = reset;
-    }
-
-    /// Возвращает режим сброса сигнализации.
-    alarmReset_t getAlarmReset() const {
-        return mAlarmReset;
-    }
-
-    /**
-     * @brief Устанавливает все сигналы сигнализации разом.
-     *
-     * Значения передаются побитно в соответствии с \a extAlarm_t.
-     * Все "лишние" биты будут обнулены.
-     *
-     * @param[in] alarm Синалы сигнализации.
-     */
-    void setAlarmOutput(uint16_t alarm) {
-        mAlarm = alarm & kAlarmMask;
-    }
-
-    /**
-     * @brief Возвращает сигналы сигнализации.
-     *
-     * Значения установлены побитно в соответствии с \a extAlarm_t.
-     *
-     * @return Сигналы сигнализации.
-     */
-    uint16_t getAlarmOutput() const {
-        return mAlarm;
     }
 
     /**
@@ -94,117 +85,67 @@ public:
      * @param[in] value Значение (bool - активный)
      * @return Возвращает true для корректного значения сигнала.
      */
-    bool setAlarmInputSignal(extAlarm_t signal, bool value) {
-        alarmReset_t reset = getAlarmReset(signal);
+    bool setAlarmInputSignal(extAlarm_t signal, bool value);
 
-        setSignal(signal, value, reset);
-
-        return (signal <= EXT_ALARM_MAX);
-    }
+    /**
+     * @brief Проверяет наличие сигналов которые требуют сброса устройства.
+     * @param[in] signal Сигнал.
+     * @return Возвращает true для корректного значения сигнала.
+     */
+    bool isSignalForDeviceReset();
 
     /**
      * @brief Возвращает значение сигнала сигнализации.
      * @param[in] signal Сигнал.
      * @return Возвращает true если сигнал активен, иначе false.
      */
-    bool getAlarmOutputSignal(extAlarm_t signal) const {
-        bool value = false;
-
-        if (mAlarmOut && (signal < EXT_ALARM_MAX)) {
-            value = (mAlarm & (1 << signal));
-        }
-
-        return value;
-    }
+    bool getAlarmOutputSignal(extAlarm_t signal) const;
 
     /**
      * @brief Сбрасывает значение для указанного сигнала.
      * @param[in] signal Сигнал.
      */
-    void resetSignal(extAlarm_t signal) {
-        Q_ASSERT(signal <= EXT_ALARM_MAX);
-
-        if (signal < EXT_ALARM_MAX) {
-            mAlarm &= ~(1 << signal);
-        }
-    }
+    void resetSignal(extAlarm_t signal);
 
     /**
      * @brief Сбрасывает значение для всех сигналов.
      */
-    void resetSignalAll() {
-        mAlarm = kAlarmDefault;
-    }
+    void resetSignalAll();
 
     /**
-     * @brief Включает режим повторителя сигналов.
-     * Т.е. работа сигнализации без запоминания.
-     * @param enable
+     * @brief Сброс сигнализции.
+     * Во время сброса сигналы ведут себя согласно установленным для них
+     * режимам \a resetMode_t.
+     * @param[in] enable Сброс сигнализации
      */
-    void setAlarmOut(bool enable) {
-        mAlarmOut = enable;
-    }
+    void reset(bool enable);
 
     /**
-     * @brief Возвращает текущий режим повторителя сигналов.
-     * @return true если сигнализация в режиме повторителя, иначе false.
+     * @brief Проверка начличия сброса.
+     * @return true если сигнализация в сбросе, иначе false.
      */
-    bool isAlarmOutEnable() const {
-        return mAlarmOut;
+    bool isReset() const {
+        return mReset;
     }
 
 private:
 
-    /// Режим работы сигнализации без запоминания (true).
-    bool mAlarmOut = true;
+    /// Настройки сигналов.
+    static signal_t mSignal[EXT_ALARM_MAX];
+
+    /// Сброс сигнализации.
+    bool mReset = false;
 
     /// Режим сброса сигнализации
-    alarmReset_t mAlarmReset = kAlarmResetModeDefault;
-    /// Сигналы сигнализации
-    uint16_t mAlarm = kAlarmDefault;
-
-    /**
-     * @brief Возвращает режим сброса сигнализации для сигнала.
-     *
-     * Особенные сигналы:
-     * - \a EXT_ALARM_comPrd всегда \a ALARM_RESET_manual
-     * - \a EXT_ALARM_comPrm всегда \a ALARM_RESET_manual
-     *
-     * @param[in] signal Сигнал.
-     * @return Режим сброса.
-     */
-    alarmReset_t getAlarmReset(extAlarm_t signal) const {
-        alarmReset_t reset = mAlarmReset;
-
-        if ((signal == EXT_ALARM_comPrd) || (signal == EXT_ALARM_comPrm)) {
-            reset = ALARM_RESET_manual;
-        }
-
-        return reset;
-    }
+    alarmReset_t mAlarmReset = ALARM_RESET_MAX;
 
     /**
      * @brief Устанавливает новое значение сигнала
+     * Во время сброса все сигналы работают в автоматическом сигнале.
      * @param[in] signal Сигнал.
      * @param[in] value Значение (bool - активный)
-     * @param[in] reset Режим сброса для сигнала.
-     * @return Значение всех сигналов побитно согласно \a extAlarm_t.
      */
-    uint16_t setSignal(extAlarm_t signal, bool value, alarmReset_t reset) {
-        Q_ASSERT(signal <= EXT_ALARM_MAX);
-
-        if (signal < EXT_ALARM_MAX) {
-            if (value) {
-                mAlarm |= (1 << signal);
-            } else {
-                if (!mAlarmOut || (reset == ALARM_RESET_auto)) {
-                    mAlarm &= ~(1 << signal);
-                }
-            }
-        }
-
-        return mAlarm;
-    }
+    void setSignal(extAlarm_t signal, bool value);
 
 #ifdef TEST_FRIENDS
     TEST_FRIENDS;

@@ -23,7 +23,7 @@ SOURCES += \
     googletest/gtest-all.cc \
     main.cpp \
     tst_Clock.cpp \
-    tst_extAlarm.cpp \
+#    tst_extAlarm.cpp \
 #    tst_bvpCommon.cpp \
     tst_modbusVp.cpp
 

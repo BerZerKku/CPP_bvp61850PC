@@ -6,7 +6,7 @@
 
 #define TEST_FRIENDS \
     friend class TExtAlarm_Test; \
-    FRIEND_TEST(TExtAlarm_Test, setSignal); \
+    FRIEND_TEST(TExtAlarm_Test, setOutSignal); \
     FRIEND_TEST(TExtAlarm_Test, getAlarmReset_signal); \
     FRIEND_TEST(TExtAlarm_Test, setAlarmInputSignal_auto); \
     FRIEND_TEST(TExtAlarm_Test, setAlarmInputSignal_manual);
@@ -183,7 +183,7 @@ TEST_F(TExtAlarm_Test, alarmReset_signal)
 }
 
 // ѕроверка установки сигнала
-TEST_F(TExtAlarm_Test, setSignal)
+TEST_F(TExtAlarm_Test, setOutSignal)
 {
     uint16_t value = 0;
     uint16_t result;
@@ -192,49 +192,41 @@ TEST_F(TExtAlarm_Test, setSignal)
     // ѕроверка добавлени€ сигнала со значением false
     result = 0;
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_auto));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_manual));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_manual));
 
     // ѕроверка добавлени€ сигнала со значением true
     result = 1 << EXT_ALARM_model61850;
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_auto));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_manual));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_manual));
 
     value = (1 << EXT_ALARM_test61850);
 
     // ѕроверка добавлени€ сигнала со значением false при наличии другого сигнала
     result = value;
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_auto));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_manual));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_manual));
 
     // ѕроверка добавлени€ сигнала со значением true при наличии другого сигнала
     result |= (1 << signal);
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_auto));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_auto));
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_manual));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_manual));
 
     // ѕроверка сброса сигнала
     signal = EXT_ALARM_channelFault;
     result = value;
     value |= (1 << signal);
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(value, mAlarm->setSignal(signal, false, ALARM_RESET_manual));
+    ASSERT_EQ(value, mAlarm->setOutSignal(signal, false, ALARM_RESET_manual));
     mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, false, ALARM_RESET_auto));
-
-    // ѕроверка установки неверного сигнала
-    result = value;
-    signal = EXT_ALARM_MAX;
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_auto));
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setSignal(signal, true, ALARM_RESET_manual));
+    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_auto));
 }
 
 // ”становка сигналов при автоматическом сбросе
