@@ -14,7 +14,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_model61850,
         .resetMode  = RESET_MODE_off,
         .alarmReset = ALARM_RESET_MAX,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -24,7 +23,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_test61850,
         .resetMode  = RESET_MODE_off,
         .alarmReset = ALARM_RESET_auto,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -34,7 +32,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_channelFault,
         .resetMode  = RESET_MODE_off,
         .alarmReset = ALARM_RESET_MAX,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -44,7 +41,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_warning,
         .resetMode  = RESET_MODE_off,
         .alarmReset = ALARM_RESET_MAX,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -54,7 +50,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_fault,
         .resetMode  = RESET_MODE_off,
         .alarmReset = ALARM_RESET_MAX,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = true
@@ -64,7 +59,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_comPrd,
         .resetMode  = RESET_MODE_direct,
         .alarmReset = ALARM_RESET_manual,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -74,7 +68,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_comPrm,
         .resetMode  = RESET_MODE_direct,
         .alarmReset = ALARM_RESET_manual,                
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -84,7 +77,6 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
         .signal     = EXT_ALARM_disablePrm,
         .resetMode  = RESET_MODE_off,
         .alarmReset = ALARM_RESET_MAX,
-        .mode       = MODE_work,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -166,19 +158,12 @@ void TExtAlarm::resetSignal(extAlarm_t signal)
 }
 
 //
-void TExtAlarm::resetSignalAll()
-{
-    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        resetSignal(extAlarm_t(i));
-    }
-}
-
-//
 void TExtAlarm::reset(bool enable)
 {
-    if (enable) {
-        resetSignalAll();
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+       resetSignal(extAlarm_t(i));
     }
+
     mReset = enable;
 }
 
@@ -192,12 +177,14 @@ void TExtAlarm::setSignal(extAlarm_t signal, bool value)
 
         s->input = value;
 
-        if (value) {
-            s->output = value;
-        } else {
-            if ((s->alarmReset != ALARM_RESET_manual) &&
-                (mAlarmReset != ALARM_RESET_manual)) {
+        if (!mReset || (s->resetMode != RESET_MODE_off)) {
+            if (value) {
                 s->output = value;
+            } else {
+                if ((s->alarmReset != ALARM_RESET_manual) &&
+                    (mAlarmReset != ALARM_RESET_manual)) {
+                    s->output = value;
+                }
             }
         }
     }

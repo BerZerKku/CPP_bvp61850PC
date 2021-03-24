@@ -43,7 +43,6 @@ class TExtAlarm {
         const extAlarm_t signal;
         const resetMode_t resetMode;
         const alarmReset_t alarmReset;
-        mode_t mode;
         bool input;
         bool output;
         const bool valDef;
@@ -106,11 +105,6 @@ public:
      * @param[in] signal Сигнал.
      */
     void resetSignal(extAlarm_t signal);
-
-    /**
-     * @brief Сбрасывает значение для всех сигналов.
-     */
-    void resetSignalAll();
 
     /**
      * @brief Сброс сигнализции.
