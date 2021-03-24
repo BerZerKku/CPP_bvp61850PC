@@ -509,20 +509,26 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(RASP_RESET_GPIO_Port, RASP_RESET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, RASP_RESET_Pin|COM_RC_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, BACKUP_EN_Pin|TP2_Pin|LED1_VD7_Pin|LED2_VD8_Pin
-                          |TM_TX_Pin|COM_RC_Pin, GPIO_PIN_RESET);
+                          |TM_TX_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, ALARM_Pin|En_DR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, OUT1_Pin|HF_FAULT_Pin|TEST_GOOSE_Pin|WARNING_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, OUT1_Pin|WARNING_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(COM_TR_GPIO_Port, COM_TR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, HF_FAULT_Pin|TEST_GOOSE_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(En_DR_GPIO_Port, En_DR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(COM_TR_GPIO_Port, COM_TR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : Sout6_Pin Sout5_Pin Sout4_Pin Sout3_Pin
                            Sout2_Pin */

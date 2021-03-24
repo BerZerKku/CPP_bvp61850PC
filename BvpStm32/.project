@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>BVP_61850</name>
-	<comment></comment>
+	<comment />
 	<projects>
 	</projects>
 	<buildSpec>
@@ -29,7 +29,7 @@
 		<link>
 			<name>bvpCommon</name>
 			<type>2</type>
-			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/bvpCommon</locationURI>
+			<location>$%7BPARENT-1-PROJECT_LOC%7D/bvpCommon</location>
 		</link>
 	</linkedResources>
 </projectDescription>
