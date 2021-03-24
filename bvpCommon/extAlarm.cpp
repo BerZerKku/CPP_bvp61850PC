@@ -12,7 +12,7 @@ namespace BVP {
 TExtAlarm::signal_t TExtAlarm::mSignal[] = {
     {
         .signal     = EXT_ALARM_model61850,
-        .resetMode  = RESET_MODE_off,
+        .resetMode  = RESET_MODE_direct,
         .alarmReset = ALARM_RESET_MAX,
         .input      = false,
         .output     = false,
@@ -21,8 +21,8 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
     //
     {
         .signal     = EXT_ALARM_test61850,
-        .resetMode  = RESET_MODE_off,
-        .alarmReset = ALARM_RESET_auto,
+        .resetMode  = RESET_MODE_direct,
+        .alarmReset = ALARM_RESET_MAX,
         .input      = false,
         .output     = false,
         .valDef     = false
@@ -30,7 +30,7 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
     //
     {
         .signal     = EXT_ALARM_channelFault,
-        .resetMode  = RESET_MODE_off,
+        .resetMode  = RESET_MODE_direct,
         .alarmReset = ALARM_RESET_MAX,
         .input      = false,
         .output     = false,
@@ -39,7 +39,7 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
     //
     {
         .signal     = EXT_ALARM_warning,
-        .resetMode  = RESET_MODE_off,
+        .resetMode  = RESET_MODE_direct,
         .alarmReset = ALARM_RESET_MAX,
         .input      = false,
         .output     = false,
@@ -75,7 +75,7 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
     //
     {
         .signal     = EXT_ALARM_disablePrm,
-        .resetMode  = RESET_MODE_off,
+        .resetMode  = RESET_MODE_direct,
         .alarmReset = ALARM_RESET_MAX,
         .input      = false,
         .output     = false,
@@ -85,18 +85,10 @@ TExtAlarm::signal_t TExtAlarm::mSignal[] = {
 
 TExtAlarm::TExtAlarm()
 {
-    //        Q_ASSERT(mResetMode[EXT_ALARM_model61850] == RESET_MODE_direct);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_test61850] == RESET_MODE_direct);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_channelFault] == RESET_MODE_direct);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_warning] == RESET_MODE_direct);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_fault] == RESET_MODE_off);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_comPrd] == RESET_MODE_direct);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_comPrm] == RESET_MODE_direct);
-    //        Q_ASSERT(mResetMode[EXT_ALARM_disablePrm] == RESET_MODE_direct);
-
   for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
     signal_t *s = &mSignal[i];
-    s->output = s->valDef;
+    s->input = s->valDef;
+    s->output = s->input;
   }
 }
 
@@ -146,18 +138,6 @@ bool TExtAlarm::getAlarmOutputSignal(extAlarm_t signal) const
 }
 
 //
-void TExtAlarm::resetSignal(extAlarm_t signal)
-{
-    Q_ASSERT(signal <= EXT_ALARM_MAX);
-
-    if (signal < EXT_ALARM_MAX) {
-        signal_t *s = &mSignal[signal];
-//        s->input = s->valDef;
-        s->output = s->input; // s->valDef;
-    }
-}
-
-//
 void TExtAlarm::reset(bool enable)
 {
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
@@ -165,6 +145,17 @@ void TExtAlarm::reset(bool enable)
     }
 
     mReset = enable;
+}
+
+//
+void TExtAlarm::resetSignal(extAlarm_t signal)
+{
+    Q_ASSERT(signal <= EXT_ALARM_MAX);
+
+    if (signal < EXT_ALARM_MAX) {
+        signal_t *s = &mSignal[signal];
+        s->output = s->input;
+    }
 }
 
 //
@@ -177,16 +168,22 @@ void TExtAlarm::setSignal(extAlarm_t signal, bool value)
 
         s->input = value;
 
-        if (!mReset || (s->resetMode != RESET_MODE_off)) {
+        if (mReset ) {
+            if (s->resetMode != RESET_MODE_off) {
+                s->output = value;
+            }
+        } else {
             if (value) {
                 s->output = value;
             } else {
-                if ((s->alarmReset != ALARM_RESET_manual) &&
-                    (mAlarmReset != ALARM_RESET_manual)) {
+                if ((mAlarmReset != ALARM_RESET_manual) &&
+                    (s->alarmReset != ALARM_RESET_manual)) {
                     s->output = value;
                 }
             }
         }
+
+
     }
 }
 

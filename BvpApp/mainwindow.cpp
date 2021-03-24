@@ -274,7 +274,7 @@ void MainWindow::alarmLoop()
             uval32 = mParam->getValue(PARAM_blkComPrmAll,
                                       SRC_int, ok);
             if (!ok) {
-                uval32 = mAlarm.kDisablePrmDefault;
+                uval32 = DISABLE_PRM_enable;
             }
 
             value = (uval32 == DISABLE_PRM_disable);
@@ -289,7 +289,6 @@ void MainWindow::alarmLoop()
         extAlarm_t signal = static_cast<extAlarm_t> (i);
 
         bool value = mAlarm.getAlarmOutputSignal(signal);
-
         setExtAlarmSignal(signal, value);
     }
 }

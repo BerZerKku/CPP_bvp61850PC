@@ -6,10 +6,13 @@
 
 #define TEST_FRIENDS \
     friend class TExtAlarm_Test; \
-    FRIEND_TEST(TExtAlarm_Test, setOutSignal); \
-    FRIEND_TEST(TExtAlarm_Test, getAlarmReset_signal); \
-    FRIEND_TEST(TExtAlarm_Test, setAlarmInputSignal_auto); \
-    FRIEND_TEST(TExtAlarm_Test, setAlarmInputSignal_manual);
+    FRIEND_TEST(TExtAlarm_Test, config); \
+    FRIEND_TEST(TExtAlarm_Test, alarmReset); \
+    FRIEND_TEST(TExtAlarm_Test, reset); \
+    FRIEND_TEST(TExtAlarm_Test, alarmSignal_default); \
+    FRIEND_TEST(TExtAlarm_Test, alarmSignal_manual); \
+    FRIEND_TEST(TExtAlarm_Test, alarmSignal_auto);
+
 
 
 #include "bvpCommon/extAlarm.hpp"
@@ -23,48 +26,29 @@ class TExtAlarm_Test: public ::testing::Test {
 
 public:
     const uint16_t kAlarmOutDefault = 0; //(1 << EXT_ALARM_fault);
-    const alarmReset_t kAlarmResetDefault = ALARM_RESET_manual;
+    const alarmReset_t kAlarmResetDefault = ALARM_RESET_MAX;
 
     TExtAlarm *mAlarm;
 
-    bool checkSignals(uint16_t value) {
-        bool check = true;
+    // Сброс всех сигналов
+    bool resetSignals() {
+        bool reset = true;
 
-        for(extAlarm_t signal = extAlarm_t(0);
-            signal < EXT_ALARM_MAX;
-            signal = extAlarm_t(signal + 1)) {
-
-            bool v = (value & (1 << signal));
-            if (v != mAlarm->getAlarmOutputSignal(signal)) {
-                check = false;
-                EXPECT_EQ(v, mAlarm->getAlarmOutputSignal(signal))
-                        << "Signal: " << signal << ", value = " << std::hex << value;
-            }
-
+        for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+            mAlarm->setAlarmInputSignal(extAlarm_t(i), false);
         }
 
-        return check;
-    }
+        mAlarm->reset(true);
+        mAlarm->reset(false);
 
-    bool checkAlarmResetSignals(const alarmReset_t reset) {
-        bool check = true;
-
-        for(extAlarm_t signal = extAlarm_t(0);
-            signal < EXT_ALARM_MAX;
-            signal = extAlarm_t(signal + 1)) {
-
-            alarmReset_t result = reset;
-            if ((signal == EXT_ALARM_comPrd) || (signal == EXT_ALARM_comPrm)) {
-                result = ALARM_RESET_manual;
-            }
-
-            if (result != mAlarm->getAlarmReset(signal)) {
-                EXPECT_EQ(result, mAlarm->getAlarmReset(signal))
-                        << "Signal: " << signal << ", alarm = " << std::hex << reset;
+        for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+            if (mAlarm->getAlarmOutputSignal(extAlarm_t(i))  != false) {
+                reset = false;
+                break;
             }
         }
 
-        return check;
+        return reset;
     }
 
 protected:
@@ -93,205 +77,260 @@ TEST_F(TExtAlarm_Test, constant)
     ASSERT_EQ(i++, EXT_ALARM_MAX);
 }
 
-// Проверка установки текущего состояния сигналов сигнализации
-TEST_F(TExtAlarm_Test, alarmOutput)
+//
+TEST_F(TExtAlarm_Test, config)
 {
-    uint16_t value;
-    ASSERT_EQ(kAlarmOutDefault, mAlarm->getAlarmOutput());
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
-    value = (1 << EXT_ALARM_comPrd);
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(value, mAlarm->getAlarmOutput());
+        ASSERT_EQ(extAlarm_t(i), s->signal);
 
-    value |= (1 << EXT_ALARM_disablePrm);
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(value, mAlarm->getAlarmOutput());
+        // проверка режима работы сигнала во время сброса
+        TExtAlarm::resetMode_t rmode = (i == EXT_ALARM_fault) ?
+                                           TExtAlarm::RESET_MODE_off :
+                                           TExtAlarm::RESET_MODE_direct;
+        ASSERT_EQ(rmode, s->resetMode) << "signal" << uint(i);
 
-    mAlarm->setAlarmOutput(value | (1 << EXT_ALARM_MAX));
-    ASSERT_EQ(value, mAlarm->getAlarmOutput());
-
-    mAlarm->setAlarmOutput(0xFFFF);
-    ASSERT_EQ((1 << EXT_ALARM_MAX) - 1, mAlarm->getAlarmOutput());
-
-    value = (1 << EXT_ALARM_comPrd);
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(value, mAlarm->getAlarmOutput());
+        alarmReset_t areset = (i == EXT_ALARM_comPrd) || (i == EXT_ALARM_comPrm) ?
+                                  ALARM_RESET_manual :
+                                  ALARM_RESET_MAX;
+        ASSERT_EQ(areset, s->alarmReset) << "signal" << uint(i);
+    }
 }
-
-// Проверка считывания сигналов сигнлизации
-TEST_F(TExtAlarm_Test, getAlarmOutputSignal)
-{
-    uint16_t value;
-
-    value = kAlarmOutDefault;
-    ASSERT_TRUE(checkSignals(value));
-
-    value |= uint16_t (1 << EXT_ALARM_comPrd);
-    value |= uint16_t (1 << EXT_ALARM_disablePrm);
-    mAlarm->setAlarmOutput(value);
-    ASSERT_TRUE(checkSignals(value));
-
-    mAlarm->setAlarmOutput(0xFFFF);
-    value = mAlarm->getAlarmOutput();
-    ASSERT_TRUE(checkSignals(value));
-
-    ASSERT_FALSE(mAlarm->getAlarmOutputSignal(EXT_ALARM_MAX));
-    ASSERT_FALSE(mAlarm->getAlarmOutputSignal(extAlarm_t(0xFFFF)));
-}
-
 
 // Проверка установки сброса сигнализации
 TEST_F(TExtAlarm_Test, alarmReset)
 {
     alarmReset_t value;
-    ASSERT_EQ(kAlarmResetDefault, mAlarm->getAlarmReset());
+    ASSERT_EQ(ALARM_RESET_MAX, mAlarm->mAlarmReset);
 
     value = ALARM_RESET_auto;
     mAlarm->setAlarmReset(value);
-    ASSERT_EQ(value, mAlarm->getAlarmReset());
+    ASSERT_EQ(value, mAlarm->mAlarmReset);
 
     value = ALARM_RESET_manual;
     mAlarm->setAlarmReset(value);
-    ASSERT_EQ(value, mAlarm->getAlarmReset());
+    ASSERT_EQ(value, mAlarm->mAlarmReset);
 
     value = ALARM_RESET_auto;
     mAlarm->setAlarmReset(value);
-    ASSERT_EQ(value, mAlarm->getAlarmReset());
+    ASSERT_EQ(value, mAlarm->mAlarmReset);
 
     value = ALARM_RESET_MAX;
     mAlarm->setAlarmReset(value);
-    ASSERT_EQ(kAlarmResetDefault, mAlarm->getAlarmReset());
+    ASSERT_EQ(ALARM_RESET_MAX, mAlarm->mAlarmReset);
 
     value = ALARM_RESET_auto;
     mAlarm->setAlarmReset(value);
-    ASSERT_EQ(value, mAlarm->getAlarmReset());
+    ASSERT_EQ(value, mAlarm->mAlarmReset);
 
     value = alarmReset_t(0xFF);
     mAlarm->setAlarmReset(value);
-    ASSERT_EQ(kAlarmResetDefault, mAlarm->getAlarmReset());
+    ASSERT_EQ(ALARM_RESET_MAX, mAlarm->mAlarmReset);
 }
 
-// Проверка установки сброса сигнализации для отдельных сигналов
-TEST_F(TExtAlarm_Test, alarmReset_signal)
+// Проверка работы сигнализации во время сброса
+TEST_F(TExtAlarm_Test, reset)
 {
-    for(alarmReset_t reset = alarmReset_t(0); reset < ALARM_RESET_MAX;
-        reset = alarmReset_t(reset + 1)) {
+    //
+    // Проверка устновки выходных сигналов состояниями из входных
+    //
 
-        mAlarm->setAlarmReset(reset);
-        ASSERT_TRUE(checkAlarmResetSignals(reset));
+    // Все входные сигналы false
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), false))
+                << "signal " << extAlarm_t(i);
+    }
+
+    mAlarm->reset(true);
+
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_FALSE(mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+
+    // Все входные сигналы true
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
+                << "signal " << extAlarm_t(i);
+    }
+
+    mAlarm->reset(true);
+
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_TRUE(mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+
+    //
+    // Проверка установки сигналов во время сброса
+    //
+
+    // Если предыдущие проверки прошли, то можно пользоваться функцией сброса
+    resetSignals();
+    ASSERT_FALSE(mAlarm->isReset());
+    mAlarm->reset(true);
+    ASSERT_TRUE(mAlarm->isReset());
+
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
+                << "signal " << extAlarm_t(i);
+
+        bool result = (s->resetMode == TExtAlarm::RESET_MODE_direct);
+        ASSERT_EQ(result, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), false))
+                << "signal " << extAlarm_t(i);
+
+        result = false;
+        ASSERT_EQ(false, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+
+    //
+    // Проверка установленных сигналов после окончания сброса
+    //
+
+    resetSignals();
+
+    mAlarm->reset(true);
+
+    // Все входные сигналы в true.
+    // Для сигналов с RESET_MODE_off на выходе сохраняется состояние которое
+    // было при сбросе на входе. Для остальных на выход будет передан вход.
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
+                << "signal " << extAlarm_t(i);
+
+        //
+        bool result = (s->resetMode != TExtAlarm::RESET_MODE_off);
+        ASSERT_EQ(result, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+
+    mAlarm->reset(false);
+
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_TRUE(mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+
+    mAlarm->reset(true);
+
+    // Все входные сигналы в false.
+    // Для сигналов с RESET_MODE_off на выходе сохраняется состояние которое
+    // было при сбросе на входе. Для остальных на выход будет передан вход.
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), false))
+                << "signal " << extAlarm_t(i);
+
+        bool result = !(s->resetMode == TExtAlarm::RESET_MODE_direct);
+        ASSERT_EQ(result, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+
+    mAlarm->reset(false);
+
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_FALSE(mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
     }
 }
 
-// Проверка установки сигнала
-TEST_F(TExtAlarm_Test, setOutSignal)
+// Проверка работы сигнализации при запуске
+TEST_F(TExtAlarm_Test, alarmSignal_default)
 {
-    uint16_t value = 0;
-    uint16_t result;
-    extAlarm_t signal = EXT_ALARM_model61850;
+    ASSERT_FALSE(mAlarm->isReset());
 
-    // Проверка добавления сигнала со значением false
-    result = 0;
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_auto));
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_manual));
-
-    // Проверка добавления сигнала со значением true
-    result = 1 << EXT_ALARM_model61850;
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_auto));
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_manual));
-
-    value = (1 << EXT_ALARM_test61850);
-
-    // Проверка добавления сигнала со значением false при наличии другого сигнала
-    result = value;
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_auto));
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_manual));
-
-    // Проверка добавления сигнала со значением true при наличии другого сигнала
-    result |= (1 << signal);
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_auto));
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, true, ALARM_RESET_manual));
-
-    // Проверка сброса сигнала
-    signal = EXT_ALARM_channelFault;
-    result = value;
-    value |= (1 << signal);
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(value, mAlarm->setOutSignal(signal, false, ALARM_RESET_manual));
-    mAlarm->setAlarmOutput(value);
-    ASSERT_EQ(result, mAlarm->setOutSignal(signal, false, ALARM_RESET_auto));
-}
-
-// Установка сигналов при автоматическом сбросе
-TEST_F(TExtAlarm_Test, setAlarmInputSignal_auto)
-{    
-    uint16_t result;
-
-    mAlarm->setAlarmOutput(0);
-    ASSERT_EQ(int(0), mAlarm->getAlarmOutput());
-
-    // Автоматический сброс
-    mAlarm->setAlarmReset(ALARM_RESET_auto);
-
-    // сброс сигнала при его отсутствии
-    for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
-        ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
-        ASSERT_TRUE(checkSignals(0));
+    // Начальное состояние выходных сигналов
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        ASSERT_EQ(s->valDef, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
     }
 
-    result = 0;
-    // установка сигнала
-    for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
-        ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, true));
-        result |= (1 << s);
-        ASSERT_TRUE(checkSignals(result));
-    }
+    // Проверка установки сигналов
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
-    // сброс сигнала при его наличии
-    for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
-        ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
-        if (mAlarm->getAlarmReset(s) != ALARM_RESET_manual) {
-            result &= ~(1 << s);
-        }
-        ASSERT_TRUE(checkSignals(result));
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
+                << "signal " << extAlarm_t(i);
+
+        ASSERT_EQ(true, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+
+        mAlarm->setAlarmInputSignal(extAlarm_t(i), false);
+        bool result = (s->alarmReset == ALARM_RESET_manual);
+        ASSERT_EQ(result, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
     }
 }
 
-// Установка сигналов при ручном сбросе
-TEST_F(TExtAlarm_Test, setAlarmInputSignal_manual) {
-    uint16_t result;
+// Проверка считывания сигналов сигнлизации
+TEST_F(TExtAlarm_Test, alarmSignal_manual)
+{
+    // Сброс всех сигналов
+    ASSERT_TRUE(resetSignals());
+    ASSERT_FALSE(mAlarm->isReset());
 
-    mAlarm->setAlarmOutput(0);
-    ASSERT_EQ(int(0), mAlarm->getAlarmOutput());
-
+    // Установка режима сброса сигнализации
     mAlarm->setAlarmReset(ALARM_RESET_manual);
-
-    // сброс сигнала при его отсутствии
-    for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
-        ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
-        ASSERT_TRUE(checkSignals(0));
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_EQ(false, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
     }
 
-    result = 0;
-    // установка сигнала
-    for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
-        ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, true));
-        result |= (1 << s);
-        ASSERT_TRUE(checkSignals(result));
+    // Проверка установки сигналов
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
+                << "signal " << extAlarm_t(i);
+
+        ASSERT_EQ(true, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+
+        mAlarm->setAlarmInputSignal(extAlarm_t(i), false);
+        ASSERT_EQ(true, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+    }
+}
+
+// Проверка считывания сигналов сигнлизации
+TEST_F(TExtAlarm_Test, alarmSignal_auto)
+{
+    // Сброс всех сигналов
+    ASSERT_TRUE(resetSignals());
+    ASSERT_FALSE(mAlarm->isReset());
+
+    // Установка режима сброса сигнализации
+    mAlarm->setAlarmReset(ALARM_RESET_auto);
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        ASSERT_EQ(false, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
     }
 
-    // сброс сигнала при его наличии
-    for(extAlarm_t s = extAlarm_t(0); s < EXT_ALARM_MAX; s = extAlarm_t(s + 1)) {
-        ASSERT_TRUE(mAlarm->setAlarmInputSignal(s, false));
-        ASSERT_TRUE(checkSignals(result));
+    // Проверка установки сигналов
+    for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
+        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+
+        ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
+                << "signal " << extAlarm_t(i);
+
+        ASSERT_EQ(true, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
+
+        mAlarm->setAlarmInputSignal(extAlarm_t(i), false);
+        bool result = (s->alarmReset == ALARM_RESET_manual);
+        ASSERT_EQ(result, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
+                << "signal " << extAlarm_t(i);
     }
+
 }
 
 } // namespace BVP

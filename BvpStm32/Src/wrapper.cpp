@@ -581,7 +581,7 @@ void alarmLoop()
       uval32 = mParam->getValue(PARAM_blkComPrmAll,
           SRC_int, ok);
       if (!ok) {
-        uval32 = mAlarm.kDisablePrmDefault;
+          uval32 = DISABLE_PRM_enable;
       }
 
       value = (uval32 == DISABLE_PRM_disable);

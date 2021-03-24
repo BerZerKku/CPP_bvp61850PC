@@ -26,35 +26,23 @@ class TExtAlarm {
 
     /// Режим сигнала во время сброса
     enum resetMode_t {
-        RESET_MODE_off = 0, ///< Всегда сброшен.
+        RESET_MODE_off = 0, ///< Запоминает последний сигнал на входе.
         RESET_MODE_direct,  ///< Выход сигнала повторяет вход
         ///
         RESET_MODE_MAX
     };
 
-    /// Режим работы сигнала
-    enum mode_t {
-        MODE_reset = 0,    /// Сброс
-        MODE_work          /// Работа
-    };
-
     /// Свойства сигнала
     struct signal_t {
-        const extAlarm_t signal;
-        const resetMode_t resetMode;
-        const alarmReset_t alarmReset;
+        const extAlarm_t signal;        ///< Сигнал.
+        const resetMode_t resetMode;    ///< Режим работы сигнала во время сброса.
+        const alarmReset_t alarmReset;  ///< Режим сброса сигнала (ALARM_RESET_MAX - согласно текущим настройкам).
         bool input;
         bool output;
-        const bool valDef;
+        const bool valDef;              ///< Значение сигнала по умолчанию.
     };
 
-    /// Состояние сигналов по умолчанию
-    const uint16_t kAlarmDefault = 0;
-
 public:
-
-    /// Состояние режима сброса по умолчанию
-    const disablePrm_t kDisablePrmDefault = DISABLE_PRM_enable;
 
     ///
     TExtAlarm();
@@ -101,12 +89,6 @@ public:
     bool getAlarmOutputSignal(extAlarm_t signal) const;
 
     /**
-     * @brief Сбрасывает значение для указанного сигнала.
-     * @param[in] signal Сигнал.
-     */
-    void resetSignal(extAlarm_t signal);
-
-    /**
      * @brief Сброс сигнализции.
      * Во время сброса сигналы ведут себя согласно установленным для них
      * режимам \a resetMode_t.
@@ -134,8 +116,15 @@ private:
     alarmReset_t mAlarmReset = ALARM_RESET_MAX;
 
     /**
+     * @brief Сбрасывает значение для указанного сигнала.
+     * @param[in] signal Сигнал.
+     */
+    void resetSignal(extAlarm_t signal);
+
+    /**
      * @brief Устанавливает новое значение сигнала
-     * Во время сброса все сигналы работают в автоматическом сигнале.
+     * Во время сброса поведение выходных сигналов зависит от resetMode.
+     * В другое время от alarmReset.
      * @param[in] signal Сигнал.
      * @param[in] value Значение (bool - активный)
      */
