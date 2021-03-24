@@ -37,8 +37,6 @@ class TExtAlarm {
         const extAlarm_t signal;        ///< Сигнал.
         const resetMode_t resetMode;    ///< Режим работы сигнала во время сброса.
         const alarmReset_t alarmReset;  ///< Режим сброса сигнала (ALARM_RESET_MAX - согласно текущим настройкам).
-        bool input;
-        bool output;
         const bool valDef;              ///< Значение сигнала по умолчанию.
     };
 
@@ -106,20 +104,21 @@ public:
 
 private:
 
-    /// Настройки сигналов.
-    static signal_t mSignal[EXT_ALARM_MAX];
 
-    /// Сброс сигнализации.
-    bool mReset = false;
-
-    /// Режим сброса сигнализации
-    alarmReset_t mAlarmReset = ALARM_RESET_MAX;
+    static const signal_t mSignal[EXT_ALARM_MAX];   /// Настройки сигналов.
+    bool mReset = false;                            /// Сброс сигнализации.
+    alarmReset_t mAlarmReset = ALARM_RESET_MAX;     /// Режим сброса сигнализации
+    uint16_t mAlarmIn;                              /// Состояние сигналов на входе.
+    uint16_t mAlarmOut;                             /// Состояние сигналов на выходе.
 
     /**
-     * @brief Сбрасывает значение для указанного сигнала.
-     * @param[in] signal Сигнал.
+     * @brief Устанавливает значение бита.
+     * @param[in] src Начальное значение.
+     * @param[in] num Номер бита [0..15].
+     * @param[in] value Значение бита.
+     * @return Значение с устновленным битом.
      */
-    void resetSignal(extAlarm_t signal);
+    uint16_t setBitValue(uint16_t src, uint8_t num, bool value) const;
 
     /**
      * @brief Устанавливает новое значение сигнала

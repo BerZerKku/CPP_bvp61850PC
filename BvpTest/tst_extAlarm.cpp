@@ -7,6 +7,7 @@
 #define TEST_FRIENDS \
     friend class TExtAlarm_Test; \
     FRIEND_TEST(TExtAlarm_Test, config); \
+    FRIEND_TEST(TExtAlarm_Test, setBitValue); \
     FRIEND_TEST(TExtAlarm_Test, alarmReset); \
     FRIEND_TEST(TExtAlarm_Test, reset); \
     FRIEND_TEST(TExtAlarm_Test, alarmSignal_default); \
@@ -81,7 +82,7 @@ TEST_F(TExtAlarm_Test, constant)
 TEST_F(TExtAlarm_Test, config)
 {
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
         ASSERT_EQ(extAlarm_t(i), s->signal);
 
@@ -95,6 +96,31 @@ TEST_F(TExtAlarm_Test, config)
                                   ALARM_RESET_manual :
                                   ALARM_RESET_MAX;
         ASSERT_EQ(areset, s->alarmReset) << "signal" << uint(i);
+    }
+}
+
+TEST_F(TExtAlarm_Test, setBitValue) {
+    uint16_t value = 0;
+    uint16_t result = 0;
+
+    ASSERT_EQ(sizeof(value), sizeof(mAlarm->mAlarmIn));
+    ASSERT_EQ(sizeof(value), sizeof(mAlarm->mAlarmOut));
+    ASSERT_LE(EXT_ALARM_MAX, sizeof(mAlarm->mAlarmIn)*CHAR_BIT);
+
+    // Установка true
+    value = 0;
+    result = 0;
+    for(uint8_t i = 0; i < (sizeof(value) * CHAR_BIT); i++) {
+        uint16_t result = mAlarm->setBitValue(value, i, true);
+        ASSERT_EQ(value | (1 << i), result) << "i = " << int(i);
+        value = result;
+    }
+
+    // Установка false
+    for(uint8_t i = 0; i < (sizeof(value) * CHAR_BIT); i++) {
+        uint16_t result = mAlarm->setBitValue(value, i, false);
+        ASSERT_EQ(value & ~(1 << i), result) << "i = " << int(i);
+        value = result;
     }
 }
 
@@ -173,7 +199,7 @@ TEST_F(TExtAlarm_Test, reset)
     ASSERT_TRUE(mAlarm->isReset());
 
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
                 << "signal " << extAlarm_t(i);
@@ -202,7 +228,7 @@ TEST_F(TExtAlarm_Test, reset)
     // Для сигналов с RESET_MODE_off на выходе сохраняется состояние которое
     // было при сбросе на входе. Для остальных на выход будет передан вход.
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
                 << "signal " << extAlarm_t(i);
@@ -226,7 +252,7 @@ TEST_F(TExtAlarm_Test, reset)
     // Для сигналов с RESET_MODE_off на выходе сохраняется состояние которое
     // было при сбросе на входе. Для остальных на выход будет передан вход.
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), false))
                 << "signal " << extAlarm_t(i);
@@ -251,14 +277,14 @@ TEST_F(TExtAlarm_Test, alarmSignal_default)
 
     // Начальное состояние выходных сигналов
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
         ASSERT_EQ(s->valDef, mAlarm->getAlarmOutputSignal(extAlarm_t(i)))
                 << "signal " << extAlarm_t(i);
     }
 
     // Проверка установки сигналов
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
                 << "signal " << extAlarm_t(i);
@@ -317,7 +343,7 @@ TEST_F(TExtAlarm_Test, alarmSignal_auto)
 
     // Проверка установки сигналов
     for(uint8_t i = 0; i < EXT_ALARM_MAX; i++) {
-        TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
+        const TExtAlarm::signal_t *s = &mAlarm->mSignal[i];
 
         ASSERT_TRUE(mAlarm->setAlarmInputSignal(extAlarm_t(i), true))
                 << "signal " << extAlarm_t(i);
