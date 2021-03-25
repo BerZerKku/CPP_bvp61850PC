@@ -200,4 +200,4 @@ uint16_t BvpPkg::sequenceTxGet() const {
   return sequence;
 }
 
-} /* namespace BVP */
+} // namespace BVP

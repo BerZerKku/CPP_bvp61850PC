@@ -2,4 +2,4 @@ TEMPLATE = subdirs
 
 SUBDIRS += BvpApp
 
-SUBDIRS += BvpTest
+#SUBDIRS += BvpTest

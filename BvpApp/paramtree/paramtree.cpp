@@ -29,6 +29,8 @@ TParamTree::TParamTree(QWidget *parent) :
 //
 void TParamTree::updateParameters()
 {
+
+
     for(BVP::param_t param: mapItems.keys()) {
         updateParameter(param);
     }

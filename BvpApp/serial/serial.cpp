@@ -29,17 +29,24 @@ TSerial::TSerial(QWidget *parent) :
     connect(ui->pbOpen, &QPushButton::clicked,
             this, &TSerial::connectSerialPort);
 
-    connect(this, &TSerial::write, [=]() {setLedTx(true);});
-    connect(this, &TSerial::write, [=]() {timerLedTx.start(kTimeLedOnMs);});
+    connect(this, &TSerial::write, [=]() {
+        if (!sport.isNull() && sport->isOpened()) {
+            setLedTx(true);
+            timerLedRx.start(kTimeLedOnMs);
+        }
+    });
     connect(&timerLedTx, &QTimer::timeout, [=]() {setLedTx(false);});
 
-    connect(this, &TSerial::read, [=]() {setLedRx(true);});
-    connect(this, &TSerial::read, [=]() {timerLedRx.start(kTimeLedOnMs);});
+    connect(this, &TSerial::read, [=]() {
+        if (!sport.isNull() && sport->isOpened()) {
+            setLedRx(true);
+            timerLedRx.start(kTimeLedOnMs);
+        }
+    });
     connect(&timerLedRx, &QTimer::timeout, [=]() {setLedRx(false);});
 
     connect(ui->cbPort, &TComboBox::popuped, this, &TSerial::refreshPortList);
     connect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::changeConfigEnabled);
-
 
     ui->pbOpen->setFixedSize(ui->pbOpen->sizeHint());
     ui->cbPort->setFixedHeight(ui->pbOpen->sizeHint().height());
@@ -56,7 +63,7 @@ TSerial::TSerial(QWidget *parent) :
 //
 TSerial::~TSerial()
 {
-    // ÐÐµ Ñ€ÐµÑˆÐ¸Ð»Ð¾ Ð¿Ñ€Ð¾Ð±Ð»ÐµÐ¼Ñƒ! ÐžÑˆÐ¸Ð±ÐºÐ° Ð²ÑÐµ Ñ€Ð°Ð²Ð½Ð¾ Ð¿Ð¾ÑÐ²Ð»ÑÐµÑ‚ÑÑ, Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð½Ðµ Ð²ÑÐµÐ³Ð´Ð°!
+    // Ïåðèîäè÷åñêè ïðè çàêðûòèè ïðèëîæåíèÿ âûñêàêèâàåò îøèáêà
 
     if (!thread.isNull()) {
         thread->quit();
@@ -110,6 +117,7 @@ void TSerial::setLedLink(bool enable)
     ui->ledLink->setChecked(enable);
 }
 
+//
 bool TSerial::setBaudRateList(QVector<qint32> &values)
 {
     QComboBox *cb = ui->cbBaudRate;
@@ -124,6 +132,7 @@ bool TSerial::setBaudRateList(QVector<qint32> &values)
     return cb->count() != 0;
 }
 
+//
 bool TSerial::setStopBitList(QVector<QSerialPort::StopBits> &values)
 {
     QComboBox *cb = ui->cbStopBit;
@@ -138,6 +147,7 @@ bool TSerial::setStopBitList(QVector<QSerialPort::StopBits> &values)
     return cb->count() != 0;
 }
 
+//
 bool TSerial::setParityList(QVector<QSerialPort::Parity> &values)
 {
     QComboBox *cb = ui->cbParity;
@@ -158,13 +168,11 @@ bool TSerial::setParityList(QVector<QSerialPort::Parity> &values)
     return cb->count() != 0;
 }
 
-
 //
 qint32 TSerial::getBaudRate() const
 {
     return ui->cbBaudRate->currentData().toInt();
 }
-
 
 //
 QSerialPort::Parity TSerial::getParity() const
@@ -173,14 +181,12 @@ QSerialPort::Parity TSerial::getParity() const
     return static_cast<QSerialPort::Parity> (value);
 }
 
-
 //
 QSerialPort::StopBits TSerial::getStopBits() const
 {
     qint16 value = ui->cbStopBit->currentData().toInt();
     return static_cast<QSerialPort::StopBits> (value);
 }
-
 
 //
 void TSerial::refreshPortList()
@@ -226,7 +232,6 @@ void TSerial::refreshPortList()
         ui->pbOpen->setEnabled(ui->cbPort->count() != 0);
     }
 }
-
 
 //
 void TSerial::connectSerialPort()
@@ -280,20 +285,17 @@ void TSerial::closeSerialPort()
     emit closePort();
 }
 
-
 //
 void TSerial::setLedRx(bool enable)
 {
     ui->ledRx->setChecked(enable);
 }
 
-
 //
 void TSerial::setLedTx(bool enable)
 {
     ui->ledTx->setChecked(enable);
 }
-
 
 //
 void TSerial::changeConfigEnabled()

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QTimer>
+#include "bvpCommon/bvpBase.hpp"
 #include "bvpCommon/param.h"
 #include "bvpCommon/extAlarm.hpp"
 #include "bvpCommon/serial/avantpc.h"
@@ -11,6 +12,10 @@
 #include "bvpCommon/serial/modbusVp.h"
 #include "serial/serial.h"
 
+extern bool getExtAlarmSignals(BVP::extAlarm_t signal);
+extern void setExtAlarmSignal(BVP::extAlarm_t signal, bool value);
+
+extern void sendDataToSerial(BVP::src_t src, uint16_t len, const uint8_t *data);
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,9 +37,7 @@ class MainWindow : public QMainWindow
     QVector<qint32> baudList;
     QVector<QSerialPort::Parity> parityList;
     QVector<QSerialPort::StopBits> stopList;
-    BVP::TSerialProtocol *protocol = nullptr;
     BVP::src_t srcId = BVP::SRC_MAX;
-    uint16_t netAddr = 0;
     uint16_t baudrate = 0;
     QSerialPort::Parity parity = QSerialPort::NoParity;
     QSerialPort::StopBits stopBits = QSerialPort::TwoStop;
@@ -51,11 +54,10 @@ private:
   QTimer timer1ms;
   QTimer timer100ms;
 
-  BVP::TParam *mParam;
-  BVP::TExtAlarm mAlarm;
-  BVP::TModbusVp *mModbus;
+  BVP::TBvpBase mBvpBase;
 
   QMap<TSerial*, serialCfg_t*> sPort;
+  QMap<BVP::src_t, TSerial*> mSerial;
 
   void initAvantPc();
   void initAvantPi();
@@ -69,15 +71,12 @@ private:
 
   void serialStart(TSerial *serial);
   void serialStop(TSerial *serial);
-
   void serialProc();
-
-  void alarmLoop();
-  void alarmResetLoop();
   void viewReadRegSlot();
 
   friend bool getExtAlarmSignal(BVP::extAlarm_t signal);
   friend void setExtAlarmSignal(BVP::extAlarm_t signal, bool value);
+  friend void sendDataToSerial(BVP::src_t src, uint16_t len, const uint8_t *data);
 };
 
 #endif // MAINWINDOW_H

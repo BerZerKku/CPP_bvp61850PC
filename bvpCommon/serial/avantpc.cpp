@@ -53,6 +53,8 @@ TAvantPc::vReadAvant() {
     mIsComRx = true;
     uint32_t value = 0;
 
+    qDebug() << "RX!";
+
     if (mComRx == 0x02) {
         Q_ASSERT(mBuf[POS_DATA_LEN] == 4);
         value = mBuf[POS_DATA + 3];

@@ -13,6 +13,10 @@ TSerialPort::TSerialPort(QString portname, qint32 baudrate,
 TSerialPort::~TSerialPort() {
 }
 
+bool TSerialPort::isOpened() {
+    return (port != nullptr) && port->isOpen();
+}
+
 //
 void
 TSerialPort::start() {

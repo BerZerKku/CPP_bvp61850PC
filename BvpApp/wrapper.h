@@ -3,5 +3,8 @@
 
 #include <cstdint>
 
+#include "bvpCommon/extAlarm.hpp"
+
+
 
 #endif // WRAPPER_H
