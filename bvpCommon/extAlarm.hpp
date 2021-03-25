@@ -50,10 +50,6 @@ public:
 
     /**
      * @brief Устанавливает режим сброса сигнализации.
-     *
-     *  В случае установки ошибочного значения оно будет заменено на
-     *  значение по умолчанию \a kAlarmResetDefault.
-     *
      * @param[in] reset Режим сброса сигнализации.
      */
     void setAlarmReset(alarmReset_t reset) {
@@ -103,7 +99,6 @@ public:
     }
 
 private:
-
 
     static const signal_t mSignal[EXT_ALARM_MAX];   /// Настройки сигналов.
     bool mReset = false;                            /// Сброс сигнализации.
