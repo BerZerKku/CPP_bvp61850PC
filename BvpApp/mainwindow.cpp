@@ -11,13 +11,17 @@ static TAlarm *wAlarm = nullptr;
 
 using namespace BVP;
 
-bool getExtAlarmSignals(extAlarm_t signal) {
+//
+bool getExtAlarmSignals(extAlarm_t signal)
+{
     Q_ASSERT(wAlarm != nullptr);
 
     return wAlarm->getSignal(signal);
 }
 
-void setExtAlarmSignal(extAlarm_t signal, bool value) {
+//
+void setExtAlarmSignal(extAlarm_t signal, bool value)
+{
     Q_ASSERT(wAlarm != nullptr);
 
     wAlarm->setSignal(signal, value);
@@ -40,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     initVp();
     initAvantPi();
-    initAvantPc();    
+    initAvantPc();
 
     TClock::setTickInMs(1);
     connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
@@ -192,14 +196,16 @@ void MainWindow::serialStart(TSerial *serial)
     cfg->stopBits = serial->getStopBits();
 
     cfg->protocol->setBuffer(cfg->buf, std::end(cfg->buf) - std::begin(cfg->buf));
-    cfg->protocol->setID(cfg->srcId);
+    cfg->protocol->setSrcId(cfg->srcId);
 
     Q_ASSERT(cfg->protocol->setup(cfg->baudrate,
                                   cfg->parity != QSerialPort::NoParity,
                                   cfg->stopBits));
+    Q_ASSERT(cfg->protocol->setSrcId(cfg->srcId));
     Q_ASSERT(cfg->protocol->setNetAddress(cfg->netAddr));
     Q_ASSERT(cfg->protocol->setTimeTick(1000));
     Q_ASSERT(cfg->protocol->setEnable(true));
+
 }
 
 

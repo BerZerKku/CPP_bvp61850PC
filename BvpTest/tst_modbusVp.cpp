@@ -91,7 +91,7 @@ protected:
         mModbus = new BVP::TModbusVp(TSerialProtocol::REGIME_master);
 
         mModbus->setBuffer(mBuf, sizeof(mBuf) / sizeof(mBuf[0]));
-        mModbus->setID(SRC_vkey);
+        mModbus->setSrcId(SRC_vkey);
     }
 
     void TearDown()override {
@@ -108,11 +108,11 @@ TEST_F(TModbusVp_Test, init)
 
 //
 TEST_F(TModbusVp_Test, id) {
-    ASSERT_EQ(SRC_vkey, mModbus->getID());
+    ASSERT_EQ(SRC_vkey, mModbus->getSrcId());
 
     for(uint16_t i = 0; i <= (SRC_MAX + 1); i++) {
-        mModbus->setID(i);
-        ASSERT_EQ(i, mModbus->getID());
+        ASSERT_EQ(i < SRC_MAX, mModbus->setSrcId(src_t(i)));
+        ASSERT_EQ(i < SRC_MAX ? i : SRC_MAX, mModbus->getSrcId());
     }
 }
 

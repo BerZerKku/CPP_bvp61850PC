@@ -44,7 +44,6 @@ static const uint16_t crc_ibm_table[256] = {
 //
 TModbusVp::TModbusVp(regime_t regime) :
     TSerialProtocol(regime),
-    mSrc(SRC_MAX),
     mState(STATE_disable),
     mTimeToCompleteUs(0),
     mTimeToErrorUs(0),
@@ -62,7 +61,7 @@ TModbusVp::~TModbusVp()
 //
 bool TModbusVp::setEnable(bool enable)
 {
-    Q_ASSERT(mSrc != SRC_MAX);
+    Q_ASSERT(mSrcId != SRC_MAX);
     Q_ASSERT(mParam != nullptr);
     Q_ASSERT(mBuf != nullptr);
     Q_ASSERT(mSize != 0);
@@ -276,21 +275,6 @@ bool TModbusVp::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits)
 }
 
 //
-void TModbusVp::setID(uint32_t id)
-{
-    Q_ASSERT(id < SRC_MAX);
-
-    *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
-}
-
-//
-uint32_t TModbusVp::getID() const
-{
-    return static_cast<uint32_t> (mSrc);
-}
-
-
-//
 void TModbusVp::vTick()
 {
     if (mState == STATE_disable) {
@@ -454,14 +438,14 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
         switch (static_cast<regWrite_t> (number)) {
             case REG_WRITE_enSanSbSac: {
                 param = PARAM_blkComPrmAll;
-                tvalue = mParam->getValue(param, mSrc, ok) ==
+                tvalue = mParam->getValue(param, mSrcId, ok) ==
                                  DISABLE_PRM_disable ?
                              0 : (uint16_t(1) << VP_BTN_CONTROL_sac1);
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_dirControl;
-                tvalue = mParam->getValue(param, mSrc, ok) ==
+                tvalue = mParam->getValue(param, mSrcId, ok) ==
                                  DIR_CONTROL_remote ?
                              0 : (uint16_t(1) << VP_BTN_CONTROL_sac2);
                 if (ok) {
@@ -469,7 +453,7 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
 
                 }
                 param = PARAM_blkComPrmDir;
-                tvalue |= (~mParam->getValue(param, mSrc, ok)) << 8;
+                tvalue |= (~mParam->getValue(param, mSrcId, ok)) << 8;
                 if (ok) {
                     value |= tvalue;
                 }
@@ -511,7 +495,7 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
             case REG_WRITE_dsLed48to33: {
                 param = PARAM_blkComPrm64to33;
                 tvalue = static_cast<uint16_t> (
-                    mParam->getValue(param, mSrc, ok));
+                    mParam->getValue(param, mSrcId, ok));
                 if (ok) {
                     value = tvalue;
                     if (number == REG_WRITE_enLed48to33) {
@@ -524,7 +508,7 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
             case REG_WRITE_dsLed64to49: {
                 param = PARAM_blkComPrm64to33;
                 tvalue = static_cast<uint16_t> (
-                    ~mParam->getValue(param, mSrc, ok)>> 16);
+                    ~mParam->getValue(param, mSrcId, ok)>> 16);
                 if (ok) {
                     value = tvalue;
                     if (number == REG_WRITE_enLed64to49) {
@@ -535,19 +519,19 @@ uint16_t TModbusVp::getWriteRegMsgData(uint16_t number, bool &ok) const
 
             case REG_WRITE_dsSanSbSac: {
                 param = PARAM_blkComPrmAll;
-                tvalue = mParam->getValue(param, mSrc, ok) ==
+                tvalue = mParam->getValue(param, mSrcId, ok) ==
                                  DISABLE_PRM_disable ? (uint16_t(1) << VP_BTN_CONTROL_sac1) : 0;
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_dirControl;
-                tvalue |= mParam->getValue(param, mSrc, ok) ==
+                tvalue |= mParam->getValue(param, mSrcId, ok) ==
                                   DIR_CONTROL_remote ? (uint16_t(1) << VP_BTN_CONTROL_sac2) : 0;
                 if (ok) {
                     value |= tvalue;
                 }
                 param = PARAM_blkComPrmDir;
-                value |= (mParam->getValue(param, mSrc, ok)) << 8;
+                value |= (mParam->getValue(param, mSrcId, ok)) << 8;
                 if (ok) {
                     value |= tvalue;
                 }
@@ -618,7 +602,7 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
             case REG_READ_sa16to01: {
                 param = PARAM_vpBtnSA32to01;
                 val32 = static_cast<uint32_t> (value);
-                val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
+                val32 += (mParam->getValue(param, mSrcId, ok) & 0xFFFF0000);
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
                 // hdlrButtonSa(PARAM_comPrmBlk08to01, val32, PARAM_vpBtnSA32to01, 1);
                 // hdlrButtonSa(PARAM_comPrmBlk16to09, val32, PARAM_vpBtnSA32to01, 2);
@@ -628,7 +612,7 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
             case REG_READ_sa32to17: {
                 param = PARAM_vpBtnSA32to01;
                 val32 = (static_cast<uint32_t> (value)) << 16;
-                val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
+                val32 += (mParam->getValue(param, mSrcId, ok) & 0x0000FFFF);
                 // FIXME Для Казань MPLSTP сделана блокировка команд передатчика
                 // hdlrButtonSa(PARAM_comPrmBlk24to17, val32, PARAM_vpBtnSA32to01, 3);
                 // hdlrButtonSa(PARAM_comPrmBlk32to25, val32, PARAM_vpBtnSA32to01, 4);
@@ -638,12 +622,12 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
             case REG_READ_sa48to33: {
                 param = PARAM_vpBtnSA64to33;
                 val32 = static_cast<uint32_t> (value);
-                val32 += (mParam->getValue(param, mSrc, ok) & 0xFFFF0000);
+                val32 += (mParam->getValue(param, mSrcId, ok) & 0xFFFF0000);
             } break;
             case REG_READ_sa64to49: {
                 param = PARAM_vpBtnSA64to33;
                 val32 = (static_cast<uint32_t> (value)) << 16;
-                val32 += (mParam->getValue(param, mSrc, ok) & 0x0000FFFF);
+                val32 += (mParam->getValue(param, mSrcId, ok) & 0x0000FFFF);
             } break;
             case REG_READ_version: {
                 param = PARAM_versionVp;
@@ -653,7 +637,7 @@ uint16_t TModbusVp::getReadRegMsgData(const uint8_t buf[],
         }
 
         if (param != PARAM_MAX) {
-            mParam->setValue(param, mSrc, val32);
+            mParam->setValue(param, mSrcId, val32);
         }
 
         ok = true;
@@ -678,7 +662,7 @@ void TModbusVp::hdlrButtonSbSacSan(uint32_t value)
 {
     bool ok = true;
     const uint32_t mask = (uint32_t(1) << VP_BTN_CONTROL_MAX) - 1;
-    uint32_t last = mParam->getValue(PARAM_vpBtnSAnSbSac, mSrc, ok);
+    uint32_t last = mParam->getValue(PARAM_vpBtnSAnSbSac, mSrcId, ok);
 
     if (!ok) {
         last = 0x00000000;
@@ -700,27 +684,27 @@ void TModbusVp::hdlrButtonSbSacSan(vpBtnControl_t btn)
 {
     bool ok = true;
     param_t param = PARAM_dirControl;
-    uint32_t value = mParam->getValue(param, mSrc, ok);
+    uint32_t value = mParam->getValue(param, mSrcId, ok);
     bool change = ok && (value == DIR_CONTROL_local);
 
     switch(btn) {
         case VP_BTN_CONTROL_sb: {
             param = PARAM_alarmRstCtrl;
-            mParam->setValue(param, mSrc, ALARM_RST_CTRL_pressed);
+            mParam->setValue(param, mSrcId, ALARM_RST_CTRL_pressed);
         } break;
         case VP_BTN_CONTROL_sac1: {
             if (change) {
                 param = PARAM_blkComPrmAll;
-                uint32_t v = mParam->getValue(param, mSrc, ok);
+                uint32_t v = mParam->getValue(param, mSrcId, ok);
                 v = ok ? (v + 1) % DISABLE_PRM_MAX : DISABLE_PRM_enable;
-                mParam->setValue(param, mSrc, v);
+                mParam->setValue(param, mSrcId, v);
             }
         } break;
         case VP_BTN_CONTROL_sac2: {
             param = PARAM_dirControl;
-            uint32_t v = mParam->getValue(param, mSrc, ok);
+            uint32_t v = mParam->getValue(param, mSrcId, ok);
             v = ok ? (v + 1)  % DIR_CONTROL_MAX : DIR_CONTROL_local;
-            mParam->setValue(param, mSrc, v);
+            mParam->setValue(param, mSrcId, v);
         } break;
         case VP_BTN_CONTROL_san1: {
             // TODO
@@ -758,7 +742,7 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
 {
     bool ok = true;
     const uint32_t mask = 0x00FF;
-    uint32_t value = mParam->getValue(PARAM_dirControl, mSrc, ok);
+    uint32_t value = mParam->getValue(PARAM_dirControl, mSrcId, ok);
 
     // Обработка переключателя вдетеся только при локальном управлении
     bool change = ok && (value == DIR_CONTROL_local);
@@ -770,18 +754,18 @@ void TModbusVp::hdlrButtonSa(param_t param, uint32_t cvalue,
 
     if (change) {
         // NOTE Еще не сохраненное предыдущее значение потеряется
-        uint32_t lvalue = mParam->getValue(lparam, mSrc, ok);
+        uint32_t lvalue = mParam->getValue(lparam, mSrcId, ok);
         if (ok) {
             Q_ASSERT((num >= 1) && (num <= 4));
             if ((num >= 1) && (num <= 4)) {
-                uint32_t value = mParam->getValue(param, mSrc, ok) & mask;
+                uint32_t value = mParam->getValue(param, mSrcId, ok) & mask;
 
                 if (ok) {
                     // определение нового нажатия на переключатель
                     uint32_t pressed = ((cvalue ^ lvalue) & cvalue);
                     pressed = (pressed >> 8*(num - 1)) & mask;
                     if (pressed) {
-                        mParam->setValue(param, mSrc, value ^ pressed);
+                        mParam->setValue(param, mSrcId, value ^ pressed);
                     }
                 }
             }
@@ -801,7 +785,7 @@ uint8_t TModbusVp::getSwitchLed(param_t param, switchOff_t sw) const
             result = 0xFF;
             ok = true;
         } else {
-            result = static_cast<uint8_t> (mParam->getValue(param, mSrc, ok));
+            result = static_cast<uint8_t> (mParam->getValue(param, mSrcId, ok));
         }
     }
 
@@ -812,7 +796,7 @@ uint8_t TModbusVp::getSwitchLed(param_t param, switchOff_t sw) const
 bool TModbusVp::isBlockPrm() const
 {
     bool ok = true;
-    uint32_t value = mParam->getValue(PARAM_blkComPrmAll, mSrc, ok);
+    uint32_t value = mParam->getValue(PARAM_blkComPrmAll, mSrcId, ok);
 
     return ok && (value == DISABLE_PRM_disable);
 }

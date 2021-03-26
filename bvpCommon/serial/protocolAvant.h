@@ -77,8 +77,6 @@ public:
     bool vPush(uint8_t byte) override;
     bool setNetAddress(uint16_t address) override;
     bool vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) override;
-    void setID(uint32_t id) override;
-    uint32_t getID() const override;
 
     void vTick() override;
     bool isConnection() const override;
@@ -93,7 +91,6 @@ protected:
         POS_DATA            ///< Первый байт данных.
     };
 
-    const src_t mSrc;       ///< Источник доступа протокола.
     state_t mState;         ///< Текущее состояние.
     uint8_t cntLostMessage; ///< Количество сообщений без ответа.
 

@@ -6,21 +6,21 @@ namespace BVP {
 //
 TProtocolAvant::TProtocolAvant(regime_t regime) :
   TSerialProtocol(regime),
-  mSrc(SRC_MAX),
   mState(STATE_disable),
   cntLostMessage(kMaxLostMessage) {
 
 }
 
 //
-TProtocolAvant::~TProtocolAvant() {
+TProtocolAvant::~TProtocolAvant()
+{
 
 }
 
 //
-bool
-TProtocolAvant::setEnable(bool enable) {
-  Q_ASSERT(mSrc != SRC_MAX);
+bool TProtocolAvant::setEnable(bool enable)
+{
+  Q_ASSERT(mSrcId != SRC_MAX);
   Q_ASSERT(mParam != nullptr);
   Q_ASSERT(mBuf != nullptr);
   Q_ASSERT(mSize != 0);
@@ -38,14 +38,14 @@ TProtocolAvant::setEnable(bool enable) {
 }
 
 //
-bool
-TProtocolAvant::isEnable() const {
+bool TProtocolAvant::isEnable() const
+{
   return mState != STATE_disable;
 }
 
 //
-bool
-TProtocolAvant::read() {
+bool TProtocolAvant::read()
+{
   bool isread = false;
 
   if (mState == STATE_procReply) {
@@ -69,8 +69,8 @@ TProtocolAvant::read() {
 }
 
 //
-void
-TProtocolAvant::readError() {
+void TProtocolAvant::readError()
+{
   if (mState == STATE_waitForReply) {
     mState = STATE_errorReply;
     mTimeUs = 0;
@@ -78,8 +78,8 @@ TProtocolAvant::readError() {
 }
 
 //
-bool
-TProtocolAvant::write() {
+bool TProtocolAvant::write()
+{
 
   if (mState == STATE_idle) {
     bool ok = true;
@@ -110,8 +110,8 @@ TProtocolAvant::write() {
 }
 
 //
-uint16_t
-TProtocolAvant::pop(uint8_t *data[]) {
+uint16_t TProtocolAvant::pop(uint8_t *data[])
+{
   uint16_t len = 0;
   *data = &mBuf[mPos];
 
@@ -126,7 +126,8 @@ TProtocolAvant::pop(uint8_t *data[]) {
 }
 
 //
-void TProtocolAvant::sendFinished() {
+void TProtocolAvant::sendFinished()
+{
     // FIXME При работе с виртуальными портаи периодически вылетает ошибка!
 //  Q_ASSERT(mState == STATE_waitSendFinished || mState == STATE_disable);
 
@@ -143,8 +144,8 @@ void TProtocolAvant::sendFinished() {
 }
 
 //
-bool
-TProtocolAvant::vPush(uint8_t byte) {
+bool TProtocolAvant::vPush(uint8_t byte)
+{
   uint16_t pos = 0;
 
   if (mState == STATE_waitForReply) {
@@ -182,16 +183,16 @@ TProtocolAvant::vPush(uint8_t byte) {
 }
 
 //
-bool
-TProtocolAvant::setNetAddress(uint16_t address) {
+bool TProtocolAvant::setNetAddress(uint16_t address)
+{
   *(const_cast<uint8_t *> (&mNetAddress)) = static_cast<uint8_t> (address);
 
   return mNetAddress == address;
 }
 
 //
-bool
-TProtocolAvant::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) {
+bool TProtocolAvant::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits)
+{
   UNUSED(baudrate);
   UNUSED(parity);
   UNUSED(stopbits);
@@ -200,8 +201,8 @@ TProtocolAvant::vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) {
 }
 
 //
-void
-TProtocolAvant::vTick() {
+void TProtocolAvant::vTick()
+{
   if (mState != STATE_disable) {
     if (mTimeUs < kMaxTimeToResponseUs) {
       mTimeUs += mTimeTickUs;
@@ -215,42 +216,29 @@ TProtocolAvant::vTick() {
 }
 
 //
-bool
-TProtocolAvant::isConnection() const {
+bool TProtocolAvant::isConnection() const
+{
   return (mState != STATE_disable) && (cntLostMessage < kMaxLostMessage);
 }
 
 //
-void
-TProtocolAvant::setID(uint32_t id) {
-  Q_ASSERT(id < SRC_MAX);
-
-    *(const_cast<src_t*> (&mSrc)) = static_cast<src_t> (id);
-}
-
-uint32_t TProtocolAvant::getID() const
+void TProtocolAvant::incLostMessageCounter()
 {
-    return static_cast<uint32_t> (mSrc);
-}
-
-//
-void
-TProtocolAvant::incLostMessageCounter() {
   if (cntLostMessage < kMaxLostMessage) {
     cntLostMessage++;
   }
 }
 
 //
-void
-TProtocolAvant::setCom(uint8_t com) {
+void TProtocolAvant::setCom(uint8_t com)
+{
   mBuf[POS_COM] = com;
   mBuf[POS_DATA_LEN] = 0;
 }
 
 //
-void
-TProtocolAvant::addByte(uint8_t byte, uint16_t nbyte) {
+void TProtocolAvant::addByte(uint8_t byte, uint16_t nbyte)
+{
   nbyte = (nbyte > 0) ? nbyte - 1 : mBuf[POS_DATA_LEN] + 1;
 
   Q_ASSERT(nbyte < (mSize - kMinLenFrame));
@@ -263,8 +251,8 @@ TProtocolAvant::addByte(uint8_t byte, uint16_t nbyte) {
 }
 
 //
-uint8_t
-TProtocolAvant::calcCRC(const uint8_t buf[], size_t len, uint8_t crc) {
+uint8_t TProtocolAvant::calcCRC(const uint8_t buf[], size_t len, uint8_t crc)
+{
   for(size_t i = 0; i < len; i++) {
     crc += buf[i];
   }
@@ -273,8 +261,8 @@ TProtocolAvant::calcCRC(const uint8_t buf[], size_t len, uint8_t crc) {
 }
 
 //
-void
-TProtocolAvant::setDefaultState() {
+void TProtocolAvant::setDefaultState()
+{
   mState = (mRegime == REGIME_master) ? STATE_idle : STATE_waitForReply;
   mPos = 0;
   mLen = 0;

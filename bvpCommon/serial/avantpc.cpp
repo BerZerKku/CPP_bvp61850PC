@@ -20,12 +20,12 @@ BVP::TAvantPc::vWriteAvant() {
     if (mIsComRx == true) {
         if (mComRx == 0x01) {
             setCom(mComRx);
-            value = mParam->getValue(PARAM_debug1, mSrc, ok);
+            value = mParam->getValue(PARAM_debug1, mSrcId, ok);
             addByte(static_cast<uint8_t> (value));
             addByte(static_cast<uint8_t> (value >> 8));
             addByte(static_cast<uint8_t> (value >> 16));
             addByte(static_cast<uint8_t> (value >> 24));
-            value = mParam->getValue(PARAM_debug2, mSrc, ok);
+            value = mParam->getValue(PARAM_debug2, mSrcId, ok);
             addByte(static_cast<uint8_t> (value));
             addByte(static_cast<uint8_t> (value >> 8));
             addByte(static_cast<uint8_t> (value >> 16));
@@ -62,7 +62,7 @@ TAvantPc::vReadAvant() {
         value += mBuf[POS_DATA + 1];
         value <<= 8;
         value += mBuf[POS_DATA];
-        mParam->setValue(PARAM_debug2, mSrc, value);
+        mParam->setValue(PARAM_debug2, mSrcId, value);
     }
 
     return mIsComRx;

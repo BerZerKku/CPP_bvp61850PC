@@ -25,7 +25,7 @@ bool TAvantPi::writeComControl()
     bool iscommand = false;
 
     // Сигналы управления
-    uint32_t value = mParam->getValue(PARAM_control, mSrc, ok) ;
+    uint32_t value = mParam->getValue(PARAM_control, mSrcId, ok) ;
     if (ok) {
         if ((value & mask) > 0) {
             for(uint8_t i = 0; (i < CTRL_MAX); i++) {
@@ -50,7 +50,7 @@ bool TAvantPi::writeComControl()
                     if (iscommand) {
                         // Удаление обработанного сигнала управления
                         value &= ~current;
-                        mParam->setValue(PARAM_control, mSrc, value);
+                        mParam->setValue(PARAM_control, mSrcId, value);
                         break;
                     }
                 }
@@ -205,50 +205,50 @@ bool TAvantPi::comGetError()
         ok = true;
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_defError, mSrc, value);
+        mParam->setValue(PARAM_defError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_defWarning, mSrc, value);
+        mParam->setValue(PARAM_defWarning, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prmError, mSrc, value);
+        mParam->setValue(PARAM_prmError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prmWarning, mSrc, value);
+        mParam->setValue(PARAM_prmWarning, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prdError, mSrc, value);
+        mParam->setValue(PARAM_prdError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prdWarning, mSrc, value);
+        mParam->setValue(PARAM_prdWarning, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_glbError, mSrc, value);
+        mParam->setValue(PARAM_glbError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_glbWarning, mSrc, value);
+        mParam->setValue(PARAM_glbWarning, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prm2Warning, mSrc, value);
+        mParam->setValue(PARAM_prm2Warning, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prm2Error, mSrc, value);
+        mParam->setValue(PARAM_prm2Error, mSrcId, value);
         Q_ASSERT(pos == (POS_DATA + 20));
     }
 
     if (mBuf[POS_DATA_LEN] >= 28) {
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_defRemoteError, mSrc, value);
+        mParam->setValue(PARAM_defRemoteError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prmRemoteError, mSrc, value);
+        mParam->setValue(PARAM_prmRemoteError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_prdRemoteError, mSrc, value);
+        mParam->setValue(PARAM_prdRemoteError, mSrcId, value);
         value = mBuf[pos++];
         value = (value << 8) + mBuf[pos++];
-        mParam->setValue(PARAM_glbRemoteError, mSrc, value);
+        mParam->setValue(PARAM_glbRemoteError, mSrcId, value);
         Q_ASSERT(pos == (POS_DATA + 28));
     }
 
@@ -312,11 +312,11 @@ uint16_t TAvantPi::comGetMisc(TAvantPi::comMiscBytes_t pos,
         } break;
         case COM_MISC_BYTES_vpSac2: {
             numbytes = 1;
-            mParam->setValue(PARAM_dirControl, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_dirControl, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_MISC_BYTES_vpSam: {
             numbytes = 1;
-            mParam->setValue(PARAM_blkComPrmDir, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_blkComPrmDir, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_MISC_BYTES_MAX: break;
     }
@@ -384,7 +384,7 @@ uint16_t TAvantPi::comGetPrdKeep(TAvantPi::comPrdKeepBytes_t pos, const uint8_t 
         } break;
         case COM_PRD_KEEP_BYTES_alarmRstMode: {
             numbytes = 1;
-            mParam->setValue(PARAM_alarmResetMode, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_alarmResetMode, mSrcId, uint32_t(buf[0]));
         } break;
 
         case COM_PRD_KEEP_BYTES_MAX: break;
@@ -430,7 +430,7 @@ uint16_t TAvantPi::comGetPrmDisable(TAvantPi::comPrmDisableBytes_t pos,
     switch(pos) {
         case COM_PRM_DISABLE_BYTES_prmDisable: {
             numbytes = 1;
-            mParam->setValue(PARAM_blkComPrmAll, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_blkComPrmAll, mSrcId, uint32_t(buf[0]));
         } break;
 
         case COM_PRM_DISABLE_BYTES_MAX: break;
@@ -473,19 +473,19 @@ uint16_t TAvantPi::comGetPrdBlock(TAvantPi::comPrdBlockBytes_t pos,
     switch(pos) {
         case COM_PRD_BLOCK_BYTES_com08to01: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrdBlk08to01, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrdBlk08to01, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRD_BLOCK_BYTES_com16to09: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrdBlk16to09, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrdBlk16to09, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRD_BLOCK_BYTES_com24to17: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrdBlk24to17, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrdBlk24to17, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRD_BLOCK_BYTES_com32to25: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrdBlk32to25, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrdBlk32to25, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRD_BLOCK_BYTES_MAX: break;
     }
@@ -528,19 +528,19 @@ uint16_t TAvantPi::comGetPrmBlock(TAvantPi::comPrmBlockBytes_t pos,
     switch(pos) {
         case COM_PRM_BLOCK_BYTES_com08to01: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrmBlk08to01, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrmBlk08to01, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRM_BLOCK_BYTES_com16to09: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrmBlk16to09, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrmBlk16to09, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRM_BLOCK_BYTES_com24to17: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrmBlk24to17, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrmBlk24to17, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRM_BLOCK_BYTES_com32to25: {
             numbytes = 1;
-            mParam->setValue(PARAM_comPrmBlk32to25, mSrc, uint32_t(buf[0]));
+            mParam->setValue(PARAM_comPrmBlk32to25, mSrcId, uint32_t(buf[0]));
         } break;
         case COM_PRM_BLOCK_BYTES_MAX: break;
     }
@@ -569,19 +569,19 @@ bool TAvantPi::comGetTime()
 
     if (mBuf[POS_DATA_LEN] >= 6) {
         ok = true;
-        mParam->setValue(PARAM_dateYear, mSrc, bcd2int(mBuf[pos++]));
-        mParam->setValue(PARAM_dateMonth, mSrc, bcd2int(mBuf[pos++]));
-        mParam->setValue(PARAM_dateDay, mSrc, bcd2int(mBuf[pos++]));
-        mParam->setValue(PARAM_timeHour, mSrc, bcd2int(mBuf[pos++]));
-        mParam->setValue(PARAM_timeMin, mSrc, bcd2int(mBuf[pos++]));
-        mParam->setValue(PARAM_timeSec, mSrc, bcd2int(mBuf[pos++]));
+        mParam->setValue(PARAM_dateYear, mSrcId, bcd2int(mBuf[pos++]));
+        mParam->setValue(PARAM_dateMonth, mSrcId, bcd2int(mBuf[pos++]));
+        mParam->setValue(PARAM_dateDay, mSrcId, bcd2int(mBuf[pos++]));
+        mParam->setValue(PARAM_timeHour, mSrcId, bcd2int(mBuf[pos++]));
+        mParam->setValue(PARAM_timeMin, mSrcId, bcd2int(mBuf[pos++]));
+        mParam->setValue(PARAM_timeSec, mSrcId, bcd2int(mBuf[pos++]));
         Q_ASSERT(pos == (POS_DATA + 6));
     }
 
     if (mBuf[POS_DATA_LEN] >= 8) {
         value = *(reinterpret_cast<uint16_t*> (&mBuf[pos]));
         pos += sizeof(uint16_t);
-        mParam->setValue(PARAM_timeMSec, mSrc, value);
+        mParam->setValue(PARAM_timeMSec, mSrcId, value);
         Q_ASSERT(pos == (POS_DATA + 8));
     }
 

@@ -68,8 +68,6 @@ class TModbusVp : public TSerialProtocol {
     bool vPush(uint8_t byte) override;
     bool setNetAddress(uint16_t address) override;
     bool vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) override;
-    void setID(uint32_t id) override;
-    uint32_t getID() const override;
     void vTick() override;
     bool isConnection() const override;
 
@@ -86,8 +84,6 @@ class TModbusVp : public TSerialProtocol {
     uint16_t getSwitchLed(param_t hi, param_t low, switchOff_t sw) const;
 
    private:
-    /// Источник доступа протокола.
-    const src_t mSrc;
     /// Текущее состояние.
     state_t mState;
     /// Количество тиков для определения принятого сообщения.
