@@ -1,4 +1,4 @@
-﻿#ifndef TSERIALPROTOCOL_H
+#ifndef TSERIALPROTOCOL_H
 #define TSERIALPROTOCOL_H
 
 #include <cstdint>
@@ -147,12 +147,15 @@ protected:
         bool resp = false;      ///< Флаг необходимости передать ответ.
         uint16_t dataSize;      ///< Размер сообщения.
         const uint8_t * data;   ///< Сообщение.
-    } mTransfer[src_t::SRC_MAX];
+    };
+
+    static transfer_t mTransfer[src_t::SRC_MAX];
+//    transfer_t mTransfer[src_t::SRC_MAX];
 
     const uint32_t mPrtId = uint32_t(-1);   ///< ID протокола.
     const src_t mSrcId = SRC_MAX;           ///< ID источника данных для протокола.
 
-    regime_t mRegime;                   ///< Режим работы протокола.
+    const regime_t mRegime;             ///< Режим работы протокола.
     TParam * const mParam;              ///< Параметры.
     uint8_t * const mBuf;               ///< Буфер данных.
     const uint16_t mSize;               ///< Размер буфера данных.
@@ -193,6 +196,44 @@ protected:
      * @brief Сброс настроек передачи сообщений между протоколами.
      */
     void transferReset();
+
+    /**
+     * @brief Передать сообщение в другой порт ?!
+     * FIXME А все таки должны быть протоколы или порты?
+     * @param[in] dst Пункт назначения.
+     * @param[in] data Данные.
+     * @param[in] size Количество данных.
+     * @return true если сообщение будет передано, иначе false.
+     */
+    bool transferTo(src_t dst, const uint8_t *data, uint16_t size);
+
+    /**
+     * @brief Передать ответ в другой порт ?!
+     * FIXME А все таки должны быть протоколы или порты?
+     * @param[in] dst Пункт назначения.
+     * @param[in] data Данные.
+     * @param[in] size Количество данных.
+     * @return true если сообщение будет передано, иначе false.
+     */
+    bool transferFrom(src_t dst, const uint8_t *data, uint16_t size);
+
+    /**
+     * @brief Проверяет необходимость передачи данных из другого порта.
+     * @return true если есть данные для передачи, инчае false.
+     */
+    bool isTransferReq();
+
+    /**
+     * @brief Проверяет необходимость передать ответ в другой порт.
+     * @return true если необходимо передать ответ, инчае false.
+     */
+    bool isTransferResp();
+
+    /**
+     * @brief Копирует данные для передачи в буфер.
+     * @return количество данных для передачи.
+     */
+    uint16_t copyTransferDataReq();
 
 private:
 

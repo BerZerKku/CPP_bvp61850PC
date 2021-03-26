@@ -65,6 +65,8 @@ TAvantPc::vReadAvant() {
         mParam->setValue(PARAM_debug2, mSrcId, value);
     }
 
+    transferTo(SRC_pi, mBuf, mLen);
+
     return mIsComRx;
 }
 

@@ -3,7 +3,7 @@
 namespace BVP {
 
 TAvantPi::TAvantPi(regime_t regime) :
-                                      TProtocolAvant(regime)
+    TProtocolAvant(regime)
 {
     Q_ASSERT(regime == REGIME_master);
 
@@ -15,6 +15,9 @@ TAvantPi::TAvantPi(regime_t regime) :
     //    ringComArray.add(COM_AVANT_getTime);
 
     Q_ASSERT(!ringComArray.isEmpty());
+
+    qDebug() << "TAvantPi::regime " << regime <<
+                "mRegime" << mRegime;
 }
 
 //
@@ -599,6 +602,12 @@ bool BVP::TAvantPi::vWriteAvant()
     static uint8_t start = 0xFF;
     bool ok = false;
 
+    if (isTransferReq()) {
+        uint16_t len = copyTransferDataReq();
+        qDebug() << "len " << len;
+        ok = (len > 0);
+    }
+
     while(!ok) {
         start++;
         switch(start) {
@@ -645,6 +654,11 @@ bool TAvantPi::vReadAvant()
 
     com_t com = static_cast<com_t> (mBuf[POS_COM]);
     group_t group = group_t(mBuf[POS_COM] & GROUP_mask);
+
+    if (isTransferResp()) {
+        transfer_t *t = &mTransfer[mSrcId];
+        transferFrom(mSrcId, mBuf, mLen);
+    }
 
     switch(static_cast<com_t> (com & ~GROUP_mask)) {
         case COM_getError: {

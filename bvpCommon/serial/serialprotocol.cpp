@@ -2,6 +2,8 @@
 
 namespace BVP {
 
+TSerialProtocol::transfer_t TSerialProtocol::mTransfer[src_t::SRC_MAX];
+
 //
 TSerialProtocol::TSerialProtocol(regime_t regime) :
     mRegime(regime),
@@ -22,6 +24,12 @@ TSerialProtocol::TSerialProtocol(regime_t regime) :
     }
 
     *(const_cast<TParam**> (&mParam)) = TParam::getInstance();
+
+    qDebug() << "TSerialProtocol::regime " << regime <<
+                "mRegime" << mRegime;
+
+    // FIXME Параметр почему-то не присваивается через список инициализации в конструкторе
+    *(const_cast<regime_t*>(&mRegime)) = regime;
 }
 
 //
@@ -111,12 +119,121 @@ void TSerialProtocol::transferReset()
 }
 
 //
+bool TSerialProtocol::transferTo(src_t dst, const uint8_t *data, uint16_t size)
+{
+    bool ok = false;
+
+    if (dst < src_t::SRC_MAX) {
+        transfer_t *t = &mTransfer[dst];
+
+        t->req = true;
+        t->resp = false;
+        t->srcData = mSrcId;
+        t->data = data;
+        t->dataSize = size;
+    } else {
+        QCRITICAL("Wrong 'dst' value " << dst);
+    }
+
+    return ok;
+}
+
+bool TSerialProtocol::transferFrom(src_t dst, const uint8_t *data, uint16_t size)
+{
+    bool ok = false;
+
+    if (dst < src_t::SRC_MAX) {
+        transfer_t *t = &mTransfer[dst];
+
+        t->req = false;
+        t->resp = true;
+        t->srcData = mSrcId;
+        t->data = data;
+        t->dataSize = size;
+
+        t = &mTransfer[mSrcId];
+        t->resp = false;
+    } else {
+        QCRITICAL("Wrong 'dst' value " << dst);
+    }
+
+    return ok;
+}
+
+//
+bool TSerialProtocol::isTransferReq()
+{
+    bool req = false;
+    const src_t src = mSrcId;
+
+    if (src < src_t::SRC_MAX) {
+        transfer_t *t = &mTransfer[src];
+
+        if (t->req) {
+            if ((t->dataSize == 0) || (t->data == nullptr)) {
+                t->req = false;
+            }
+            req = t->req;
+        }
+    } else {
+        QCRITICAL("Wrong 'src' value " << src);
+    }
+
+    return req;
+}
+
+bool TSerialProtocol::isTransferResp()
+{
+    bool resp = false;
+    const src_t src = mSrcId;
+
+    if (src < src_t::SRC_MAX) {
+        transfer_t *t = &mTransfer[src];
+
+        resp = t->resp;
+    } else {
+        QCRITICAL("Wrong 'src' value " << src);
+    }
+
+    return resp;
+}
+
+//
+uint16_t TSerialProtocol::copyTransferDataReq()
+{
+    uint16_t cnt = 0;
+    const src_t src = mSrcId;
+
+    if (src < src_t::SRC_MAX) {
+        transfer_t *t = &mTransfer[src];
+
+        if (mSize >= t->dataSize) {
+            for(uint16_t i = 0; i < t->dataSize; i++) {
+                mBuf[i] = t->data[i];
+            }
+            cnt = t->dataSize;
+        } else {
+            QCRITICAL("Buffer size is too small" << src);
+        }
+
+        t->req = false;
+        t->re
+        t->dataSize = 0;
+        t->data = nullptr;
+    } else {
+        QCRITICAL("Wrong 'src' value " << src);
+    }
+
+    return cnt;
+}
+
+//
 void TSerialProtocol::transferReset(src_t src)
 {
     // TODO Добавить ID типов протоколов, чтобы не передавать туда, куда не надо!
 
     if (src < src_t::SRC_MAX) {
-        transfer_t *t = &mTransfer[mSrcId];
+        transfer_t *t = &mTransfer[src];
 
         t->srcData = src_t::SRC_MAX;
         t->req = false;

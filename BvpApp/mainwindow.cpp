@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("Windows-1251"));
 
     wAlarm = ui->fAlarm; // const_cast<MainWindow*> (this);
+    qDebug() << wAlarm;
 
     mModbus = new TModbusVp(TModbusVp::REGIME_master);
     mParam = TParam::getInstance();
@@ -221,7 +222,8 @@ void MainWindow::serialStop(TSerial *serial)
 
 
 //
-void MainWindow::serialProc() {
+void MainWindow::serialProc()
+{
     for(auto& serial: sPort.keys()) {
         serialCfg_t *cfg = sPort.value(serial);
 
@@ -241,9 +243,9 @@ void MainWindow::serialProc() {
                         pkg.append(data[i]);
                     }
 
-//                    if (cfg->protocol->getID() == SRC_pi) {
-//                        qDebug() << "Tx to PI: " << Qt::hex << pkg << Qt::endl;
-//                    }
+                    if (cfg->protocol->getSrcId() == SRC_pi) {
+                        qDebug() << "Tx to PI: " << Qt::hex << pkg << Qt::endl;
+                    }
 
                     for(auto &byte: pkg) {
                         serial->write(byte);
