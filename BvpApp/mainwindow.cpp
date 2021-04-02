@@ -235,12 +235,12 @@ void MainWindow::serialProc() {
                         pkg.append(data[i]);
                     }
 
-//                    if (cfg->protocol->getID() == SRC_pi) {
+                    if (cfg->protocol->getID() == SRC_pi) {
 //                        qDebug() << "Tx to PI: " << Qt::hex << pkg << Qt::endl;
-//                    }
+                    }
 
                     for(auto &byte: pkg) {
-                        serial->write(byte);
+                        emit serial->write(byte);
                     }
                 }
             }
