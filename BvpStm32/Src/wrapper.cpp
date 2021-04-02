@@ -58,7 +58,7 @@ static void protocolPoll();
 #define POWER_OFF_TIME_MS 100
 
 #define RPI_REBOOT_TIME_MS 30000
-#define RPI_RESET_NO_CONNECT_MS 2000
+#define RPI_RESET_NO_CONNECT_MS 1000
 
 //
 TParam params;
@@ -242,11 +242,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // 1 мс
     TClock::tick();
 
-    HAL_GPIO_WritePin(LED2_VD8_GPIO_Port, LED2_VD8_Pin,
-        rpiConnection ? GPIO_PIN_RESET : GPIO_PIN_SET);
-
     if (++cnt >= 1000) {
-      HAL_GPIO_TogglePin(LED1_VD7_GPIO_Port, LED1_VD7_Pin);
+      if (rpiConnection) {
+        HAL_GPIO_WritePin(LED1_VD7_GPIO_Port, LED1_VD7_Pin, GPIO_PIN_RESET);
+      } else {
+        HAL_GPIO_TogglePin(LED1_VD7_GPIO_Port, LED1_VD7_Pin);
+      }
       Debug::proc();
       cnt = 0;
     }
@@ -453,7 +454,8 @@ bool getExtAlarmSignals(extAlarm_t signal) {
     } break;
 
     case EXT_ALARM_fault: {
-      state = HAL_GPIO_ReadPin(Sout7_GPIO_Port, Sout7_Pin) == defval;
+      state = (HAL_GPIO_ReadPin(Sout7_GPIO_Port, Sout7_Pin) == defval);
+//      state |= !rpiConnection;
     } break;
 
     case EXT_ALARM_comPrd: {
@@ -503,7 +505,6 @@ void setExtAlarmSignal(extAlarm_t signal, bool value) {
     } break;
 
     case EXT_ALARM_disablePrm: {
-//      HAL_GPIO_WritePin(RX_DISABLE_GPIO_Port, RX_DISABLE_Pin, state);
       HAL_GPIO_WritePin(OUT1_GPIO_Port, OUT1_Pin, state);
     } break;
 

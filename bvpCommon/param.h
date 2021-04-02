@@ -9,7 +9,7 @@ namespace BVP {
 
 // FIXME Эта версия должна быть в ПО для БВП!!!
 // NOTE Версия ПО состоит из двух байт (major << 8) + (minor)
-static const uint8_t versionMajor = 153;    ///< Версия ПО (major)
+static const uint8_t versionMajor = 100;    ///< Версия ПО (major)
 static const uint8_t versionMinor = 1;      ///< Версия ПО (minor)
 
 

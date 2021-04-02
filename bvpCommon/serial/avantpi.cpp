@@ -619,7 +619,20 @@ bool BVP::TAvantPi::vWriteAvant()
             } break;
             default: {
                 if (!ringComArray.isEmpty()) {
-                    setCom(ringComArray.get());
+                  com_t com = ringComArray.get();
+                    setCom(com);
+
+                    if (com == COM_getMisc) {
+                      addByte(versionMinor);
+                      addByte(versionMajor);
+
+                      bool ok = true;
+                      uint32_t version = mParam->getValue(PARAM_versionVp, mSrc, ok);
+                      if (ok) {
+                        addByte(uint8_t(version));
+                        addByte(uint8_t(version >> 8));
+                      }
+                    }
                     ok = true;
                     start = 0;
                 } else {
@@ -645,6 +658,12 @@ bool TAvantPi::vReadAvant()
 
     com_t com = static_cast<com_t> (mBuf[POS_COM]);
     group_t group = group_t(mBuf[POS_COM] & GROUP_mask);
+
+//    QVector<uint8_t> pkg;
+//    for(uint16_t i = 0; i < mLen; i++) {
+//        pkg.append(mBuf[i]);
+//    }
+//    qDebug() << "Rx from PI: " << Qt::hex << pkg << Qt::endl;
 
     switch(static_cast<com_t> (com & ~GROUP_mask)) {
         case COM_getError: {
