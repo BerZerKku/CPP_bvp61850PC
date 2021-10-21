@@ -8,12 +8,10 @@
 #include "bvpBase.hpp"
 
 
-
-void mainInit() {
-
+void mainInit()
+{
 }
 
-void mainLoop() {
-
+void mainLoop()
+{
 }
-

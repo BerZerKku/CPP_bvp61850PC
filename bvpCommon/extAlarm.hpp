@@ -1,15 +1,17 @@
 #ifndef TEXT_ALARM_H
 #define TEXT_ALARM_H
 
-#include <cstdint>
 #include "debug.hpp"
 #include "hardware.hpp"
 #include "param.h"
+#include <cstdint>
 
-namespace BVP {
+namespace BVP
+{
 
 /// Сигналы сигнализации
-enum extAlarm_t {
+enum extAlarm_t
+{
     EXT_ALARM_model61850 = 0,
     EXT_ALARM_test61850,
     EXT_ALARM_channelFault,
@@ -22,31 +24,34 @@ enum extAlarm_t {
     EXT_ALARM_MAX
 };
 
-class TExtAlarm {
+class TExtAlarm
+{
 
     /// Режим сигнала во время сброса
-    enum resetMode_t {
-        RESET_MODE_off = 0, ///< Запоминает последний сигнал на входе.
+    enum resetMode_t
+    {
+        RESET_MODE_off = 0,  ///< Запоминает последний сигнал на входе.
         RESET_MODE_direct,  ///< Выход сигнала повторяет вход
         ///
         RESET_MODE_MAX
     };
 
     /// Свойства сигнала
-    struct signal_t {
-        const extAlarm_t signal;        ///< Сигнал.
-        const resetMode_t resetMode;    ///< Режим работы сигнала во время сброса.
-        const alarmReset_t alarmReset;  ///< Режим сброса сигнала (ALARM_RESET_MAX - согласно текущим настройкам).
-        const bool valDef;              ///< Значение сигнала по умолчанию.
+    struct signal_t
+    {
+        const extAlarm_t signal;  ///< Сигнал.
+        const resetMode_t resetMode;  ///< Режим работы сигнала во время сброса.
+        const alarmReset_t
+                   alarmReset;  ///< Режим сброса сигнала (ALARM_RESET_MAX - согласно текущим настройкам).
+        const bool valDef;      ///< Значение сигнала по умолчанию.
     };
 
 public:
-
     ///
     TExtAlarm();
 
     ///
-    ~TExtAlarm() {}
+    ~TExtAlarm() { }
 
     /**
      * @brief Устанавливает режим сброса сигнализации.
@@ -56,8 +61,10 @@ public:
      *
      * @param[in] reset Режим сброса сигнализации.
      */
-    void setAlarmReset(alarmReset_t reset) {
-        if (reset > ALARM_RESET_MAX) {
+    void setAlarmReset(alarmReset_t reset)
+    {
+        if (reset > ALARM_RESET_MAX)
+        {
             reset = ALARM_RESET_MAX;
         }
 
@@ -98,18 +105,14 @@ public:
      * @brief Проверка начличия сброса.
      * @return true если сигнализация в сбросе, иначе false.
      */
-    bool isReset() const {
-        return mReset;
-    }
+    bool isReset() const { return mReset; }
 
 private:
-
-
-    static const signal_t mSignal[EXT_ALARM_MAX];   /// Настройки сигналов.
-    bool mReset = false;                            /// Сброс сигнализации.
-    alarmReset_t mAlarmReset = ALARM_RESET_MAX;     /// Режим сброса сигнализации
-    uint16_t mAlarmIn;                              /// Состояние сигналов на входе.
-    uint16_t mAlarmOut;                             /// Состояние сигналов на выходе.
+    static const signal_t mSignal[EXT_ALARM_MAX];  /// Настройки сигналов.
+    bool                  mReset = false;          /// Сброс сигнализации.
+    alarmReset_t mAlarmReset = ALARM_RESET_MAX;  /// Режим сброса сигнализации
+    uint16_t     mAlarmIn;   /// Состояние сигналов на входе.
+    uint16_t     mAlarmOut;  /// Состояние сигналов на выходе.
 
     /**
      * @brief Устанавливает значение бита.
@@ -134,6 +137,6 @@ private:
 #endif
 };
 
-} // namespace BVP
+}  // namespace BVP
 
-#endif // TEXT_ALARM_H
+#endif  // TEXT_ALARM_H

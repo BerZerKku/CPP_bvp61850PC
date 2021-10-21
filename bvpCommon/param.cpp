@@ -1,37 +1,43 @@
-#include "global.hpp"
 #include "param.h"
+#include "global.hpp"
 #include "paramDB.h"
 
-namespace BVP {
+namespace BVP
+{
 
 TParam TParam::mParam;
 
 //
 bool setError(param_t param, src_t src, uint32_t &value)
 {
-    bool ok = true;
-    TParam *params = TParam::getInstance();
-    uint32_t v = value;
+    bool     ok     = true;
+    TParam * params = TParam::getInstance();
+    uint32_t v      = value;
 
     // TODO ƒобавить фильтр по наличию текущих устройств (прм, прд, защ)
 
-    if (ok && (param != PARAM_glbError)) {
+    if (ok && (param != PARAM_glbError))
+    {
         v |= params->getValue(PARAM_glbError, src, ok);
     }
 
-    if (ok && (param != PARAM_defError)) {
+    if (ok && (param != PARAM_defError))
+    {
         v |= params->getValue(PARAM_defError, src, ok);
     }
 
-    if (ok && (param != PARAM_prmError)) {
+    if (ok && (param != PARAM_prmError))
+    {
         v |= params->getValue(PARAM_prmError, src, ok);
     }
 
-    if (ok && (param != PARAM_prdError)) {
+    if (ok && (param != PARAM_prdError))
+    {
         v |= params->getValue(PARAM_prdError, src, ok);
     }
 
-    if (ok) {
+    if (ok)
+    {
         params->setValue(PARAM_error, SRC_int, v);
     }
 
@@ -41,29 +47,34 @@ bool setError(param_t param, src_t src, uint32_t &value)
 //
 bool setWarning(param_t param, src_t src, uint32_t &value)
 {
-    bool ok = true;
-    TParam *params = TParam::getInstance();
-    uint32_t v = value;
+    bool     ok     = true;
+    TParam * params = TParam::getInstance();
+    uint32_t v      = value;
 
     // TODO ƒобавить фильтр по наличию текущих устройств (прм, прд, защ)
 
-    if (ok && (param != PARAM_glbWarning)) {
+    if (ok && (param != PARAM_glbWarning))
+    {
         v |= params->getValue(PARAM_glbWarning, src, ok);
     }
 
-    if (ok && (param != PARAM_defWarning)) {
+    if (ok && (param != PARAM_defWarning))
+    {
         v |= params->getValue(PARAM_defWarning, src, ok);
     }
 
-    if (ok && (param != PARAM_prmWarning)) {
+    if (ok && (param != PARAM_prmWarning))
+    {
         v |= params->getValue(PARAM_prmWarning, src, ok);
     }
 
-    if (ok && (param != PARAM_prdWarning)) {
+    if (ok && (param != PARAM_prdWarning))
+    {
         v |= params->getValue(PARAM_prdWarning, src, ok);
     }
 
-    if (ok) {
+    if (ok)
+    {
         params->setValue(PARAM_warning, SRC_int, v);
     }
 
@@ -73,16 +84,18 @@ bool setWarning(param_t param, src_t src, uint32_t &value)
 //
 TParam::TParam()
 {
-    for(uint16_t i = 0; i < PARAM_MAX; i++) {
-        Q_ASSERT_X(params[i].param == static_cast<param_t> (i),
-                   "param", QString::number(i).toStdString().c_str());
+    for (uint16_t i = 0; i < PARAM_MAX; i++)
+    {
+        Q_ASSERT_X(params[i].param == static_cast<param_t>(i),
+                   "param",
+                   QString::number(i).toStdString().c_str());
     }
 
     reset();
 }
 
 //
-TParam* TParam::getInstance()
+TParam *TParam::getInstance()
 {
     return &TParam::mParam;
 }
@@ -122,10 +135,12 @@ uint32_t TParam::getValue(param_t param, src_t src, bool &ok)
     // TODO добавить проверку источника доступа!
     ok = isAccess(param, src) && isSet(param);
 
-    if (ok) {
+    if (ok)
+    {
         value = params[param].rValue;
 
-        if (params[param].get != nullptr) {
+        if (params[param].get != nullptr)
+        {
             ok = params[param].get(param, src, value);
         }
     }
@@ -155,15 +170,19 @@ bool TParam::setValue(param_t param, src_t src, uint32_t value)
     bool ok = false;
 
     Q_ASSERT(param < PARAM_MAX);
-    if (param < PARAM_MAX) {
-        if (isAccess(param, src)) {
+    if (param < PARAM_MAX)
+    {
+        if (isAccess(param, src))
+        {
             ok = true;
 
-            if (params[param].set != nullptr) {
+            if (params[param].set != nullptr)
+            {
                 ok = params[param].set(param, src, value);
             }
 
-            if (ok) {
+            if (ok)
+            {
                 setLocalValue(param, src, value);
             }
         }
@@ -177,12 +196,13 @@ void TParam::reset()
 {
     paramFields_t *p;
 
-    for(uint16_t i = 0; i < PARAM_MAX; i++) {
+    for (uint16_t i = 0; i < PARAM_MAX; i++)
+    {
         p = &params[i];
 
-        p->rValue = 0;
-        p->isSet = false;
-        p->wValue = 0;
+        p->rValue     = 0;
+        p->isSet      = false;
+        p->wValue     = 0;
         p->isModified = false;
     }
 
@@ -201,19 +221,25 @@ void TParam::setLocalValue(param_t param, src_t src, uint32_t value)
 {
     paramFields_t *p = &params[param];
 
-    if (p->source & (1 << src)) {
+    if (p->source & (1 << src))
+    {
         p->rValue = value;
-        p->isSet = true;
+        p->isSet  = true;
 
-        if (!p->isModified) {
+        if (!p->isModified)
+        {
             p->wValue = value;
-        } else {
+        }
+        else
+        {
             p->isModified = (value != p->wValue);
         }
-    } else {
-        p->wValue = value;
+    }
+    else
+    {
+        p->wValue     = value;
         p->isModified = true;
     }
 }
 
-} // namespace BVP
+}  // namespace BVP

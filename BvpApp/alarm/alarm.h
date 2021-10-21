@@ -1,13 +1,14 @@
 #ifndef ALARM_H
 #define ALARM_H
 
-#include <QPushButton>
-#include <QWidget>
-#include "widget/qledindicator.h"
 #include "bvpCommon/extAlarm.hpp"
 #include "widget/qcolorbutton.h"
+#include "widget/qledindicator.h"
+#include <QPushButton>
+#include <QWidget>
 
-namespace Ui {
+namespace Ui
+{
 class TAlarm;
 }
 
@@ -36,4 +37,4 @@ private:
     void setLedYellow(QLedIndicator *led);
 };
 
-#endif // ALARM_H
+#endif  // ALARM_H

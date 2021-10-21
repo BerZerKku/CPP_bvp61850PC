@@ -13,15 +13,15 @@
 #if defined(QT_CORE_LIB)
 
 #include <QDebug>
-#  define QDEBUG(x) (qDebug() << x)
+#define QDEBUG(x) (qDebug() << x)
 
 #else
 
-#  include <assert.h>
-#  define Q_ASSERT(x) (assert(x))
-#  define QDEBUG(x) void (0)
-#  define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
-#  define Q_ASSERT_X(cond, where, what) ((cond) ? static_cast<void>(0) : assert(where))
+#include <assert.h>
+#define Q_ASSERT(x)                   (assert(x))
+#define QDEBUG(x)                     void(0)
+#define Q_STATIC_ASSERT(Condition)    static_assert(bool(Condition), #Condition)
+#define Q_ASSERT_X(cond, where, what) ((cond) ? static_cast<void>(0) : assert(where))
 
 #endif
 
@@ -29,24 +29,24 @@
 extern "C" {
 #endif
 
-  // FIXME В QT флаг NDEBUG не используется. Надо найти его замену!
+// FIXME В QT флаг NDEBUG не используется. Надо найти его замену!
 
 #if defined(NDEBUG)
 
-  #define PRINT_ERROR(x) (void(0))
+#define PRINT_ERROR(x) (void(0))
 
 #else
 
-  #define PRINT_ERROR(x) printError( __FILE__, __LINE__, __FUNCTION__, x)
+#define PRINT_ERROR(x) printError(__FILE__, __LINE__, __FUNCTION__, x)
 
-  /** Вывод на экран ошибки и места где она произошла.
-   *
-   *  @param[in] file
-   *  @param[in] line
-   *  @param[in] function
-   *  @param[in] error
-   */
-  void printError(const char *file, int line, const char *function, int error);
+/** Вывод на экран ошибки и места где она произошла.
+ *
+ *  @param[in] file
+ *  @param[in] line
+ *  @param[in] function
+ *  @param[in] error
+ */
+void printError(const char *file, int line, const char *function, int error);
 #endif
 
 

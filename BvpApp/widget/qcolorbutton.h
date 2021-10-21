@@ -22,4 +22,4 @@ private:
     void changeColor(Qt::GlobalColor color);
 };
 
-#endif // QCOLORBUTTON_H
+#endif  // QCOLORBUTTON_H

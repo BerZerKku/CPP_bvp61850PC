@@ -5,16 +5,15 @@
 
 class TComboBox : public QComboBox
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  explicit TComboBox(QWidget *parent = nullptr);
+    explicit TComboBox(QWidget *parent = nullptr);
 
 signals:
-  void popuped();
+    void popuped();
 
 private:
-  void showPopup() override;
-
+    void showPopup() override;
 };
 
-#endif // TCOMBOBOX_HPP
+#endif  // TCOMBOBOX_HPP

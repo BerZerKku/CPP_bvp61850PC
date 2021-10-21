@@ -8,26 +8,27 @@
 
 #include <bvpCommon/param.h>
 
-class TParamTree : public QTreeWidget {
+class TParamTree : public QTreeWidget
+{
 public:
-  TParamTree(QWidget *parent=nullptr);
-  void updateParameters();
+    TParamTree(QWidget* parent = nullptr);
+    void updateParameters();
 
-  const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 private:
-  QMap<BVP::param_t, QTreeWidgetItem*> mapItems;
+    QMap<BVP::param_t, QTreeWidgetItem*> mapItems;
 
-  void crtGroupInternal();
-  void crtGroupParamGlobal();
-  void crtGroupTime();
-  void crtGroupError();
-  void crtGroupErrorRemote();
-  void crtGroupVp();
+    void crtGroupInternal();
+    void crtGroupParamGlobal();
+    void crtGroupTime();
+    void crtGroupError();
+    void crtGroupErrorRemote();
+    void crtGroupVp();
 
-  void crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name);
+    void crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name);
 
-  void updateParameter(BVP::param_t param);
+    void updateParameter(BVP::param_t param);
 };
 
-#endif // PARAMTREE_H
+#endif  // PARAMTREE_H

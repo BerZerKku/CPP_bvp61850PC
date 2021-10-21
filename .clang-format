@@ -1,0 +1,55 @@
+# Format Style Options - Created with Clang Power Tools
+---
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: Consecutive              # None, Consecutive, AcrossEmptyLines, AcrossComments, AcrossEmptyLinesAndComments
+AlignConsecutiveBitFields: true
+AlignConsecutiveDeclarations: Consecutive             # None, Consecutive, AcrossEmptyLines, AcrossComments, AcrossEmptyLinesAndComments
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Left
+AlignOperands: Align                                  # DontAlign, Align, AlignAfterOperator
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortLambdasOnASingleLine: All
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+BasedOnStyle: WebKit
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping: 
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: false
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: true
+  BeforeWhile: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: NonAssignment             # None, NonAssignment, All
+BreakBeforeBraces: Custom
+BreakInheritanceList: BeforeColon
+BreakConstructorInitializers: AfterColon
+ColumnLimit: 100
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ContinuationIndentWidth: 4
+DerivePointerAlignment: true
+IndentCaseBlocks: true
+IndentCaseLabels: false
+MaxEmptyLinesToKeep: 2
+SpaceAfterCStyleCast: true
+SpaceAfterTemplateKeyword: false
+SpacesBeforeTrailingComments: 2
+...

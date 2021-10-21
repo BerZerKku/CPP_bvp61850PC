@@ -3,21 +3,23 @@
 
 #include "protocolAvant.h"
 
-namespace BVP {
+namespace BVP
+{
 
-class TAvantPc : public TProtocolAvant {
+class TAvantPc : public TProtocolAvant
+{
 
 public:
-  TAvantPc(regime_t regime);
+    TAvantPc(regime_t regime);
 
-  bool vWriteAvant() override;
-  bool vReadAvant() override;
+    bool vWriteAvant() override;
+    bool vReadAvant() override;
 
 private:
-  bool mIsComRx = false;
-  com_t mComRx;
+    bool  mIsComRx = false;
+    com_t mComRx;
 };
 
-} // namespace BVP
+}  // namespace BVP
 
-#endif // AVANT_PC_H
+#endif  // AVANT_PC_H

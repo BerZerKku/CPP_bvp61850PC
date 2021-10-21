@@ -7,7 +7,8 @@
 
 #include "clock.hpp"
 
-namespace BVP {
+namespace BVP
+{
 
 clockPoint_t TClock::mClockCounter = 0;
 

@@ -1,21 +1,24 @@
 ﻿#ifndef TSERIALPROTOCOL_H
 #define TSERIALPROTOCOL_H
 
-#include <cstdint>
 #include "param.h"
+#include <cstdint>
 
-namespace BVP {
+namespace BVP
+{
 
-class TSerialProtocol {
+class TSerialProtocol
+{
 
     /// Максимальное время с момента принятия первого байта данных, мкс.
     static const uint32_t kMaxTimeFromReadFirstByte = 10000000UL;
 
 public:
     /// Режим работы протокола
-    enum regime_t {
-        REGIME_slave = 0, ///< Ведомый.
-        REGIME_master     ///< Ведущий.
+    enum regime_t
+    {
+        REGIME_slave = 0,  ///< Ведомый.
+        REGIME_master      ///< Ведущий.
     };
 
     TSerialProtocol(regime_t regime);
@@ -116,14 +119,12 @@ public:
      *
      *  @return Время.
      */
-    uint32_t getTimeFromReadStart() const {
-        return mTimeReadStart;
-    }
+    uint32_t getTimeFromReadStart() const { return mTimeReadStart; }
 
 protected:
-
     /// Список состояний протокола.
-    enum state_t {
+    enum state_t
+    {
         STATE_disable = 0,
         STATE_idle,
         STATE_reqSend,
@@ -136,17 +137,17 @@ protected:
     };
 
     const uint32_t mId = uint32_t(-1);
-    regime_t mRegime;                   ///< Режим работы протокола.
-    TParam * const mParam;              ///< Параметры.
-    uint8_t * const mBuf;               ///< Буфер данных.
-    const uint16_t mSize;               ///< Размер буфера данных.
-    uint16_t mPos;                      ///< Текущая позиция в буфере.
-    uint16_t mLen;                      ///< Количество байт данных по протоколу.
-    const uint8_t mNetAddress;          ///< Адрес опрашиваемого устройства.
-    uint32_t mTimeReadStart;            ///< Время прошедшее с момента приема первого байта.
-    uint32_t mTimeUs;                   ///< Счетчик времени.
-    const uint32_t mTimeTickUs;         ///< Период вызова функции tick.
-    const uint32_t mTimeOneByteUs;      ///< Время передачи/приема одного байта данных.
+    regime_t       mRegime;  ///< Режим работы протокола.
+    TParam *const  mParam;   ///< Параметры.
+    uint8_t *const mBuf;     ///< Буфер данных.
+    const uint16_t mSize;    ///< Размер буфера данных.
+    uint16_t       mPos;     ///< Текущая позиция в буфере.
+    uint16_t       mLen;  ///< Количество байт данных по протоколу.
+    const uint8_t  mNetAddress;  ///< Адрес опрашиваемого устройства.
+    uint32_t       mTimeReadStart;  ///< Время прошедшее с момента приема первого байта.
+    uint32_t       mTimeUs;      ///< Счетчик времени.
+    const uint32_t mTimeTickUs;  ///< Период вызова функции tick.
+    const uint32_t mTimeOneByteUs;  ///< Время передачи/приема одного байта данных.
 
     /** Добавляет принятый байт данных.
      *
@@ -178,6 +179,6 @@ protected:
     virtual bool vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) = 0;
 };
 
-} // namespace BVP
+}  // namespace BVP
 
-#endif // TSERIALPROTOCOL_H
+#endif  // TSERIALPROTOCOL_H

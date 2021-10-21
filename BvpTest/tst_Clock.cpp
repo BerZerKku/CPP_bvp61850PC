@@ -5,21 +5,20 @@
 #include <iostream>
 #include <limits>
 
-#define TEST_FRIENDS \
-//    friend class TClock_Test;
+#define TEST_FRIENDS //    friend class TClock_Test;
 
 #include "bvpCommon/clock.hpp"
 
 using namespace std;
 
-namespace BVP {
+namespace BVP
+{
 
-class TClock_Test: public ::testing::Test {
+class TClock_Test : public ::testing::Test
+{
 
 public:
-
 protected:
-
     void SetUp() override { }
 
     void TearDown() override { }
@@ -28,14 +27,15 @@ protected:
 //
 TEST_F(TClock_Test, clock)
 {
-    uint16_t ticktime;
+    uint16_t     ticktime;
     clockPoint_t point = 0;
     // Начальное состояние.
     ASSERT_EQ(point, TClock::getClockPoint());
 
     ticktime = 1;
     TClock::setTickInMs(ticktime);
-    while(point < 100) {
+    while (point < 100)
+    {
         TClock::tick();
         point += ticktime;
 
@@ -44,7 +44,8 @@ TEST_F(TClock_Test, clock)
 
     ticktime = 100;
     TClock::setTickInMs(ticktime);
-    while(point < 1000) {
+    while (point < 1000)
+    {
         TClock::tick();
         point += ticktime;
 
@@ -53,7 +54,8 @@ TEST_F(TClock_Test, clock)
 
     ticktime = 1000;
     TClock::setTickInMs(ticktime);
-    while(point < 10000) {
+    while (point < 10000)
+    {
         TClock::tick();
         point += ticktime;
 
@@ -62,7 +64,8 @@ TEST_F(TClock_Test, clock)
 
     ticktime = 0xFFFF;
     TClock::setTickInMs(ticktime);
-    while(point <= (0xFFFFFFFF - ticktime)) {
+    while (point <= (0xFFFFFFFF - ticktime))
+    {
         TClock::tick();
         point += ticktime;
 
@@ -71,7 +74,8 @@ TEST_F(TClock_Test, clock)
 
     ticktime = 1;
     TClock::setTickInMs(ticktime);
-    while(point > 0) {
+    while (point > 0)
+    {
         TClock::tick();
         point += ticktime;
 
@@ -108,19 +112,19 @@ TEST_F(TClock_Test, getDuration)
 
     ltime = 0;
     ASSERT_EQ(ctime - ltime, TClock::getDurationMs(ltime));
-    ASSERT_EQ((ctime - ltime)/1000, TClock::getDurationS(ltime));
+    ASSERT_EQ((ctime - ltime) / 1000, TClock::getDurationS(ltime));
 
     ltime = 1111;
     ASSERT_EQ(ctime - ltime, TClock::getDurationMs(ltime));
-    ASSERT_EQ((ctime - ltime)/1000, TClock::getDurationS(ltime));
+    ASSERT_EQ((ctime - ltime) / 1000, TClock::getDurationS(ltime));
 
     ltime = tick - 1;
     ASSERT_EQ(ctime - ltime, TClock::getDurationMs(ltime));
-    ASSERT_EQ((ctime - ltime)/1000, TClock::getDurationS(ltime));
+    ASSERT_EQ((ctime - ltime) / 1000, TClock::getDurationS(ltime));
 
     ltime = tick;
     ASSERT_EQ(ctime - ltime, TClock::getDurationMs(ltime));
-    ASSERT_EQ(((ctime - ltime))/1000, TClock::getDurationS(ltime));
+    ASSERT_EQ(((ctime - ltime)) / 1000, TClock::getDurationS(ltime));
 
     //
     // Проверка времени с значением нового отсчета меньше предыдущего
@@ -128,8 +132,8 @@ TEST_F(TClock_Test, getDuration)
 
     ltime = clockPoint_t(-tick);
     ASSERT_EQ(UINT32_MAX - tick + 1, ltime);
-    ASSERT_EQ(2*tick, TClock::getDurationMs(ltime));
-    ASSERT_EQ((2*tick)/1000, TClock::getDurationS(ltime));
+    ASSERT_EQ(2 * tick, TClock::getDurationMs(ltime));
+    ASSERT_EQ((2 * tick) / 1000, TClock::getDurationS(ltime));
 }
 
-} // namespace BVP
+}  // namespace BVP

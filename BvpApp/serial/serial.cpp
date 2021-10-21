@@ -5,13 +5,16 @@
 #include <QPair>
 
 //
-bool
-comp(const QString &s1, const QString &s2) {
+bool comp(const QString &s1, const QString &s2)
+{
     bool less;
 
-    if (s1.size() != s2.size()) {
+    if (s1.size() != s2.size())
+    {
         less = (s1.size() < s2.size());
-    } else {
+    }
+    else
+    {
         less = (s1.compare(s2) < 0);
     }
 
@@ -19,23 +22,21 @@ comp(const QString &s1, const QString &s2) {
 }
 
 //
-TSerial::TSerial(QWidget *parent) :
-    QWidget(parent), ui(new Ui::TSerial)
+TSerial::TSerial(QWidget *parent) : QWidget(parent), ui(new Ui::TSerial)
 {
     ui->setupUi(this);
 
     refreshPortList();
 
-    connect(ui->pbOpen, &QPushButton::clicked,
-            this, &TSerial::connectSerialPort);
+    connect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::connectSerialPort);
 
-    connect(this, &TSerial::write, [=]() {setLedTx(true);});
-    connect(this, &TSerial::write, [=]() {timerLedTx.start(kTimeLedOnMs);});
-    connect(&timerLedTx, &QTimer::timeout, [=]() {setLedTx(false);});
+    connect(this, &TSerial::write, [=]() { setLedTx(true); });
+    connect(this, &TSerial::write, [=]() { timerLedTx.start(kTimeLedOnMs); });
+    connect(&timerLedTx, &QTimer::timeout, [=]() { setLedTx(false); });
 
-    connect(this, &TSerial::read, [=]() {setLedRx(true);});
-    connect(this, &TSerial::read, [=]() {timerLedRx.start(kTimeLedOnMs);});
-    connect(&timerLedRx, &QTimer::timeout, [=]() {setLedRx(false);});
+    connect(this, &TSerial::read, [=]() { setLedRx(true); });
+    connect(this, &TSerial::read, [=]() { timerLedRx.start(kTimeLedOnMs); });
+    connect(&timerLedRx, &QTimer::timeout, [=]() { setLedRx(false); });
 
     connect(ui->cbPort, &TComboBox::popuped, this, &TSerial::refreshPortList);
     connect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::changeConfigEnabled);
@@ -56,13 +57,16 @@ TSerial::TSerial(QWidget *parent) :
 //
 TSerial::~TSerial()
 {
-    // Не решило проблему! Ошибка все равно появляется, просто не всегда!
+    // Не решило проблему! Ошибка все равно появляется,
+    // просто не всегда!
 
-    if (!thread.isNull()) {
+    if (!thread.isNull())
+    {
         thread->quit();
     }
 
-    if (!sport.isNull()) {
+    if (!sport.isNull())
+    {
         delete sport;
     }
 
@@ -76,8 +80,7 @@ void TSerial::setLabelText(QString text)
 }
 
 //
-bool TSerial::setup(uint32_t baudrate, QSerialPort::Parity parity,
-                    QSerialPort::StopBits stopbits)
+bool TSerial::setup(uint32_t baudrate, QSerialPort::Parity parity, QSerialPort::StopBits stopbits)
 {
     Q_ASSERT(ui->cbBaudRate->findData(baudrate) != -1);
     ui->cbBaudRate->setCurrentIndex(ui->cbBaudRate->findData(baudrate));
@@ -94,12 +97,14 @@ bool TSerial::setup(uint32_t baudrate, QSerialPort::Parity parity,
 //
 void TSerial::addDefaultPort(QString portname)
 {
-    if (!portname.isEmpty() && !defaultPorts.contains(portname)) {
+    if (!portname.isEmpty() && !defaultPorts.contains(portname))
+    {
         defaultPorts.append(portname);
     }
 
     int index = ui->cbPort->findText(portname);
-    if (index >= 0) {
+    if (index >= 0)
+    {
         ui->cbPort->setCurrentIndex(index);
     }
 }
@@ -115,7 +120,8 @@ bool TSerial::setBaudRateList(QVector<qint32> &values)
     QComboBox *cb = ui->cbBaudRate;
 
     cb->clear();
-    for(auto value: values) {
+    for (auto value : values)
+    {
         cb->addItem(QString("%1").arg(value), value);
     }
 
@@ -129,7 +135,8 @@ bool TSerial::setStopBitList(QVector<QSerialPort::StopBits> &values)
     QComboBox *cb = ui->cbStopBit;
 
     cb->clear();
-    for(auto value: values) {
+    for (auto value : values)
+    {
         cb->addItem(QString("%1").arg(value), value);
     }
 
@@ -143,12 +150,13 @@ bool TSerial::setParityList(QVector<QSerialPort::Parity> &values)
     QComboBox *cb = ui->cbParity;
 
     QMap<QSerialPort::Parity, QString> parityString;
-    parityString.insert(QSerialPort::NoParity,   "  Нет (N)");
+    parityString.insert(QSerialPort::NoParity, "  Нет (N)");
     parityString.insert(QSerialPort::EvenParity, "  Чет (E)");
-    parityString.insert(QSerialPort::OddParity,  "Нечет (O)");
+    parityString.insert(QSerialPort::OddParity, "Нечет (O)");
 
     cb->clear();
-    for(auto &value: values) {
+    for (auto &value : values)
+    {
         Q_ASSERT(parityString.count(value) == 1);
         cb->addItem(parityString.value(value), value);
     }
@@ -170,7 +178,7 @@ qint32 TSerial::getBaudRate() const
 QSerialPort::Parity TSerial::getParity() const
 {
     qint16 value = ui->cbParity->currentData().toInt();
-    return static_cast<QSerialPort::Parity> (value);
+    return static_cast<QSerialPort::Parity>(value);
 }
 
 
@@ -178,31 +186,34 @@ QSerialPort::Parity TSerial::getParity() const
 QSerialPort::StopBits TSerial::getStopBits() const
 {
     qint16 value = ui->cbStopBit->currentData().toInt();
-    return static_cast<QSerialPort::StopBits> (value);
+    return static_cast<QSerialPort::StopBits>(value);
 }
 
 
 //
 void TSerial::refreshPortList()
 {
-    QString portname;
-    QList<QString> ports;
+    QString                portname;
+    QList<QString>         ports;
     QMap<QString, QString> portsInfo;
     QList<QSerialPortInfo> infos = QSerialPortInfo::availablePorts();
 
-    if (ui->cbPort->isEnabled()) {
+    if (ui->cbPort->isEnabled())
+    {
         portname = ui->cbPort->currentText();
         ui->cbPort->clear();
 
-        for(const QSerialPortInfo &info :infos) {
-            if (!info.isBusy()) {
+        for (const QSerialPortInfo &info : infos)
+        {
+            if (!info.isBusy())
+            {
                 ports.append(info.portName());
-                QString deviceInfo = QString("%1 %2\n%3:%4# %5").
-                                     arg(info.manufacturer()).
-                                     arg(info.description()).
-                                     arg(info.vendorIdentifier()).
-                                     arg(info.productIdentifier()).
-                                     arg(info.serialNumber());
+                QString deviceInfo = QString("%1 %2\n%3:%4# %5")
+                                         .arg(info.manufacturer())
+                                         .arg(info.description())
+                                         .arg(info.vendorIdentifier())
+                                         .arg(info.productIdentifier())
+                                         .arg(info.serialNumber());
 
                 portsInfo.insert(info.portName(), deviceInfo);
             }
@@ -210,17 +221,22 @@ void TSerial::refreshPortList()
 
         std::sort(ports.begin(), ports.end(), comp);
         int index = 0;
-        for(auto &port: ports) {
+        for (auto &port : ports)
+        {
             ui->cbPort->addItem(port, portsInfo.value(port));
             ui->cbPort->setItemData(index, portsInfo.value(port), Qt::ToolTipRole);
             index++;
         }
 
-        if (portname.isEmpty()) {
-            for(QString &portname: defaultPorts) {
+        if (portname.isEmpty())
+        {
+            for (QString &portname : defaultPorts)
+            {
                 ui->cbPort->setCurrentText(portname);
             }
-        } else {
+        }
+        else
+        {
             ui->cbPort->setCurrentText(portname);
         }
         ui->pbOpen->setEnabled(ui->cbPort->count() != 0);
@@ -231,14 +247,17 @@ void TSerial::refreshPortList()
 //
 void TSerial::connectSerialPort()
 {
-    if (sport.isNull() && thread.isNull()) {
+    if (sport.isNull() && thread.isNull())
+    {
         QSerialPort::Parity parity =
-                static_cast<QSerialPort::Parity> (ui->cbParity->currentData().toInt());
+            static_cast<QSerialPort::Parity>(ui->cbParity->currentData().toInt());
         QSerialPort::StopBits stopbits =
-                static_cast<QSerialPort::StopBits> (ui->cbStopBit->currentData().toInt());
+            static_cast<QSerialPort::StopBits>(ui->cbStopBit->currentData().toInt());
 
         sport = new TSerialPort(ui->cbPort->currentText(),
-                                ui->cbBaudRate->currentData().toInt(), parity, stopbits);
+                                ui->cbBaudRate->currentData().toInt(),
+                                parity,
+                                stopbits);
 
         thread = new QThread(this);
 
@@ -255,14 +274,15 @@ void TSerial::connectSerialPort()
 
         connect(this, &TSerial::write, sport, &TSerialPort::writeByteSlot);
 
-        disconnect(ui->pbOpen, &QPushButton::clicked,
-                   this, &TSerial::connectSerialPort);
+        disconnect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::connectSerialPort);
         connect(ui->pbOpen, &QPushButton::clicked, sport, &TSerialPort::stop);
 
         sport->moveToThread(thread);
         thread->start();
         emit openPort();
-    } else {
+    }
+    else
+    {
         qDebug() << "portBSP.isNull() && threadBSP.isNull()";
     }
 }
@@ -270,8 +290,7 @@ void TSerial::connectSerialPort()
 //
 void TSerial::closeSerialPort()
 {
-    connect(ui->pbOpen, &QPushButton::clicked,
-            this, &TSerial::connectSerialPort);
+    connect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::connectSerialPort);
 
     refreshPortList();
     ui->cbPort->setEnabled(true);
@@ -300,10 +319,16 @@ void TSerial::changeConfigEnabled()
 {
     bool enable = sport.isNull();
 
-    if (enable) {
-        connect(ui->pbOpen, &QPushButton::clicked,
-                this, &TSerial::changeConfigEnabled, Qt::UniqueConnection);
-    } else {
+    if (enable)
+    {
+        connect(ui->pbOpen,
+                &QPushButton::clicked,
+                this,
+                &TSerial::changeConfigEnabled,
+                Qt::UniqueConnection);
+    }
+    else
+    {
         disconnect(ui->pbOpen, &QPushButton::clicked, this, &TSerial::changeConfigEnabled);
     }
 

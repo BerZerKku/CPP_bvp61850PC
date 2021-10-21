@@ -25,74 +25,57 @@
 
 class QPush1 : public QWidget
 {
-  Q_OBJECT
-  Q_PROPERTY(QFont font READ font WRITE setFont);
-  Q_PROPERTY(QColor colorTx READ colorText WRITE setColorText);
-  Q_PROPERTY(QColor colorBt READ colorButton WRITE setColorButton);
-  Q_PROPERTY(QString text READ text WRITE setText);
+    Q_OBJECT
+    Q_PROPERTY(QFont font READ font WRITE setFont);
+    Q_PROPERTY(QColor colorTx READ colorText WRITE setColorText);
+    Q_PROPERTY(QColor colorBt READ colorButton WRITE setColorButton);
+    Q_PROPERTY(QString text READ text WRITE setText);
 
 
-  QFont font() const
-  {
-    return fontText;
-  }
-  QColor colorText() const
-  {
-    return colText;
-  }
-  QColor colorButton() const
-  {
-    return colBut;
-  }
-  QString text() const
-  {
-    return textBut;
-  }
+    QFont   font() const { return fontText; }
+    QColor  colorText() const { return colText; }
+    QColor  colorButton() const { return colBut; }
+    QString text() const { return textBut; }
 
 public:
-
-  QPush1(QWidget *parent = 0);
-  QSize minimumSizeHint() const;
-  QSize sizeHint() const;
+    QPush1(QWidget *parent = 0);
+    QSize minimumSizeHint() const;
+    QSize sizeHint() const;
 
 
 signals:
 
-  void pressed();
-  void released();
+    void pressed();
+    void released();
 
 
 public slots:
 
-  void setText(QString);
-  void setFont(QFont);
-  void setColorText(QColor);
-  void setColorButton(QColor);
+    void setText(QString);
+    void setFont(QFont);
+    void setColorText(QColor);
+    void setColorButton(QColor);
 
 protected:
-
-  void paintEvent(QPaintEvent *);
-  void mousePressEvent(QMouseEvent *);
-  void mouseReleaseEvent(QMouseEvent *);
-  void enterEvent(QEvent *);
-  void leaveEvent(QEvent *);
-  void initValue();
-  void paintButton();
-  void paintText();
+    void paintEvent(QPaintEvent *);
+    void mousePressEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
+    void enterEvent(QEvent *);
+    void leaveEvent(QEvent *);
+    void initValue();
+    void paintButton();
+    void paintText();
 
 
 private:
-
-  int click;
-  bool pushed;
-  bool focus;
-  QString textBut;
-  QString family;
-  QColor colBut;
-  QColor colText;
-  QFont fontText;
-
-
+    int     click;
+    bool    pushed;
+    bool    focus;
+    QString textBut;
+    QString family;
+    QColor  colBut;
+    QColor  colText;
+    QFont   fontText;
 };
 
 #endif

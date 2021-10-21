@@ -1,58 +1,60 @@
 #ifndef TPARAM_H
 #define TPARAM_H
 
-#include <stdint.h>
 #include "debug.hpp"
 #include "hardware.hpp"
+#include <stdint.h>
 
-namespace BVP {
+namespace BVP
+{
 
 // FIXME Эта версия должна быть в ПО для БВП!!!
 // NOTE Версия ПО состоит из двух байт (major << 8) + (minor)
-static const uint8_t versionMajor = 100;    ///< Версия ПО (major)
-static const uint8_t versionMinor = 1;      ///< Версия ПО (minor)
+static const uint8_t versionMajor = 100;  ///< Версия ПО (major)
+static const uint8_t versionMinor = 1;    ///< Версия ПО (minor)
 
 
-enum param_t {
-    PARAM_version = 0,      ///< Версия текущего устройства
+enum param_t
+{
+    PARAM_version = 0,  ///< Версия текущего устройства
     // Текущее состояние
-    PARAM_error,            ///< Флаг наличия неисправности
-    PARAM_warning,          ///< Флаг наличия предупреждения
-    PARAM_defError,         ///< Неисправности Защиты
-    PARAM_defWarning,       ///< Предупреждения Защиты
-    PARAM_prmError,         ///< Неисправности Приемника
-    PARAM_prmWarning,       ///< Педупреждения Приемника
-    PARAM_prm2Error,        ///< Неисправности Приемника 2
-    PARAM_prm2Warning,      ///> Педупреждения Приемника 2
-    PARAM_prdError,         ///< Неисправности Передатчика
-    PARAM_prdWarning,       ///< Педупреждения Передатчика
-    PARAM_glbError,         ///< Неисправности Общие
-    PARAM_glbWarning,       ///< Педупреждения Общие
-    PARAM_defRemoteError,   ///< Неисправности Защиты удаленного аппарата
-    PARAM_prmRemoteError,   ///< Неисправности Приемника удаленного аппарата
-    PARAM_prdRemoteError,   ///< Неисправности Передатчика удаленного аппарата
-    PARAM_glbRemoteError,   ///< Неисправности Общие удаленного аппарата
+    PARAM_error,        ///< Флаг наличия неисправности
+    PARAM_warning,      ///< Флаг наличия предупреждения
+    PARAM_defError,     ///< Неисправности Защиты
+    PARAM_defWarning,   ///< Предупреждения Защиты
+    PARAM_prmError,     ///< Неисправности Приемника
+    PARAM_prmWarning,   ///< Педупреждения Приемника
+    PARAM_prm2Error,    ///< Неисправности Приемника 2
+    PARAM_prm2Warning,  ///> Педупреждения Приемника 2
+    PARAM_prdError,     ///< Неисправности Передатчика
+    PARAM_prdWarning,   ///< Педупреждения Передатчика
+    PARAM_glbError,     ///< Неисправности Общие
+    PARAM_glbWarning,   ///< Педупреждения Общие
+    PARAM_defRemoteError,  ///< Неисправности Защиты удаленного аппарата
+    PARAM_prmRemoteError,  ///< Неисправности Приемника удаленного аппарата
+    PARAM_prdRemoteError,  ///< Неисправности Передатчика удаленного аппарата
+    PARAM_glbRemoteError,  ///< Неисправности Общие удаленного аппарата
     // Дата и время
-    PARAM_dateYear,         ///< Год
-    PARAM_dateMonth,        ///< Месяц
-    PARAM_dateDay,          ///< День
-    PARAM_timeHour,         ///< Часы
-    PARAM_timeMin,          ///< Минуты
-    PARAM_timeSec,          ///< Секунды
-    PARAM_timeMSec,         ///< Миллисекунды
+    PARAM_dateYear,   ///< Год
+    PARAM_dateMonth,  ///< Месяц
+    PARAM_dateDay,    ///< День
+    PARAM_timeHour,   ///< Часы
+    PARAM_timeMin,    ///< Минуты
+    PARAM_timeSec,    ///< Секунды
+    PARAM_timeMSec,   ///< Миллисекунды
     // Общие параметры
-    PARAM_alarmResetMode,   ///< Режим сброса сигнализации
+    PARAM_alarmResetMode,  ///< Режим сброса сигнализации
     // Внутренние параметры
-    PARAM_extAlarm,         ///< Внешняя сигнализация
-    PARAM_alarmRstCtrl,     ///< Управление "Сброс сигнализации"
-    PARAM_control,          ///< Сигналы управления
-    PARAM_debug1,           ///< Параметр для отладки ПО 1
-    PARAM_debug2,           ///< Параметр для отладки ПО 2
+    PARAM_extAlarm,      ///< Внешняя сигнализация
+    PARAM_alarmRstCtrl,  ///< Управление "Сброс сигнализации"
+    PARAM_control,       ///< Сигналы управления
+    PARAM_debug1,        ///< Параметр для отладки ПО 1
+    PARAM_debug2,        ///< Параметр для отладки ПО 2
     // Параметры панели виртуальных ключей
-    PARAM_versionVp,        ///< Версия ПО панели ВК
-    PARAM_dirControl,       ///< Управление ключами (SAC2)
-    PARAM_blkComPrmAll,     ///< Блокировка всех выходов приемника (SAC1)
-    PARAM_blkComPrmDir,     ///< Блокировка направлений выхода приемника (SAnn.x)
+    PARAM_versionVp,     ///< Версия ПО панели ВК
+    PARAM_dirControl,    ///< Управление ключами (SAC2)
+    PARAM_blkComPrmAll,  ///< Блокировка всех выходов приемника (SAC1)
+    PARAM_blkComPrmDir,  ///< Блокировка направлений выхода приемника (SAnn.x)
     PARAM_comPrmBlk08to01,  ///< Блокированные команды приемника с 8 по 1
     PARAM_comPrmBlk16to09,  ///< Блокированные команды приемника с 16 по 9
     PARAM_comPrmBlk24to17,  ///< Блокированные команды приемника с 24 по 17
@@ -64,20 +66,21 @@ enum param_t {
     PARAM_comPrdBlk32to25,  ///< Блокированные команды передатчика с 32 по 25
     PARAM_blkComPrd64to33,  ///< Блокированные команды передатчика с 33 по 64
     // Кнопки панели виртуальных ключей.
-    PARAM_vpBtnSAnSbSac,    ///< Текущее положение кнопок SA.m, SB, SAC
-    PARAM_vpBtnSA32to01,    ///< Текущее положение кнопок c SA32  по SA1
-    PARAM_vpBtnSA64to33,    ///< Текущее положение кнопок c SA64  по SA33
+    PARAM_vpBtnSAnSbSac,  ///< Текущее положение кнопок SA.m, SB, SAC
+    PARAM_vpBtnSA32to01,  ///< Текущее положение кнопок c SA32  по SA1
+    PARAM_vpBtnSA64to33,  ///< Текущее положение кнопок c SA64  по SA33
     //
     PARAM_MAX
 };
 
 /// Источник доступа к параметрам.
-enum src_t {
-    SRC_pi = 0, ///< БСП-ПИ
-    SRC_pc,     ///< Конфигуратор ПК
-    SRC_acs,    ///< АСУ
-    SRC_vkey,   ///< Панель виртуальных ключей
-    SRC_int,    ///< Внутренние алгоритмы программы
+enum src_t
+{
+    SRC_pi = 0,  ///< БСП-ПИ
+    SRC_pc,      ///< Конфигуратор ПК
+    SRC_acs,     ///< АСУ
+    SRC_vkey,    ///< Панель виртуальных ключей
+    SRC_int,     ///< Внутренние алгоритмы программы
     //
     SRC_MAX
 };
@@ -87,16 +90,18 @@ enum src_t {
  *  Команда перезагрузки аппарата должна стоять в конце!
  *  Чтобы перед ней были переданы все остальные.
  */
-enum ctrl_t {
-    CTRL_resetComInd = 0,   ///< Сброс индикации команд.
-    CTRL_resetFault,        ///< Сброс неисправностей. Пока == CTRL_reset
-    CTRL_resetSelf,         ///< Сброс аппарта. Желательно ставить в конец.
+enum ctrl_t
+{
+    CTRL_resetComInd = 0,  ///< Сброс индикации команд.
+    CTRL_resetFault,       ///< Сброс неисправностей. Пока == CTRL_reset
+    CTRL_resetSelf,  ///< Сброс аппарта. Желательно ставить в конец.
     //
     CTRL_MAX
 };
 
 /// Управление ключами
-enum dirControl_t {
+enum dirControl_t
+{
     DIR_CONTROL_local = 0,  ///< Местное
     DIR_CONTROL_remote,     ///< Дистанционное
     //
@@ -104,43 +109,48 @@ enum dirControl_t {
 };
 
 /// Сброс сигнализации
-enum alarmReset_t {
-    ALARM_RESET_auto = 0,   ///< Автоматический
-    ALARM_RESET_manual,     ///< Ручной
+enum alarmReset_t
+{
+    ALARM_RESET_auto = 0,  ///< Автоматический
+    ALARM_RESET_manual,    ///< Ручной
     //
     ALARM_RESET_MAX
 };
 
 /// Управление сбросом сигнализации
-enum alarmRstCtrl_t {
+enum alarmRstCtrl_t
+{
     ALARM_RST_CTRL_no = 0,  ///< Нет.
-    ALARM_RST_CTRL_pressed, ///< Нажат переключатель "Сброс сигнализации".
+    ALARM_RST_CTRL_pressed,  ///< Нажат переключатель "Сброс сигнализации".
     //
     ALARM_RST_CTRL_MAX
 };
 
 /// Состояния параметра "Вывод ПРМ (SAC1)"
-enum disablePrm_t {
-    DISABLE_PRM_disable = 0,    ///< ПРМ выведен
-    DISABLE_PRM_enable,         ///< ПРМ введен
+enum disablePrm_t
+{
+    DISABLE_PRM_disable = 0,  ///< ПРМ выведен
+    DISABLE_PRM_enable,       ///< ПРМ введен
     //
     DISABLE_PRM_MAX
 };
 
 ///
-enum switchOff_t {
-    ON_OFF_off = 0, ///< Переключатель выключен
-    ON_OFF_on,      ///< Переключатель включен
+enum switchOff_t
+{
+    ON_OFF_off = 0,  ///< Переключатель выключен
+    ON_OFF_on,       ///< Переключатель включен
     //
     ON_OFF_MAX
 };
 
 ///
-enum vpBtnControl_t {
+enum vpBtnControl_t
+{
     VP_BTN_CONTROL_sac1 = 0,
     VP_BTN_CONTROL_sac2,
     VP_BTN_CONTROL_sb,
-    VP_BTN_CONTROL_san1  = 8,
+    VP_BTN_CONTROL_san1 = 8,
     VP_BTN_CONTROL_san2,
     VP_BTN_CONTROL_san3,
     VP_BTN_CONTROL_san4,
@@ -166,22 +176,24 @@ enum vpBtnControl_t {
  *
  * Создавать объект где-либо нельзя, он создается сразу!!!
  */
-class TParam {
+class TParam
+{
     /// Параметры.
     static TParam mParam;
 
     /// Поля настроек параметра.
-    struct paramFields_t {
-        const param_t param;      ///< Параметр
-        const uint32_t source;    ///< Источник установки данного значения (биты).
-        bool isSet;         ///< Флаг наличия считанного значения.
-        bool isModified;    ///< Флаг наличия нового знаения.
-        uint32_t rValue;    ///< Считанное значение.
-        uint32_t wValue;    ///< Значение для записи.
+    struct paramFields_t
+    {
+        const param_t param;  ///< Параметр
+        const uint32_t source;  ///< Источник установки данного значения (биты).
+        bool     isSet;       ///< Флаг наличия считанного значения.
+        bool     isModified;  ///< Флаг наличия нового знаения.
+        uint32_t rValue;      ///< Считанное значение.
+        uint32_t wValue;      ///< Значение для записи.
         ///< Доп. обработка при установке значения параметра.
-        bool (* const set) (param_t, BVP::src_t, uint32_t&);
+        bool (*const set)(param_t, BVP::src_t, uint32_t &);
         ///< Доп. обработка при чтении значения параметра.
-        bool (* const get) (param_t, BVP::src_t, uint32_t&);
+        bool (*const get)(param_t, BVP::src_t, uint32_t &);
     };
 
 public:
@@ -190,13 +202,13 @@ public:
     /// Конструктор копирования запрещен.
     TParam(TParam &other) = delete;
     /// Конструктор присваивания запрещен.
-    void operator=(const TParam&) = delete;
+    void operator=(const TParam &) = delete;
 
     /** Возвращает экземпляр класса параметров.
      *
      *  @return Класс параметров.
      */
-    static TParam* getInstance();
+    static TParam *getInstance();
 
     /** Проверяет наличие установленного значения параметра.
      *
@@ -263,7 +275,7 @@ public:
 private:
     /// Значения параметров.
     static paramFields_t params[PARAM_MAX];
-    const src_t mSrc = SRC_int;
+    const src_t          mSrc = SRC_int;
 
     friend bool setError(param_t param, src_t src, uint32_t &value);
     friend bool setWarning(param_t param, src_t src, uint32_t &value);
@@ -280,6 +292,6 @@ private:
     void setLocalValue(param_t param, src_t src, uint32_t value);
 };
 
-} // namespace BVP
+}  // namespace BVP
 
-#endif // TPARAM_H
+#endif  // TPARAM_H

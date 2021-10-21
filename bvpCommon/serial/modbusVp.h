@@ -1,15 +1,18 @@
 ﻿#ifndef MODBUS_VP_H
 #define MODBUS_VP_H
 
-#include <cstdint>
-#include <cstddef>
 #include "serialprotocol.h"
+#include <cstddef>
+#include <cstdint>
 
-namespace BVP {
+namespace BVP
+{
 
-class TModbusVp : public TSerialProtocol {
+class TModbusVp : public TSerialProtocol
+{
 
-    enum regRead_t {
+    enum regRead_t
+    {
         REG_READ_MIN = 1,
         //
         REG_READ_sanSbSac = REG_READ_MIN,
@@ -22,7 +25,8 @@ class TModbusVp : public TSerialProtocol {
         REG_READ_MAX
     };
 
-    enum regWrite_t {
+    enum regWrite_t
+    {
         REG_WRITE_MIN = 0x0B,
         //
         REG_WRITE_enSanSbSac = REG_WRITE_MIN,
@@ -40,9 +44,10 @@ class TModbusVp : public TSerialProtocol {
     };
 
     /// Список команд протокола.
-    enum com_t {
-        COM_readHoldingRegs = 0x03, /// Команда чтения регистров.
-        COM_writeMultRegs   = 0x10, /// Команда записи регистров.
+    enum com_t
+    {
+        COM_readHoldingRegs = 0x03,  /// Команда чтения регистров.
+        COM_writeMultRegs   = 0x10,  /// Команда записи регистров.
         COM_readWriteRegs   = 0x17  /// Команда чтения/записи регистров.
     };
 
@@ -54,24 +59,24 @@ class TModbusVp : public TSerialProtocol {
     /// Максимальная длина RTU кадра
     const uint16_t kMaxSizeFrameRtu = 256;
 
-   public:
+public:
     TModbusVp(regime_t regime);
     ~TModbusVp() override;
 
-    bool setEnable(bool enable) override;
-    bool isEnable() const override;
-    bool read() override;
-    void readError() override;
-    bool write() override;
+    bool     setEnable(bool enable) override;
+    bool     isEnable() const override;
+    bool     read() override;
+    void     readError() override;
+    bool     write() override;
     uint16_t pop(uint8_t *data[]) override;
-    void sendFinished() override;
-    bool vPush(uint8_t byte) override;
-    bool setNetAddress(uint16_t address) override;
-    bool vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) override;
-    void setID(uint32_t id) override;
+    void     sendFinished() override;
+    bool     vPush(uint8_t byte) override;
+    bool     setNetAddress(uint16_t address) override;
+    bool     vSetup(uint32_t baudrate, bool parity, uint8_t stopbits) override;
+    void     setID(uint32_t id) override;
     uint32_t getID() const override;
-    void vTick() override;
-    bool isConnection() const override;
+    void     vTick() override;
+    bool     isConnection() const override;
 
     /**
      * @brief Возвращает текущее состояние светодиодов для двух групп переключателей.
@@ -85,7 +90,7 @@ class TModbusVp : public TSerialProtocol {
      */
     uint16_t getSwitchLed(param_t hi, param_t low, switchOff_t sw) const;
 
-   private:
+private:
     /// Источник доступа протокола.
     const src_t mSrc;
     /// Текущее состояние.
@@ -167,8 +172,7 @@ class TModbusVp : public TSerialProtocol {
      *  @param[in/out] ok true если номера регистров найдены, иначе false.
      *  @return Количество обработанных байт в сообщении.
      */
-    uint16_t getReadReg(const uint8_t buf[], uint16_t &len, uint16_t min,
-                        uint16_t max, bool &ok);
+    uint16_t getReadReg(const uint8_t buf[], uint16_t &len, uint16_t min, uint16_t max, bool &ok);
 
     /** Извлекает значение для указанного номера регистра.
      *
@@ -189,7 +193,7 @@ class TModbusVp : public TSerialProtocol {
      *  @param[in] crc Текущее значение CRC.
      *  @return Значение CRC.
      */
-    uint16_t calcCRC(const uint8_t buf[], size_t len, uint16_t crc=0xFFFF);
+    uint16_t calcCRC(const uint8_t buf[], size_t len, uint16_t crc = 0xFFFF);
 
     /**
      * @brief Обработка нажатия на переключатели SB, SAC и Snn
@@ -244,6 +248,6 @@ class TModbusVp : public TSerialProtocol {
 #endif
 };
 
-} // namespace BVP
+}  // namespace BVP
 
-#endif // MODBUS_VP_H
+#endif  // MODBUS_VP_H

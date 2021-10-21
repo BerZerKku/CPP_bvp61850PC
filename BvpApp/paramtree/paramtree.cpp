@@ -3,8 +3,7 @@
 #include <QLineEdit>
 
 //
-TParamTree::TParamTree(QWidget *parent) :
-                                          QTreeWidget (parent)
+TParamTree::TParamTree(QWidget *parent) : QTreeWidget(parent)
 {
     headerItem()->setText(0, "Параметр");
     headerItem()->setText(1, "Значение R/W");
@@ -20,7 +19,7 @@ TParamTree::TParamTree(QWidget *parent) :
     header()->resizeSections(QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(0, QHeaderView::Fixed);
     header()->resizeSection(0, header()->sectionSize(0) + 5);
-    setFixedWidth(static_cast<int> (1.75*header()->sectionSize(0)));
+    setFixedWidth(static_cast<int>(1.75 * header()->sectionSize(0)));
 
     setSelectionMode(QAbstractItemView::NoSelection);
     setFocusPolicy(Qt::NoFocus);
@@ -29,7 +28,8 @@ TParamTree::TParamTree(QWidget *parent) :
 //
 void TParamTree::updateParameters()
 {
-    for(BVP::param_t param: mapItems.keys()) {
+    for (BVP::param_t param : mapItems.keys())
+    {
         updateParameter(param);
     }
 }
@@ -140,10 +140,10 @@ void TParamTree::crtGroupVp()
 }
 
 //
-void TParamTree::crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name)
+void TParamTree::crtItem(QTreeWidgetItem *top, BVP::param_t param, QString name)
 {
-    QTreeWidgetItem *item = new QTreeWidgetItem();
-    QLineEdit *lineedit = new QLineEdit();
+    QTreeWidgetItem *item     = new QTreeWidgetItem();
+    QLineEdit *      lineedit = new QLineEdit();
 
     item->setText(0, name);
 
@@ -162,21 +162,24 @@ void TParamTree::crtItem(QTreeWidgetItem* top, BVP::param_t param, QString name)
 //
 void TParamTree::updateParameter(BVP::param_t param)
 {
-    Qt::GlobalColor color = Qt::black;
-    BVP::TParam *p = BVP::TParam::getInstance();
-    QTreeWidgetItem *item = mapItems.value(param);
-    QLineEdit *lineedit = static_cast<QLineEdit *> (itemWidget(item, 1));
+    Qt::GlobalColor  color    = Qt::black;
+    BVP::TParam *    p        = BVP::TParam::getInstance();
+    QTreeWidgetItem *item     = mapItems.value(param);
+    QLineEdit *      lineedit = static_cast<QLineEdit *>(itemWidget(item, 1));
 
     uint32_t rvalue = p->getValueR(param);
     uint32_t wvalue = p->getValueW(param);
 
-    if ((param >= BVP::PARAM_error) && (param <= BVP::PARAM_glbRemoteError)) {
-        if ((rvalue | wvalue) > 0) {
+    if ((param >= BVP::PARAM_error) && (param <= BVP::PARAM_glbRemoteError))
+    {
+        if ((rvalue | wvalue) > 0)
+        {
             color = Qt::blue;
         }
     }
 
-    if (!p->isSet(param)) {
+    if (!p->isSet(param))
+    {
         color = Qt::darkYellow;
     }
 
@@ -184,9 +187,9 @@ void TParamTree::updateParameter(BVP::param_t param)
     palette.setColor(QPalette::Text, color);
     lineedit->setPalette(palette);
 
-    lineedit->setText(QString("%1 / %2").
-                      arg(rvalue, 8, 16, QLatin1Char('0')).
-                      arg(wvalue, 8, 16, QLatin1Char('0')));
+    lineedit->setText(QString("%1 / %2")
+                          .arg(rvalue, 8, 16, QLatin1Char('0'))
+                          .arg(wvalue, 8, 16, QLatin1Char('0')));
 
     lineedit->setToolTip(QString("%1 / %2").arg(rvalue).arg(wvalue));
 }
