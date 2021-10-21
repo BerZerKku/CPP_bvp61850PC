@@ -41,6 +41,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     initVp();
     initAvantPi();
     initAvantPc();
+    initAvantRPi();
 
     TClock::setTickInMs(1);
     connect(&timer1ms, &QTimer::timeout, this, &MainWindow::serialProc);
@@ -135,8 +136,34 @@ void MainWindow::initVp()
     addSerialToFrame(serial);
 }
 
+
+/**
+ * *****************************************************************************
+ *
+ * @brief Инициализация порта связи с RaspberryPi
+ *
+ * *****************************************************************************
+ */
 void MainWindow::initAvantRPi()
 {
+    TSerial*     serial = new TSerial;
+    serialCfg_t* cfg    = new serialCfg_t;
+
+    cfg->label = "Raspberry Pi";
+    cfg->defaultPorts.append("COM8");
+    cfg->defaultPorts.append("tnt5");
+    cfg->baudList.append({ 1000000 });
+    cfg->parityList.append({ QSerialPort::NoParity });
+    cfg->stopList.append({ QSerialPort::OneStop });
+    cfg->protocol = new TAvantRPi(TSerialProtocol::REGIME_slave);
+    cfg->srcId    = SRC_rpi;
+    cfg->netAddr  = 1;
+    cfg->baudrate = 1000000UL;
+    cfg->parity   = QSerialPort::NoParity;
+    cfg->stopBits = QSerialPort::OneStop;
+
+    initSerial(serial, cfg);
+    addSerialToFrame(serial);
 }
 
 //
@@ -185,15 +212,17 @@ void MainWindow::serialStart(TSerial* serial)
     Q_ASSERT(sPort.count(serial) == 1);
     serialCfg_t* cfg = sPort.value(serial);
 
-    cfg->baudrate = serial->getBaudRate();
+    cfg->baudrate = static_cast<uint32_t>(serial->getBaudRate());
     cfg->parity   = serial->getParity();
     cfg->stopBits = serial->getStopBits();
 
-    cfg->protocol->setBuffer(cfg->buf, std::end(cfg->buf) - std::begin(cfg->buf));
+    int size = std::end(cfg->buf) - std::begin(cfg->buf);
+    cfg->protocol->setBuffer(cfg->buf, static_cast<uint16_t>(size));
     cfg->protocol->setID(cfg->srcId);
 
-    Q_ASSERT(
-        cfg->protocol->setup(cfg->baudrate, cfg->parity != QSerialPort::NoParity, cfg->stopBits));
+    bool    parity   = cfg->parity != QSerialPort::NoParity;
+    uint8_t stopbits = static_cast<uint8_t>(cfg->stopBits);
+    Q_ASSERT(cfg->protocol->setup(cfg->baudrate, parity, stopbits));
     Q_ASSERT(cfg->protocol->setNetAddress(cfg->netAddr));
     Q_ASSERT(cfg->protocol->setTimeTick(1000));
     Q_ASSERT(cfg->protocol->setEnable(true));

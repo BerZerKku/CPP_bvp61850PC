@@ -3,6 +3,7 @@
 
 #include "bvpCommon/extAlarm.hpp"
 #include "bvpCommon/param.h"
+#include "bvpCommon/serial/avant_rpi.h"
 #include "bvpCommon/serial/avantpc.h"
 #include "bvpCommon/serial/avantpi.h"
 #include "bvpCommon/serial/modbusVp.h"
@@ -38,7 +39,7 @@ class MainWindow : public QMainWindow
         BVP::TSerialProtocol*          protocol = nullptr;
         BVP::src_t                     srcId    = BVP::SRC_MAX;
         uint16_t                       netAddr  = 0;
-        uint16_t                       baudrate = 0;
+        uint32_t                       baudrate = 0;
         QSerialPort::Parity            parity   = QSerialPort::NoParity;
         QSerialPort::StopBits          stopBits = QSerialPort::TwoStop;
     };

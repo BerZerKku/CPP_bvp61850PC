@@ -80,6 +80,7 @@ enum src_t
     SRC_pc,      ///< Конфигуратор ПК
     SRC_acs,     ///< АСУ
     SRC_vkey,    ///< Панель виртуальных ключей
+    SRC_rpi,     ///< Raspberry Pi
     SRC_int,     ///< Внутренние алгоритмы программы
     //
     SRC_MAX

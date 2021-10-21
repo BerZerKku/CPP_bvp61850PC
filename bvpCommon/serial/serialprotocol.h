@@ -125,13 +125,13 @@ protected:
     /// Список состояний протокола.
     enum state_t
     {
-        STATE_disable = 0,
-        STATE_idle,
-        STATE_reqSend,
-        STATE_waitSendFinished,
-        STATE_waitForReply,
-        STATE_procReply,
-        STATE_errorReply,
+        STATE_disable = 0,       ///< Отключен.
+        STATE_idle,              ///< Жидание приема или передачи.
+        STATE_reqSend,           ///< Отправка запроса.
+        STATE_waitSendFinished,  ///< Окончание передачи.
+        STATE_waitForReply,      ///< Ожидание ответа.
+        STATE_procReply,         ///< Подготовка ответа.
+        STATE_errorReply,        ///< Ошибка приема ответа.
         //
         STATE_MAX
     };

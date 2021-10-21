@@ -16,6 +16,7 @@ HEADERS += \
     $${BVP_PATH}/paramDB.h\
     $${BVP_PATH}/serial/avantpc.h \
     $${BVP_PATH}/serial/avantpi.h \
+    $${BVP_PATH}/serial/avant_rpi.h \
     $${BVP_PATH}/serial/modbusVp.h \
     $${BVP_PATH}/serial/protocolAvant.h \
     $${BVP_PATH}/serial/serialprotocol.h \
@@ -30,6 +31,7 @@ SOURCES += \
     $${BVP_PATH}/param.cpp \
     $${BVP_PATH}/serial/avantpc.cpp \
     $${BVP_PATH}/serial/avantpi.cpp \
+    $${BVP_PATH}/serial/avant_rpi.cpp \
     $${BVP_PATH}/serial/modbusVp.cpp \
     $${BVP_PATH}/serial/protocolAvant.cpp \
     $${BVP_PATH}/serial/serialprotocol.cpp
