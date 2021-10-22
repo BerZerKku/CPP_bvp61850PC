@@ -19,6 +19,7 @@
 #include "bvpCommon/serial/modbusVp.h"
 #include "bvpCommon/serial/avantpi.h"
 #include "bvpCommon/serial/avantpc.h"
+#include "bvpCommon/serial/avant_rpi.h"
 #include "bvpCommon/extAlarm.hpp"
 #include "bvpCommon/clock.hpp"
 
@@ -65,6 +66,7 @@ TParam params;
 TModbusVp modbusVp(TSerialProtocol::REGIME_master);
 TAvantPi avantPi(TSerialProtocol::REGIME_master);
 TAvantPc avantPc(TSerialProtocol::REGIME_slave);
+TAvantRPi avantRPi(TSerialProtocol::REGIME_slave);
 
 TExtAlarm mAlarm;
 
@@ -94,7 +96,7 @@ struct port_t {
   UART_HandleTypeDef *huart = nullptr;
 };
 
-port_t<256, uint8_t> port[PORT_MAX];
+port_t<1024, uint8_t> port[PORT_MAX];
 
 //
 enum i2cState_t {
@@ -157,20 +159,22 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
  *
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-  for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
-    if (port[i].type == PORT_TYPE_uart) {
-      if (huart == port[i].huart) {
-        TSerialProtocol *protocol = port[i].protocol;
 
-        if (protocol != nullptr) {
-          protocol->push(port[i].rxByte);
-          HAL_UART_Receive_IT(huart, &port[i].rxByte, 1);
-        }
+	for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
+		if (port[i].type == PORT_TYPE_uart) {
+			if (huart == port[i].huart) {
+				TSerialProtocol *protocol = port[i].protocol;
 
-        break;
-      }
-    }
-  }
+				if (protocol != nullptr) {
+					protocol->push(port[i].rxByte);
+					HAL_UART_Receive_IT(huart, &port[i].rxByte, 1);
+				}
+
+				break;
+			}
+		}
+	}
+
 }
 
 /**
@@ -376,6 +380,7 @@ void HAL_I2C_AbortCpltCallback(I2C_HandleTypeDef *hi2c) {
 
 // Вызов после инициализации всей периферии в main().
 void wrapperMainInit() {
+  ePort_t index;
 
   i2cWatchDogReset();
   HAL_Delay(10);
@@ -383,19 +388,19 @@ void wrapperMainInit() {
 
   TClock::setTickInMs(1);
 
-  ePort_t index = PORT_PI;
-  port[index].type = PORT_TYPE_uart;
-  port[index].huart = &huart1;
-  port[index].protocol = &avantPi;
-  port[index].protocol->setNetAddress(0x01);
-  port[index].protocol->setID(SRC_pi);
-  port[index].protocol->setBuffer(port[index].buf,
-      sizeof(port[index].buf) / sizeof(port[index].buf[0]));
-  port[index].protocol->setTimeTick(100);
-  port[index].protocol->setup(port[index].huart->Init.BaudRate,
-      (port[index].huart->Init.Parity != UART_PARITY_NONE),
-      (port[index].huart->Init.StopBits == UART_STOPBITS_2) ? 2 : 1);
-  port[index].protocol->setEnable(true);
+//  index = PORT_PI;
+//  port[index].type = PORT_TYPE_uart;
+//  port[index].huart = &huart1;
+//  port[index].protocol = &avantPi;
+//  port[index].protocol->setNetAddress(0x01);
+//  port[index].protocol->setID(SRC_pi);
+//  port[index].protocol->setBuffer(port[index].buf,
+//      sizeof(port[index].buf) / sizeof(port[index].buf[0]));
+//  port[index].protocol->setTimeTick(100);
+//  port[index].protocol->setup(port[index].huart->Init.BaudRate,
+//      (port[index].huart->Init.Parity != UART_PARITY_NONE),
+//      (port[index].huart->Init.StopBits == UART_STOPBITS_2) ? 2 : 1);
+//  port[index].protocol->setEnable(true);
 
   index = PORT_DR;
   port[index].type = PORT_TYPE_uart;
@@ -423,6 +428,21 @@ void wrapperMainInit() {
       (port[index].huart->Init.Parity != UART_PARITY_NONE),
       (port[index].huart->Init.StopBits == UART_STOPBITS_2) ? 2 : 1);
   port[index].protocol->setEnable(true);
+
+  index = PORT_RPi;
+  port[index].type = PORT_TYPE_uart;
+  port[index].huart = &huart2;
+  port[index].protocol = &avantRPi;
+  port[index].protocol->setNetAddress(0x01);
+  port[index].protocol->setID(SRC_rpi);
+  port[index].protocol->setBuffer(port[index].buf,
+      sizeof(port[index].buf) / sizeof(port[index].buf[0]));
+  port[index].protocol->setTimeTick(100);
+  port[index].protocol->setup(port[index].huart->Init.BaudRate,
+      (port[index].huart->Init.Parity != UART_PARITY_NONE),
+      (port[index].huart->Init.StopBits == UART_STOPBITS_2) ? 2 : 1);
+  port[index].protocol->setEnable(true);
+  HAL_UART_Receive_IT(port[index].huart, &port[index].rxByte, 1);
 }
 
 
@@ -430,10 +450,10 @@ void wrapperMainInit() {
 void wrapperMainLoop() {
   HAL_IWDG_Refresh(&hiwdg);
 
-  i2cProcessing();
+//  i2cProcessing();
 
   protocolPoll();
-  alarmLoop();
+//  alarmLoop();
 }
 
 // FIXME ПОлучается лишнее либо params, либо mParam

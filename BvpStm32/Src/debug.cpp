@@ -66,18 +66,18 @@ void Debug::proc() {
 
   time++;
 
-  if (debug > 0) {
-    printf("Debug message 0x(%.4lX) at time = %ld sek:\n", debug,  time);
-  }
-
-  for(uint8_t i = 0; i < MSG_MAX; i++) {
-    uint32_t mask = (1UL << i);
-
-    if ((debug & mask) == mask) {
-      debug &= ~mask;
-      printf("    %s (cnt = %ld)\n", msgString[i], msgCnt[i]);
-    }
-  }
+//  if (debug > 0) {
+//    printf("Debug message 0x(%.4lX) at time = %ld sek:\n", debug,  time);
+//  }
+//
+//  for(uint8_t i = 0; i < MSG_MAX; i++) {
+//    uint32_t mask = (1UL << i);
+//
+//    if ((debug & mask) == mask) {
+//      debug &= ~mask;
+//      printf("    %s (cnt = %ld)\n", msgString[i], msgCnt[i]);
+//    }
+//  }
 }
 
 //

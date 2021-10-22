@@ -111,15 +111,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_IWDG_Init();
-  MX_SPI1_Init();
-  MX_USART1_UART_Init();
+//  MX_SPI1_Init();
+//  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
-  MX_USART6_UART_Init();
-  MX_TIM6_Init();
-  MX_USB_DEVICE_Init();
-  MX_I2C2_Init();
-  MX_TIM7_Init();
+//  MX_USART3_UART_Init();
+//  MX_USART6_UART_Init();
+//  MX_TIM6_Init();
+//  MX_USB_DEVICE_Init();
+//  MX_I2C2_Init();
+//  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
   wrapperMainInit();
@@ -128,8 +128,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_TIM_Base_Start_IT(&htim6);
-  HAL_TIM_Base_Start_IT(&htim7);
+//  HAL_TIM_Base_Start_IT(&htim6);
+//  HAL_TIM_Base_Start_IT(&htim7);
 
   while (1) {
     /* USER CODE END WHILE */
@@ -409,7 +409,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 1000000;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
