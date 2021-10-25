@@ -139,34 +139,13 @@ BvpPkg bvpPkg(BvpPkg::MODE_slave);
  *
  */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-  for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
-    if (port[i].type == PORT_TYPE_uart) {
-      if (huart == port[i].huart) {
-        TSerialProtocol *protocol = port[i].protocol;
-
-        if (protocol != nullptr) {
-          protocol->sendFinished();
-          HAL_UART_Receive_IT(huart, &port[i].rxByte, 1);
-        }
-
-        break;
-      }
-    }
-  }
-}
-
-/**
- *
- */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-
-	for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
+	for(uint8_t i = PORT_RPi; i <= PORT_RPi; i++) {
 		if (port[i].type == PORT_TYPE_uart) {
 			if (huart == port[i].huart) {
 				TSerialProtocol *protocol = port[i].protocol;
 
 				if (protocol != nullptr) {
-					protocol->push(port[i].rxByte);
+					protocol->sendFinished();
 					HAL_UART_Receive_IT(huart, &port[i].rxByte, 1);
 				}
 
@@ -174,7 +153,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			}
 		}
 	}
+}
 
+/**
+ *
+ */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	for(uint8_t i = PORT_RPi; i <= PORT_RPi; i++) {
+		if (port[i].type == PORT_TYPE_uart) {
+			if (huart == port[i].huart) {
+				TSerialProtocol *protocol = port[i].protocol;
+
+				if (protocol != nullptr) {
+					protocol->push(port[i].rxByte);
+					HAL_UART_Receive_IT(huart, &port[PORT_RPi].rxByte, 1);
+				}
+
+				break;
+			}
+		}
+	}
 }
 
 /**
@@ -182,20 +180,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
   // TODO Проверить работает ли данный обработчик
-  for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
-    if (port[i].type == PORT_TYPE_uart) {
-      if (huart == port[i].huart) {
-        TSerialProtocol *protocol = port[i].protocol;
+	for(uint8_t i = PORT_RPi; i <= PORT_RPi; i++) {
+		if (port[i].type == PORT_TYPE_uart) {
+			if (huart == port[i].huart) {
+				TSerialProtocol *protocol = port[i].protocol;
 
-        if (protocol != nullptr) {
-          protocol->readError();
-          HAL_UART_Receive_IT(huart, &port[i].rxByte, 1);
-        }
+				if (protocol != nullptr) {
+					port[PORT_RPi].protocol->readError();
+					HAL_UART_Receive_IT(huart, &port[PORT_RPi].rxByte, 1);
+				}
 
-        break;
-      }
-    }
-  }
+				break;
+			}
+		}
+	}
 }
 
 /**
@@ -384,7 +382,7 @@ void wrapperMainInit() {
 
   i2cWatchDogReset();
   HAL_Delay(10);
-  printf("Hello STM32\n");
+//  printf("Hello STM32\n");
 
   TClock::setTickInMs(1);
 
@@ -769,7 +767,7 @@ void i2cProcessing() {
 }
 
 void protocolPoll() {
-  for(uint8_t i = 0; i < (sizeof(port) / sizeof(port[0])); i++) {
+  for(uint8_t i = PORT_RPi; i <= PORT_RPi; i++) {
     TSerialProtocol *p = port[i].protocol;
 
     if ((p != nullptr) && p->isEnable()) {
